@@ -1,0 +1,58 @@
+<style>
+    .selector-bar { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 15px; background: #0b1118; padding: 15px; border-radius: 8px; border: 1px solid #222; margin-bottom: 20px; }
+    
+    #container-ecole-selector { display: none; } /* Caché par défaut, affiché si 'editor' */
+
+    .user-table { width: 100%; border-collapse: collapse; margin-top: 20px; font-size: 0.9em; }
+    .user-table th, .user-table td { text-align: left; padding: 12px; border-bottom: 1px solid #222; }
+    .user-table th { color: var(--poly-cyan); text-transform: uppercase; letter-spacing: 1px; font-size: 0.8em; }
+    .user-table tr:hover { background: rgba(255,255,255,0.02); }
+    
+    .badge { padding: 4px 8px; border-radius: 4px; font-size: 0.8em; font-weight: bold; text-transform: uppercase; }
+    .badge-admin { background: #ed1c24; color: white; }
+    .badge-editor { background: #f09433; color: black; }
+
+    .btn-delete-user { background: none; border: none; color: #555; cursor: pointer; font-size: 1.2em; transition: 0.2s; }
+    .btn-delete-user:hover { color: #ed1c24; transform: scale(1.1); }
+</style>
+
+<div class="admin-card" style="border-top: 3px solid #ed1c24;">
+    <h3 style="color: #ed1c24;">Ajouter un nouvel accès</h3>
+    <div class="selector-bar">
+        <div>
+            <label>Adresse Email</label>
+            <input type="email" id="new-user-email" placeholder="nom@federp.fr">
+        </div>
+        <div>
+            <label>Rôle</label>
+            <select id="new-user-role">
+                <option value="editor" selected>Éditeur (École spécifique)</option>
+                <option value="admin">Admin (Toutes les écoles)</option>
+            </select>
+        </div>
+        <div id="container-ecole-selector">
+            <label>École attribuée</label>
+            <select id="new-user-ecole">
+                </select>
+        </div>
+    </div>
+    <button class="btn-push" id="btn-add-user" style="background: #ed1c24; max-width: 200px; margin: 0 auto; display: block;">➕ Autoriser l'accès</button>
+    <p id="adduser-status" style="text-align:center; font-size:0.8em; margin-top:10px; min-height:1em;"></p>
+</div>
+
+<div class="admin-card">
+    <h3>Liste des accès autorisés</h3>
+    <div id="loading-users" style="color:#aaa; text-align:center; padding:20px; font-style:italic;">Chargement des utilisateurs...</div>
+    <table class="user-table" id="user-table" style="display:none;">
+        <thead>
+            <tr>
+                <th>Email</th>
+                <th>Rôle</th>
+                <th>École</th>
+                <th style="text-align:right;">Action</th>
+            </tr>
+        </thead>
+        <tbody id="user-table-body">
+            </tbody>
+    </table>
+</div>

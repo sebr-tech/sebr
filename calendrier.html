@@ -1,0 +1,252 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="icon" type="image/png" href="image.png">
+    <title>Calendrier Rezo - SEBR.tech</title>
+    
+    <script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.10/index.global.min.js"></script>
+    
+    <style>
+    :root {
+        --poly-blue: #003057;
+        --poly-cyan: #009EE3;
+        --bg-dark: #050a0f;
+        --sidebar-bg: #0b1118;
+    }
+    * { box-sizing: border-box; }
+    body {
+        margin: 0; font-family: 'Segoe UI', sans-serif;
+        background-color: var(--bg-dark); color: white;
+        height: 100vh; display: flex; flex-direction: column; overflow: hidden;
+    }
+
+    header {
+        display: flex; justify-content: space-between; align-items: center;
+        padding: 0 20px; background: var(--poly-blue); height: 60px;
+        border-bottom: 3px solid var(--poly-cyan); flex-shrink: 0; z-index: 10;
+    }
+    .btn-back {
+        background: rgba(255,255,255,0.1); border: 1px solid var(--poly-cyan);
+        color: white; padding: 6px 12px; border-radius: 4px;
+        cursor: pointer; text-decoration: none; font-weight: bold; font-size: 0.85em;
+    }
+
+    .main-container { display: flex; flex: 1; overflow: hidden; }
+
+    .sidebar {
+        width: 260px; background: var(--sidebar-bg); border-right: 1px solid #222;
+        display: flex; flex-direction: column; padding: 20px; flex-shrink: 0; overflow-y: auto;
+    }
+    .sidebar h3 {
+        font-size: 0.9em; color: var(--poly-cyan); text-transform: uppercase;
+        margin-bottom: 15px; letter-spacing: 1px;
+    }
+    
+    #filter-list { display: flex; flex-direction: column; }
+
+    .filter-item {
+        display: flex; align-items: center; margin-bottom: 10px;
+        cursor: pointer; font-size: 0.9em; padding: 4px 0;
+    }
+    .filter-item input { margin-right: 12px; width: 16px; height: 16px; cursor: pointer; }
+
+    .calendar-section { flex: 1; padding: 15px; background: var(--bg-dark); overflow: hidden; }
+    #calendar { height: 100%; background: #111a24; padding: 10px; border-radius: 8px; }
+
+    .fc { --fc-border-color: #2a3542; color: white; height: 100%; }
+    .fc-toolbar-title { font-size: 1.1em !important; font-weight: bold; color: var(--poly-cyan); }
+    .fc-button-primary { background-color: #1e2936 !important; border: 1px solid #333 !important; padding: 4px 8px !important; }
+    .fc-button-primary:hover { background-color: var(--poly-cyan) !important; }
+    .fc-daygrid-day-number { color: #fff; text-decoration: none; padding: 5px !important; }
+    .fc-col-header-cell-cushion { color: #888; text-decoration: none; font-size: 0.8em; text-transform: uppercase; }
+    .fc-day-today { background: rgba(0, 158, 227, 0.1) !important; }
+    
+    .fc-event { border: none !important; border-radius: 3px !important; padding: 1px 2px; color: white !important; cursor: pointer; }
+    .fc-event-title { font-weight: 700; font-size: 0.7em; white-space: normal !important; }
+
+    @media (max-width: 900px) {
+        .main-container { flex-direction: column-reverse; }
+        .sidebar { width: 100%; height: auto; max-height: 35vh; border-right: none; border-top: 1px solid #222; padding: 15px; }
+        #filter-list { display: grid; grid-template-columns: 1fr 1fr; gap: 5px 15px; }
+        .calendar-section { flex: 1; padding: 10px; }
+    }
+</style>
+</head>
+<body>
+
+<header>
+    <a href="index.html" class="btn-back">← ACCUEIL</a>
+    <div style="font-weight: 800; color: var(--poly-cyan);">SEBR.tech - CALENDRIER REZO</div>
+    <div style="width: 70px;"></div>
+</header>
+
+<div class="main-container">
+    <aside class="sidebar">
+        <h3>Filtrer par écoles</h3>
+        <div id="filter-list"></div>
+    </aside>
+
+    <main class="calendar-section">
+        <div id="calendar"></div>
+    </main>
+</div>
+
+<script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+    import { getFirestore, doc, getDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+
+    const firebaseConfig = {
+        apiKey: "AIzaSyB1_SgV4E80Qxs2vQ-_jIGexv6YYqaiARs",
+        authDomain: "sebr-dea8d.firebaseapp.com",
+        projectId: "sebr-dea8d",
+        storageBucket: "sebr-dea8d.firebasestorage.app",
+        messagingSenderId: "948314281215",
+        appId: "1:948314281215:web:1fddf38350d9a3663e68ca"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const db = getFirestore(app);
+
+    const ecolesConfig = {
+        lille: { nom: "Lille", color: "#ed1c24" },
+        sorbonne: { nom: "Sorbonne", color: "#b2b2b2" },
+        saclay: { nom: "Saclay", color: "#8e95b3" },
+        nancy: { nom: "Nancy", color: "#f04e23" },
+        nantes: { nom: "Nantes", color: "#ffc20e" },
+        angers: { nom: "Angers", color: "#ff8368" },
+        orleans: { nom: "Orléans", color: "#f37021" },
+        tours: { nom: "Tours", color: "#8c4799" },
+        clermont: { nom: "Clermont", color: "#8dc63f" },
+        dijon: { nom: "Dijon", color: "#d3d3ff" },
+        lyon: { nom: "Lyon", color: "#781716" },
+        annecy: { nom: "Annecy", color: "#ea1d8e" },
+        grenoble: { nom: "Grenoble", color: "#b49a71" },
+        montpellier: { nom: "Montpellier", color: "#1674b9" },
+        marseille: { nom: "Marseille", color: "#00a5b5" },
+        nice: { nom: "Nice", color: "#b3d334" }
+    };
+
+    let calendar;
+    let allFetchedEvents = [];
+    const currentAnnee = "2025-2026";
+
+    function parseFirebaseDate(dateField) {
+        if (!dateField) return null;
+        if (dateField.toDate) return dateField.toDate();
+        return new Date(dateField);
+    }
+
+    async function loadEvents() {
+        // Système de cache pour éviter le clignotement au retour
+        const cached = sessionStorage.getItem('rezo_calendar_cache');
+        if (cached) {
+            const data = JSON.parse(cached);
+            return data.map(ev => ({ ...ev, start: new Date(ev.start) }));
+        }
+
+        const events = [];
+        for (const [id, info] of Object.entries(ecolesConfig)) {
+            try {
+                const snap = await getDoc(doc(db, "ecoles", id, "events", currentAnnee));
+                if (snap.exists()) {
+                    const data = snap.data();
+                    const ecoleNom = info.nom.toUpperCase();
+
+                    // 1. Soirée REZO
+                    if (data.soiree && data.soiree.date) {
+                        const d = parseFirebaseDate(data.soiree.date);
+                        if(d) events.push({
+                            ecoleId: id,
+                            title: `${ecoleNom} REZO : ${data.soiree.nom.toUpperCase()}`,
+                            start: d,
+                            backgroundColor: info.color,
+                            allDay: true,
+                            extendedProps: { type: 'bde_actuel', id: 'bde_actuel' }
+                        });
+                    }
+
+                    // 2. Soirées Locales
+                    if (data.locaux && Array.isArray(data.locaux)) {
+                        data.locaux.forEach((loc) => {
+                            const d = parseFirebaseDate(loc.date);
+                            if(d) {
+                                let targetType = loc.typeList || 'listes_bde';
+                                let targetId = loc.listeLiee || loc.nom;
+
+                                if (loc.orga === "BDE") {
+                                    targetType = "bde_actuel";
+                                    targetId = "BDE";
+                                } else if (loc.orga === "BDP") {
+                                    targetType = "bdp_actuel";
+                                    targetId = "BDP";
+                                }
+
+                                events.push({
+                                    ecoleId: id,
+                                    title: `${ecoleNom} ${(loc.orga || '').toUpperCase()} : ${loc.nom.toUpperCase()}`,
+                                    start: d,
+                                    backgroundColor: loc.couleur || info.color,
+                                    allDay: true,
+                                    extendedProps: { type: targetType, id: targetId }
+                                });
+                            }
+                        });
+                    }
+                }
+            } catch (e) { console.error("Erreur " + id, e); }
+        }
+        
+        sessionStorage.setItem('rezo_calendar_cache', JSON.stringify(events));
+        return events;
+    }
+
+    function initFilters() {
+        const container = document.getElementById('filter-list');
+        Object.entries(ecolesConfig).forEach(([id, info]) => {
+            const label = document.createElement('label');
+            label.className = 'filter-item';
+            label.innerHTML = `
+                <input type="checkbox" value="${id}" checked>
+                <span style="color:${info.color}; font-weight:bold;">${info.nom}</span>
+            `;
+            label.querySelector('input').addEventListener('change', updateVisibility);
+            container.appendChild(label);
+        });
+    }
+
+    function updateVisibility() {
+        const activeEcoles = Array.from(document.querySelectorAll('#filter-list input:checked')).map(i => i.value);
+        calendar.removeAllEvents();
+        const filtered = allFetchedEvents.filter(ev => activeEcoles.includes(ev.ecoleId));
+        calendar.addEventSource(filtered);
+    }
+
+    document.addEventListener('DOMContentLoaded', async () => {
+        calendar = new FullCalendar.Calendar(document.getElementById('calendar'), {
+            initialView: 'dayGridMonth',
+            locale: 'fr',
+            firstDay: 1,
+            headerToolbar: { left: 'prev,next today', center: 'title', right: '' },
+            height: '100%',
+            eventDisplay: 'block',
+            showNonCurrentDates: false,
+            fixedWeekCount: false,
+            eventClick: function(info) {
+                const props = info.event.extendedProps;
+                if (props.type && props.id) {
+                    const ecole = props.ecoleId || info.event.source.internalEventSource.meta[0]?.ecoleId;
+                    window.location.href = `liste.html?ecole=${ecole || info.event.extendedProps.ecoleId}&annee=${currentAnnee}&type=${props.type}&id=${encodeURIComponent(props.id)}`;
+                }
+            }
+        });
+
+        calendar.render();
+        initFilters();
+        allFetchedEvents = await loadEvents();
+        updateVisibility();
+    });
+</script>
+</body>
+</html>

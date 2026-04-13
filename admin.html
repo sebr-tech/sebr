@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="icon" type="image/png" href="image.png">
+    <title>SEBR.tech — Admin</title>
+    <style>
+        :root { --poly-blue: #003057; --poly-cyan: #009EE3; --bg-dark: #050a0f; }
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body { font-family: 'Segoe UI', sans-serif; background: var(--bg-dark); color: white; display: flex; flex-direction: column; min-height: 100vh; }
+        header { display: flex; justify-content: space-between; align-items: center; padding: 0 25px; background: var(--poly-blue); height: 65px; border-bottom: 3px solid var(--poly-cyan); }
+        main { flex: 1; padding: 30px; max-width: 900px; margin: 0 auto; width: 100%; }
+        @media (max-width: 600px) {
+            main { padding: 15px; }
+            header { padding: 0 15px; }
+            .logo-title { font-size: 0.9em; }
+        }
+        .tabs { display: flex; gap: 10px; margin-bottom: 20px; flex-wrap: wrap; }
+        .tab-button { background: #0b1118; border: 1px solid #222; color: white; padding: 10px 15px; border-radius: 5px 5px 0 0; cursor: pointer; font-size: 0.9em; transition: 0.2s; }
+        .tab-button.active { background: var(--poly-cyan); border-color: var(--poly-cyan); font-weight: bold; }
+        .btn-logout { border-color: #ff4444 !important; color: #ff4444; margin-left: auto; border-radius: 5px !important; }
+        .btn-logout:hover { background: #ff4444 !important; color: white; }
+        .tab-content { display: none; background: #0b1118; border: 1px solid #222; padding: 20px; border-radius: 0 5px 5px 5px; }
+        .tab-content.active { display: block; }
+    </style>
+</head>
+<body>
+
+<header>
+    <button onclick="location.href='index.html'" style="background: transparent; border: 1px solid var(--poly-cyan); color: white; padding: 8px 15px; border-radius: 5px; cursor: pointer;">← Retour Accueil</button>
+    <div class="logo-title" style="font-weight: 800; color: var(--poly-cyan); letter-spacing: 2px;">SEBR.tech : CONSOLE ADMIN</div>
+    <div></div>
+</header>
+
+<main>
+    <div class="tabs">
+        <button class="tab-button active" data-tab="tab-ajout-liste">BDE & Listes</button>
+        <button class="tab-button" data-tab="tab-events">Événements</button>
+        <button class="tab-button" data-tab="tab-gestion-users" id="tab-btn-users" style="display: none; border-color: #ed1c24;">Users</button>
+        <button class="tab-button btn-logout" id="btn-logout">Déconnexion</button>
+    </div>
+
+    <div id="tab-ajout-liste" class="tab-content active">
+        <div id="ajoutliste-container">Chargement module listes...</div>
+    </div>
+    <div id="tab-events" class="tab-content">
+        <div id="event-container">Chargement module événements...</div>
+    </div>
+    <div id="tab-gestion-users" class="tab-content">
+        <div id="adduser-container">Chargement module accès...</div>
+    </div>
+</main>
+
+<script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+    import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+    import { getFirestore, doc, getDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+
+    const firebaseConfig = {
+        apiKey: "AIzaSyB1_SgV4E80Qxs2vQ-_jIGexv6YYqaiARs",
+        authDomain: "sebr-dea8d.firebaseapp.com",
+        projectId: "sebr-dea8d",
+        storageBucket: "sebr-dea8d.firebasestorage.app",
+        messagingSenderId: "948314281215",
+        appId: "1:948314281215:web:1fddf38350d9a3663e68ca"
+    };
+    
+    const app = initializeApp(firebaseConfig);
+    const auth = getAuth(app);
+    const db = getFirestore(app);
+
+    let currentUserData = null;
+
+    onAuthStateChanged(auth, async (user) => {
+        if (user) {
+            try {
+                const userDocSnap = await getDoc(doc(db, "users", user.email));
+                if (userDocSnap.exists()) {
+                    currentUserData = userDocSnap.data();
+                    if (currentUserData.role === 'admin') {
+                        document.getElementById('tab-btn-users').style.display = 'block';
+                    }
+                    loadAjoutListe();
+                } else {
+                    alert("Accès non autorisé dans la base de données.");
+                    window.location.href = 'index.html';
+                }
+            } catch (error) {
+                console.error("Erreur rôle:", error);
+            }
+        } else {
+            window.location.href = 'authentification.html';
+        }
+    });
+
+    document.getElementById('btn-logout').addEventListener('click', async () => {
+        if(confirm("Voulez-vous vous déconnecter ?")) {
+            try {
+                await signOut(auth);
+                window.location.href = 'authentification.html';
+            } catch (error) {
+                console.error("Erreur déconnexion:", error);
+            }
+        }
+    });
+
+    async function loadAjoutListe() {
+        const container = document.getElementById('ajoutliste-container');
+        if (container.innerHTML !== "Chargement module listes...") return;
+        try {
+            const resp = await fetch('ajoutliste.html');
+            container.innerHTML = await resp.text();
+            const { initAjoutListe } = await import('./ajoutliste.js');
+            initAjoutListe(currentUserData);
+        } catch (e) { container.innerText = "Erreur de chargement Listes."; }
+    }
+
+    async function loadEventTab() {
+        const container = document.getElementById('event-container');
+        if (container.innerHTML !== "Chargement module événements...") return;
+        try {
+            const resp = await fetch('event.html');
+            container.innerHTML = await resp.text();
+            const module = await import('./event.js?v=' + Date.now());
+            if(module.initEvent) module.initEvent(currentUserData);
+        } catch (e) { container.innerText = "Erreur de chargement Événements."; }
+    }
+
+    async function loadAddUserTab() {
+        const container = document.getElementById('adduser-container');
+        if (container.innerHTML !== "Chargement module accès...") return;
+        try {
+            const resp = await fetch('adduser.html');
+            container.innerHTML = await resp.text();
+            const { initAddUser } = await import('./adduser.js');
+            initAddUser();
+        } catch (e) { container.innerText = "Erreur de chargement Accès."; }
+    }
+
+    const tabButtons = document.querySelectorAll('.tab-button:not(.btn-logout)');
+    const tabContents = document.querySelectorAll('.tab-content');
+
+    tabButtons.forEach(btn => {
+        btn.addEventListener('click', () => {
+            tabButtons.forEach(b => b.classList.remove('active'));
+            tabContents.forEach(c => c.classList.remove('active'));
+            btn.classList.add('active');
+            const targetId = btn.getAttribute('data-tab');
+            document.getElementById(targetId).classList.add('active');
+            if (targetId === 'tab-ajout-liste') loadAjoutListe();
+            if (targetId === 'tab-events') loadEventTab();
+            if (targetId === 'tab-gestion-users') loadAddUserTab();
+        });
+    });
+</script>
+</body>
+</html>

@@ -1,0 +1,542 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="icon" type="image/png" href="image.png">
+    <title>SEBR.tech - Rezo Polytech</title>
+    <style>
+        :root {
+            --poly-blue: #003057;
+            --poly-cyan: #e3cc00;
+            --bg-dark: #050a0f;
+            --card-bg: #161f2b;
+        }
+
+        * { box-sizing: border-box; }
+
+        body {
+            margin: 0;
+            font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+            background-color: var(--bg-dark);
+            color: white;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0 20px;
+            background: var(--poly-blue);
+            height: 70px;
+            border-bottom: 3px solid var(--poly-cyan);
+            z-index: 100;
+            flex-shrink: 0;
+        }
+
+        .header-left, .header-right { display: flex; gap: 10px; align-items: center; flex: 1; }
+        .header-right { justify-content: flex-end; }
+
+        .logo-title {
+            font-weight: 800;
+            color: var(--poly-cyan);
+            letter-spacing: 1px;
+            font-size: 1.1em;
+            text-align: center;
+            line-height: 1.2;
+            flex: 2;
+        }
+
+        .btn-nav {
+            background: rgba(255,255,255,0.05);
+            border: 1px solid var(--poly-cyan);
+            color: white;
+            padding: 8px 15px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-weight: bold;
+            font-size: 0.85em;
+            text-decoration: none;
+            transition: 0.2s;
+            white-space: nowrap;
+        }
+
+        .btn-nav:hover { background: var(--poly-cyan); color: white; }
+        .btn-active { background: var(--poly-cyan); }
+
+        .btn-admin {
+            background: transparent;
+            border: 1px solid #444;
+            color: #888;
+            padding: 8px 12px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 0.8em;
+        }
+
+        #main-container { display: flex; flex: 1; overflow: hidden; }
+
+        #map-section {
+            flex: 2;
+            position: relative;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            background: radial-gradient(circle at center, #111b2d 0%, #050a0f 100%);
+            padding: 20px;
+        }
+
+        .map-wrapper {
+            position: relative;
+            width: 100%;
+            max-width: 600px;
+            aspect-ratio: 1 / 1;
+        }
+
+        .france-svg { width: 100%; height: 100%; filter: drop-shadow(0 0 15px rgba(0, 158, 227, 0.2)); }
+
+        .ecole-point {
+            position: absolute;
+            width: 7.5%;
+            aspect-ratio: 1/1;
+            background: transparent; 
+            border: none; 
+            border-radius: 50%;
+            cursor: pointer;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            z-index: 10;
+            filter: drop-shadow(0 2px 4px rgba(0,0,0,0.5));
+        }
+
+        .ecole-point img {
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+            border-radius: 50%;
+        }
+
+        .ecole-point:hover {
+            transform: scale(1.4);
+            z-index: 100;
+            box-shadow: 0 0 0 3px white, 0 0 20px 5px var(--halo-color);
+            filter: drop-shadow(0 4px 8px rgba(0,0,0,0.7));
+        }
+
+        #sidebar-section {
+            flex: 1;
+            min-width: 380px;
+            background: #0b1118;
+            border-left: 1px solid #222;
+            overflow-y: auto;
+            padding: 25px;
+        }
+
+        .side-header-flex {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 10px;
+            margin-bottom: 15px;
+        }
+
+        #side-title { color: var(--poly-cyan); margin: 0; font-size: 1.4em; flex: 1; }
+
+        #annee-selector {
+            background: #161f2b;
+            color: white;
+            border: 1px solid #444;
+            padding: 5px 10px;
+            border-radius: 5px;
+            font-size: 0.85em;
+            cursor: pointer;
+        }
+
+        .btn-back {
+            display: block;
+            color: #888;
+            text-decoration: none;
+            font-weight: bold;
+            margin-bottom: 20px;
+            font-size: 0.9em;
+            cursor: pointer;
+        }
+
+        .category-wrapper {
+            margin-top: 20px;
+            background: rgba(22, 31, 43, 0.5);
+            padding: 15px;
+            border-radius: 8px;
+            border: 1px solid #222;
+        }
+
+        .category-title { margin: 0 0 15px 0; font-size: 0.9em; text-transform: uppercase; color: #888; font-weight: bold; letter-spacing: 1px; }
+
+        .list-card {
+            background: var(--card-bg);
+            padding: 12px;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 10px;
+            cursor: pointer;
+            transition: 0.2s;
+            position: relative;
+            border: 1px solid transparent;
+        }
+
+        .list-card:hover { transform: translateX(5px); border-color: #444; }
+
+        .list-logo { width: 50px; height: 50px; border-radius: 50%; object-fit: cover; background: #eee; }
+        .list-name { font-weight: bold; flex: 1; font-size: 1.05em; }
+        .list-prez { font-size: 0.85em; color: #aaa; }
+
+        .rank-badge {
+            position: absolute;
+            top: -5px; right: -5px;
+            background: #ffd700; color: black;
+            font-weight: bold; font-size: 0.7em;
+            padding: 2px 8px; border-radius: 10px;
+            z-index: 5;
+        }
+
+        .rezo-banner {
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px dashed #444;
+            padding: 12px;
+            border-radius: 8px;
+            margin-bottom: 15px;
+            font-size: 0.9em;
+            line-height: 1.4;
+        }
+
+        #tooltip {
+            position: fixed;
+            background: rgba(5, 10, 15, 0.95);
+            padding: 12px;
+            border: 1px solid var(--poly-cyan);
+            border-radius: 8px;
+            pointer-events: none;
+            z-index: 1000;
+            font-size: 0.9em;
+            box-shadow: 0 8px 25px rgba(0,0,0,0.6);
+            backdrop-filter: blur(5px);
+        }
+
+        .hidden { display: none !important; }
+
+        @media (max-width: 850px) {
+            body { overflow-y: auto; height: auto; }
+            #main-container { flex-direction: column; }
+            header { height: auto; padding: 15px; flex-direction: column; gap: 15px; }
+            #map-section { height: 450px; flex: none; }
+            #sidebar-section { min-width: 100%; border-left: none; border-top: 2px solid #222; }
+        }
+    </style>
+</head>
+<body>
+
+<header>
+    <div class="header-left">
+        <a href="index.html" class="btn-nav">ACCUEIL</a>
+        <a href="calendrier.html" class="btn-nav">📅 CALENDRIER</a>
+    </div>
+
+    <div class="logo-title">SEBR.tech<br><span style="font-size: 0.7em; font-weight: normal; color: #ccc;">Service Évenementiel : Base du Rezo Polytech</span></div>
+
+    <div class="header-right">
+        <button class="btn-admin" onclick="window.location.href='authentification.html'">ADMIN 🔒</button>
+    </div>
+</header>
+
+<div id="main-container">
+    <div id="map-section">
+        <div id="tooltip" class="hidden"></div>
+        <div class="map-wrapper">
+            <img src="france.svg" class="france-svg" alt="Carte de France">
+            <div class="ecole-point" style="top: 8%; left: 58%; --halo-color: #ed1c24;" data-name="Lille" data-folder="lille"><img src="lille.png" alt="Lille"></div>
+            <div class="ecole-point" style="top: 21%; left: 53%; --halo-color: #b2b2b2;" data-name="Paris-Sorbonne" data-folder="sorbonne"><img src="sorbonne.png" alt="Sorbonne"></div>
+            <div class="ecole-point" style="top: 26%; left: 52%; --halo-color: #8e95b3;" data-name="Paris-Saclay" data-folder="saclay"><img src="saclay.png" alt="Saclay"></div>
+            <div class="ecole-point" style="top: 24%; left: 76%; --halo-color: #f04e23;" data-name="Nancy" data-folder="nancy"><img src="nancy.png" alt="Nancy"></div>
+            <div class="ecole-point" style="top: 42%; left: 24%; --halo-color: #ffc20e;" data-name="Nantes" data-folder="nantes"><img src="nantes.png" alt="Nantes"></div>
+            <div class="ecole-point" style="top: 40%; left: 32%; --halo-color: #ff8368;" data-name="Angers" data-folder="angers"><img src="angers.png" alt="Angers"></div>
+            <div class="ecole-point" style="top: 36%; left: 49%; --halo-color: #f37021;" data-name="Orléans" data-folder="orleans"><img src="orleans.png" alt="Orléans"></div>
+            <div class="ecole-point" style="top: 41%; left: 40%; --halo-color: #8c4799;" data-name="Tours" data-folder="tours"><img src="tours.png" alt="Tours"></div>
+            <div class="ecole-point" style="top: 58%; left: 55%; --halo-color: #8dc63f;" data-name="Clermont-Ferrand" data-folder="clermont"><img src="clermont.png" alt="Clermont"></div>
+            <div class="ecole-point" style="top: 57%; left: 70%; --halo-color: #781716;" data-name="Lyon" data-folder="lyon"><img src="lyon.png" alt="Lyon"></div>
+            <div class="ecole-point" style="top: 53%; left: 78%; --halo-color: #ea1d8e;" data-name="Annecy-Chambéry" data-folder="annecy"><img src="annecy.png" alt="Annecy"></div>
+            <div class="ecole-point" style="top: 63%; left: 76%; --halo-color: #b49a71;" data-name="Grenoble" data-folder="grenoble"><img src="grenoble.png" alt="Grenoble"></div>
+            <div class="ecole-point" style="top: 78%; left: 59%; --halo-color: #1674b9;" data-name="Montpellier" data-folder="montpellier"><img src="montpellier.png" alt="Montpellier"></div>
+            <div class="ecole-point" style="top: 78%; left: 71%; --halo-color: #00a5b5;" data-name="Marseille" data-folder="marseille"><img src="marseille.png" alt="Marseille"></div>
+            <div class="ecole-point" style="top: 80%; left: 83%; --halo-color: #b3d334;" data-name="Nice Sophia" data-folder="nice"><img src="nice.png" alt="Nice"></div>
+            <div class="ecole-point" style="top: 42%; left: 70%; --halo-color: #d3d3ff;" data-name="Dijon" data-folder="dijon"><img src="dijon.png" alt="Dijon"></div>
+        </div>
+    </div>
+
+    <div id="sidebar-section">
+        <div class="side-header-flex">
+            <h2 id="side-title">Le Rezo Polytech</h2>
+            <select id="annee-selector">
+                <option value="2025-2026">2025-2026</option>
+                <option value="2024-2025">2024-2025</option>
+                <option value="2023-2024">2023-2024</option>
+            </select>
+        </div>
+        <div id="side-content">
+            <div style="background: #161f2b; padding: 20px; border-radius: 10px; border-left: 4px solid var(--poly-cyan);">
+                Cliquez sur une école pour voir ses bureaux et ses listes.
+            </div>
+        </div>
+    </div>
+</div>
+
+<script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+    import { getFirestore, doc, getDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+
+    const firebaseConfig = {
+        apiKey: "AIzaSyB1_SgV4E80Qxs2vQ-_jIGexv6YYqaiARs",
+        authDomain: "sebr-dea8d.firebaseapp.com",
+        projectId: "sebr-dea8d",
+        storageBucket: "sebr-dea8d.firebasestorage.app",
+        messagingSenderId: "948314281215",
+        appId: "1:948314281215:web:1fddf38350d9a3663e68ca"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const db = getFirestore(app);
+
+    // ==========================================
+    // CACHE DE LECTURE (RAM + SessionStorage)
+    // ==========================================
+    const memoryCache = {};
+
+    async function fetchWithCache(collection, ecoleId, subCollection, annee) {
+        const cacheKey = `sebr_cache_${collection}_${ecoleId}_${subCollection}_${annee}`;
+
+        if (memoryCache[cacheKey]) return memoryCache[cacheKey];
+
+        const sessionData = sessionStorage.getItem(cacheKey);
+        if (sessionData) {
+            try {
+                const parsed = JSON.parse(sessionData);
+                const mockSnap = {
+                    exists: () => !parsed._empty,
+                    data: () => parsed._empty ? null : parsed
+                };
+                memoryCache[cacheKey] = mockSnap;
+                return mockSnap;
+            } catch (e) {
+                console.warn("Erreur de parsing cache.");
+            }
+        }
+
+        const docRef = doc(db, collection, ecoleId, subCollection, annee);
+        const snap = await getDoc(docRef);
+
+        if (snap.exists()) {
+            const data = snap.data();
+            const mockSnap = { exists: () => true, data: () => data };
+            memoryCache[cacheKey] = mockSnap;
+            
+            // On stocke tel quel, la fonction formaterDate gérera la transformation
+            sessionStorage.setItem(cacheKey, JSON.stringify(data));
+            return mockSnap;
+        } else {
+            const mockEmpty = { exists: () => false, data: () => null };
+            memoryCache[cacheKey] = mockEmpty;
+            sessionStorage.setItem(cacheKey, JSON.stringify({ _empty: true }));
+            return mockEmpty;
+        }
+    }
+
+    // ==========================================
+    // LOGIQUE DE TRAITEMENT DES DATES (SÉCURISÉE)
+    // ==========================================
+    function parseAnyDate(val) {
+        if (!val) return null;
+        // 1. Si c'est un vrai Timestamp Firestore
+        if (val.toDate && typeof val.toDate === 'function') return val.toDate();
+        // 2. Si c'est un objet Timestamp venant du JSON (cache)
+        if (val.seconds !== undefined) return new Date(val.seconds * 1000);
+        // 3. Si c'est une String ou autre
+        const d = new Date(val);
+        return isNaN(d.getTime()) ? null : d;
+    }
+
+    function formaterDate(val) {
+        const d = parseAnyDate(val);
+        if (!d) return "";
+        try {
+            return d.toLocaleDateString('fr-FR', { day: 'numeric', month: 'long', year: 'numeric' }).toUpperCase();
+        } catch(e) { return ""; }
+    }
+
+    // ==========================================
+
+    const points = document.querySelectorAll('.ecole-point');
+    const sideContent = document.getElementById('side-content');
+    const sideTitle = document.getElementById('side-title');
+    const tooltip = document.getElementById('tooltip');
+    const anneeSelector = document.getElementById('annee-selector');
+
+    let currentEcole = null;
+
+    anneeSelector.addEventListener('change', () => {
+        if (currentEcole) {
+            ouvrirEcole(currentEcole.id, currentEcole.name, currentEcole.color);
+        }
+    });
+
+    points.forEach(p => {
+        const haloColor = p.style.getPropertyValue('--halo-color');
+        
+        p.addEventListener('mouseenter', async () => {
+            tooltip.classList.remove('hidden');
+            tooltip.style.borderColor = haloColor;
+            tooltip.innerHTML = `<strong style="color: ${haloColor};">Polytech ${p.dataset.name}</strong>`;
+            
+            try {
+                const snap = await fetchWithCache("ecoles", p.dataset.folder, "events", anneeSelector.value);
+                if (snap.exists()) {
+                    const data = snap.data();
+                    if (data.soiree && data.soiree.nom) {
+                        const dateSimple = formaterDate(data.soiree.date);
+                        tooltip.innerHTML += `
+                            <div style="margin-top: 8px; border-top: 1px solid #333; padding-top: 5px;">
+                                <span style="font-size:0.85em; color:#fff; display:block;">🎉 ${data.soiree.nom.toUpperCase()}</span>
+                                <span style="font-size:0.75em; color:var(--poly-cyan); font-weight:bold;">📅 ${dateSimple}</span>
+                            </div>`;
+                    }
+                }
+            } catch(e) { console.error("Erreur tooltip:", e); }
+        });
+
+        p.addEventListener('mouseleave', () => tooltip.classList.add('hidden'));
+
+        p.addEventListener('mousemove', (e) => {
+            tooltip.style.left = (e.clientX + 15) + 'px';
+            tooltip.style.top = (e.clientY + 15) + 'px';
+        });
+
+        p.addEventListener('click', () => {
+            window.location.hash = p.dataset.folder;
+            ouvrirEcole(p.dataset.folder, p.dataset.name, haloColor);
+        });
+    });
+
+    async function ouvrirEcole(ecoleId, name, cityColor) {
+        currentEcole = { id: ecoleId, name: name, color: cityColor };
+        const annee = anneeSelector.value;
+
+        sideTitle.innerHTML = `Polytech ${name} <img src="${ecoleId}.png" style="height:50px; vertical-align:middle; margin-left:10px;" onerror="this.style.display='none'">`;
+        sideTitle.style.color = cityColor;
+
+        sideContent.innerHTML = `
+            <div class="btn-back" onclick="location.reload()">← Retour à la carte</div>
+            <div id="dynamic-area"><div style="text-align:center; padding:20px;">Chargement ${annee}...</div></div>
+        `;
+
+        const dynamicArea = document.getElementById('dynamic-area');
+        
+        try {
+            const eventSnap = await fetchWithCache("ecoles", ecoleId, "events", annee);
+            let eventHtml = "";
+            if (eventSnap.exists()) {
+                const eData = eventSnap.data();
+                if (eData.soiree) {
+                    eventHtml = `
+                        <div class="rezo-banner" style="border-bottom: 3px solid ${cityColor}; margin-bottom: 20px; padding-bottom: 15px;">
+                            <span style="color:var(--poly-cyan); font-weight:bold; font-size:1.1em;">REZO 🎉 ${eData.soiree.nom.toUpperCase()}</span><br>
+                            <span style="color:#aaa; font-size:0.9em;">📅 ${formaterDate(eData.soiree.date) || 'Date à venir'}</span>
+                        </div>`;
+                }
+            }
+
+            const archiveSnap = await fetchWithCache("ecoles", ecoleId, "archives", annee);
+            let calendarHtml = "";
+            let sectionsHtml = "";
+
+            if (archiveSnap.exists()) {
+                const d = archiveSnap.data();
+                const dStart = formaterDate(d.campagne_start);
+                const dEnd = formaterDate(d.campagne_end);
+                const dPass = formaterDate(d.passation_date);
+
+                if (dStart || dPass) {
+                    calendarHtml = `
+                        <div class="category-wrapper" style="border-top: 2px solid ${cityColor}66; background: rgba(255,255,255,0.02); margin-bottom: 20px;">
+                            <div class="category-title" style="color:${cityColor}">Calendrier local</div>
+                            ${dStart ? `
+                                <div class="info-banner" style="margin-bottom: 10px; background: rgba(255,255,255,0.03); padding: 10px; border-radius: 5px;">
+                                    <span style="color: #888; font-size: 0.75em; text-transform: uppercase; display: block; margin-bottom: 4px;">Campagne Listes</span>
+                                    <span style="font-weight: bold; font-size: 0.9em;">🗳️ Du ${dStart} au ${dEnd || '...'}</span>
+                                </div>
+                            ` : ''}
+                            ${dPass ? `
+                                <div class="info-banner" style="background: rgba(255,255,255,0.03); padding: 10px; border-radius: 5px;">
+                                    <span style="color: #888; font-size: 0.75em; text-transform: uppercase; display: block; margin-bottom: 4px;">Passation</span>
+                                    <span style="font-weight: bold; font-size: 0.9em;">🤝 ${dPass}</span>
+                                </div>
+                            ` : ''}
+                        </div>`;
+                }
+
+                sectionsHtml += renderSection("BDE", d.bde_actuel, cityColor, ecoleId, annee, "bde_actuel");
+                sectionsHtml += renderSection("BDP", d.bdp_actuel, cityColor, ecoleId, annee, "bdp_actuel");
+                sectionsHtml += renderSection("Listes BDE", d.listes_bde, cityColor, ecoleId, annee, "listes_bde");
+                sectionsHtml += renderSection("Listes BDP", d.listes_bdp, cityColor, ecoleId, annee, "listes_bdp");
+                sectionsHtml += renderSection("Fakelistes", d.fakelistes, cityColor, ecoleId, annee, "fakelistes");
+                
+                dynamicArea.innerHTML = eventHtml + calendarHtml + sectionsHtml;
+            } else {
+                dynamicArea.innerHTML = eventHtml + `<p style='color:#666; margin-top:20px; text-align:center;'>Pas de données pour ${annee}.</p>`;
+            }
+        } catch(e) { console.error("Erreur Firestore:", e); }
+    }
+
+    function renderSection(title, data, cityColor, ecoleId, annee, type) {
+        if (!data || (Array.isArray(data) && data.length === 0)) return "";
+        let items = Array.isArray(data) ? data : [data];
+        items.sort((a, b) => (parseInt(a.classement) || 99) - (parseInt(b.classement) || 99));
+        
+        const cards = items.map(i => {
+            const color = i.couleur || cityColor;
+            let identifier;
+            if (type === 'bde_actuel') identifier = "BDE";
+            else if (type === 'bdp_actuel') identifier = "BDP";
+            else identifier = encodeURIComponent(i.nom || i.prez || "inconnu");
+
+            const url = `liste.html?ecole=${ecoleId}&annee=${annee}&type=${type}&id=${identifier}`;
+            return `
+                <div class="list-card" onclick="window.location.href='${url}'" style="border-left: 4px solid ${color}">
+                    ${i.classement ? `<div class="rank-badge">${i.classement}</div>` : ''}
+                    <img src="${i.logo || i.photo || 'default.png'}" class="list-logo" onerror="this.src='default.png'">
+                    <div style="flex:1;">
+                        <div class="list-name">${i.nom || ''}</div>
+                        <div class="list-prez">Prez: ${i.prez || 'N/A'}</div>
+                    </div>
+                </div>
+            `;
+        }).join('');
+
+        return `<div class="category-wrapper"><div class="category-title">${title}</div>${cards}</div>`;
+    }
+
+    window.addEventListener('load', () => {
+        const h = window.location.hash.replace('#','');
+        if(h) {
+            const p = document.querySelector(`.ecole-point[data-folder="${h}"]`);
+            if(p) ouvrirEcole(h, p.dataset.name, p.style.getPropertyValue('--halo-color'));
+        }
+    });
+</script>
+</body>
+</html>

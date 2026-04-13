@@ -1,0 +1,127 @@
+<style>
+    .selector-bar { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; background: #0b1118; padding: 20px; border-radius: 10px; border: 1px solid #222; margin-bottom: 25px; }
+    select, input { width: 100%; padding: 10px; background: #161f2b; border: 1px solid #333; color: white; border-radius: 5px; margin-top: 5px; box-sizing: border-box;}
+    .admin-card { background: #0b1118; border: 1px solid #222; padding: 20px; border-radius: 10px; margin-bottom: 20px; border-top: 3px solid var(--poly-cyan); }
+    h3 { color: var(--poly-cyan); margin-top: 0; text-transform: uppercase; font-size: 0.9em; }
+    .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 15px; }
+    .btn-push { background: var(--poly-cyan); color: white; border: none; padding: 12px; border-radius: 5px; cursor: pointer; font-weight: bold; width: 100%; margin-top: 10px; transition: 0.2s; }
+    .btn-push:hover { opacity: 0.8; }
+    .btn-push:disabled { background: #444; cursor: not-allowed; }
+    label { font-size: 0.8em; color: #aaa; }
+    .section-divider { border: 0; border-top: 1px solid #222; margin: 20px 0; }
+
+    .existing-item { display: flex; align-items: center; justify-content: space-between; background: #161f2b; padding: 10px 15px; margin-bottom: 10px; border-radius: 5px; border-left: 3px solid var(--poly-cyan); }
+    .existing-item img { width: 45px; height: 45px; border-radius: 50%; object-fit: cover; margin-right: 15px; background: #0b1118; }
+    .existing-info { flex: 1; }
+    .existing-name { font-weight: bold; font-size: 1em; display: block; color: white; }
+    .existing-prez { font-size: 0.85em; color: #aaa; }
+    
+    .action-group { display: flex; gap: 8px; align-items: center; }
+    .btn-action { background: none; border: none; cursor: pointer; font-size: 1.2em; transition: 0.2s; padding: 5px; border-radius: 4px; }
+    .btn-action:hover { background: #333; }
+</style>
+
+<div class="selector-bar">
+    <div>
+        <label>École</label>
+        <select id="ecole-select">
+            <option value="lille">Lille</option>
+            <option value="sorbonne">Sorbonne</option>
+            <option value="saclay">Saclay</option>
+            <option value="nancy">Nancy</option>
+            <option value="nantes">Nantes</option>
+            <option value="angers">Angers</option>
+            <option value="orleans">Orléans</option>
+            <option value="tours">Tours</option>
+            <option value="clermont">Clermont</option>
+            <option value="lyon">Lyon</option>
+            <option value="dijon">Dijon</option>
+            <option value="annecy">Annecy</option>
+            <option value="grenoble">Grenoble</option>
+            <option value="montpellier">Montpellier</option>
+            <option value="marseille">Marseille</option>
+            <option value="nice">Nice</option>
+        </select>
+    </div>
+    <div>
+        <label>Année / Campagne</label>
+        <select id="annee-select">
+            <option value="2026-2027">2026-2027</option> 
+            <option value="2025-2026" selected>2025-2026</option>
+            <option value="2024-2025">2024-2025</option>
+            <option value="2023-2024">2023-2024</option>
+        </select>
+    </div>
+</div>
+
+<div class="admin-card">
+    <h3>Dates & Infos Officiels (BDE/BDP)</h3>
+    <div class="grid-2">
+        <div><label>Début Campagne</label><input type="date" id="date-debut-campagne"></div>
+        <div><label>Fin Campagne</label><input type="date" id="date-fin-campagne"></div>
+    </div>
+    <div class="grid-2">
+        <div><label>Date de Passation</label><input type="date" id="date-passation"></div>
+    </div>
+    <hr class="section-divider">
+    <div class="grid-2">
+        <div><label>Prez BDE</label><input type="text" id="bde-prez"></div>
+        <div><label>Photo Prez BDE</label><input type="file" id="bde-photo-file" accept="image/*"></div>
+        <label style="font-size: 0.7em; color: var(--poly-cyan);"><input type="checkbox" id="bde-remove-bg"> ✨ Détourer la photo</label>
+    </div>
+    <div class="grid-2">
+        <div><label>Instagram BDE</label><input type="text" id="bde-insta" placeholder="Ex: @bde_polytech"></div>
+        <div><label>Photo Collective BDE</label><input type="file" id="bde-photo-coll-file" accept="image/*"></div>
+    </div>
+    <hr class="section-divider">
+    <div class="grid-2">
+        <div><label>Prez BDP</label><input type="text" id="bdp-prez"></div>
+        <div><label>Photo Prez BDP</label><input type="file" id="bdp-photo-file" accept="image/*"></div>
+        <label style="font-size: 0.7em; color: var(--poly-cyan);"><input type="checkbox" id="bdp-remove-bg"> ✨ Détourer la photo</label>
+    </div>
+    <div class="grid-2">
+        <div><label>Instagram BDP</label><input type="text" id="bdp-insta" placeholder="Ex: @bdp_polytech"></div>
+        <div><label>Photo Collective BDP</label><input type="file" id="bdp-photo-coll-file" accept="image/*"></div>
+    </div>
+    <button class="btn-push" id="btn-save-officiels">💾 Sauvegarder Infos & Dates</button>
+</div>
+
+<div class="admin-card" id="card-listes">
+    <h3 id="title-listes">Ajouter une Liste (Campagne)</h3>
+    <div class="grid-2">
+        <div>
+            <label>Type</label>
+            <select id="type-liste">
+                <option value="listes_bde">Liste BDE</option>
+                <option value="listes_bdp">Liste BDP</option>
+                <option value="fakelistes">Fakeliste</option>
+            </select>
+        </div>
+        <div><label>Nom de la liste</label><input type="text" id="new-nom" placeholder="Ex: Poly'Glotte"></div>
+    </div>
+    <div class="grid-2">
+        <div><label>Prez</label><input type="text" id="new-prez" placeholder="Nom du Prez"></div>
+        <div><label>Logo (Optionnel si modif)</label><input type="file" id="new-logo-file" accept="image/*"></div>
+        <label style="font-size: 0.7em; color: var(--poly-cyan);"><input type="checkbox" id="list-remove-bg"> ✨ Détourer le logo</label>
+    </div>
+    <div class="grid-2">
+        <div><label>Couleur de la liste</label><input type="color" id="new-couleur" value="#009EE3" style="padding: 2px; height: 38px;"></div>
+        <div><label>Instagram</label><input type="text" id="new-insta" placeholder="Ex: @liste_poly"></div>
+    </div>
+    <div class="grid-2">
+        <div><label>Photo Collective (Optionnel si modif)</label><input type="file" id="new-photo-coll-file" accept="image/*"></div>
+    </div>
+    <button class="btn-push" id="btn-add-item" style="background: #222; border: 1px solid var(--poly-cyan);">
+        ➕ Envoyer & Ajouter
+    </button>
+    <button class="btn-push" id="btn-cancel-edit-list" style="background: #444; display: none;">
+        ❌ Annuler la modification
+    </button>
+</div>
+
+<div class="admin-card">
+    <h3>Gérer les listes existantes</h3>
+    <div id="existing-lists-container"></div>
+</div>
+
+<p id="status" style="text-align: center; font-size: 0.9em; margin-bottom: 30px;"></p>

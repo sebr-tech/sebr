@@ -1,0 +1,377 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SEBR.tech — Admin</title>
+
+  <script src="https://www.google.com/recaptcha/api.js?render=6LeAoJosAAAAADtz2OXhUt4t8Un4pdDjvXI98_rH"></script>
+
+  <style>
+    :root {
+      --poly-blue: #003057;
+      --poly-cyan: #009EE3;
+      --bg-dark: #050a0f;
+      --bg-panel: #0b1118;
+      --bg-input: #161f2b;
+      --line: #222;
+      --line-2: #333;
+      --text: #ffffff;
+      --muted: #aaa;
+      --muted-2: #777;
+      --success: #44ff44;
+      --error: #ff4444;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    html, body { min-height: 100%; }
+
+    body {
+      font-family: 'Segoe UI', sans-serif;
+      background: var(--bg-dark);
+      color: var(--text);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+
+    header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 12px;
+      padding: 0 25px;
+      background: var(--poly-blue);
+      height: 65px;
+      border-bottom: 3px solid var(--poly-cyan);
+    }
+
+    header a {
+      color: white;
+      text-decoration: none;
+      font-weight: bold;
+      white-space: nowrap;
+    }
+
+    .logo-title {
+      font-weight: 800;
+      color: var(--poly-cyan);
+      letter-spacing: 2px;
+      text-align: center;
+      flex: 1;
+    }
+
+    main {
+      flex: 1;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      padding: 20px;
+    }
+
+    .login-box {
+      background: var(--bg-panel);
+      border: 1px solid var(--line);
+      border-top: 3px solid var(--poly-cyan);
+      border-radius: 10px;
+      padding: 40px;
+      width: 100%;
+      max-width: 420px;
+      box-shadow: 0 12px 30px rgba(0, 0, 0, 0.25);
+    }
+
+    .tabs {
+      display: flex;
+      margin-bottom: 25px;
+      border-bottom: 1px solid var(--line-2);
+      overflow: hidden;
+      border-radius: 8px 8px 0 0;
+    }
+
+    .tab {
+      flex: 1;
+      padding: 10px;
+      text-align: center;
+      cursor: pointer;
+      color: var(--muted-2);
+      transition: 0.3s;
+      user-select: none;
+    }
+
+    .tab.active {
+      color: var(--poly-cyan);
+      border-bottom: 2px solid var(--poly-cyan);
+      font-weight: bold;
+    }
+
+    .form-group {
+      margin-bottom: 20px;
+      position: relative;
+    }
+
+    .form-group label {
+      display: block;
+      margin-bottom: 8px;
+      color: var(--muted);
+      font-size: 0.9em;
+    }
+
+    .form-group input {
+      width: 100%;
+      padding: 12px 15px;
+      background: var(--bg-input);
+      border: 1px solid var(--line-2);
+      border-radius: 5px;
+      color: white;
+      font-size: 1em;
+      outline: none;
+      transition: border-color 0.2s, box-shadow 0.2s;
+    }
+
+    .form-group input:focus {
+      border-color: var(--poly-cyan);
+      box-shadow: 0 0 0 3px rgba(0, 158, 227, 0.16);
+    }
+
+    .forgot-link {
+      display: block;
+      margin-top: 8px;
+      text-align: right;
+      font-size: 0.8em;
+      color: var(--poly-cyan);
+      text-decoration: none;
+      cursor: pointer;
+    }
+
+    .btn-action {
+      width: 100%;
+      padding: 14px;
+      background: var(--poly-cyan);
+      border: none;
+      border-radius: 5px;
+      color: white;
+      font-size: 1em;
+      font-weight: bold;
+      cursor: pointer;
+      margin-top: 10px;
+      transition: 0.2s;
+    }
+
+    .btn-action:hover { filter: brightness(1.06); }
+
+    .btn-action:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+
+    #msg-feedback {
+      text-align: center;
+      margin-top: 15px;
+      font-size: 0.9em;
+      min-height: 20px;
+      line-height: 1.4;
+    }
+
+    .error { color: var(--error); }
+    .success {
+      color: var(--success);
+      border: 1px solid var(--success);
+      padding: 10px;
+      border-radius: 5px;
+      background: rgba(68, 255, 68, 0.1);
+    }
+
+    .recaptcha-notice {
+      color: #555;
+      font-size: 0.75em;
+      text-align: center;
+      margin-top: 15px;
+    }
+
+    @media (max-width: 480px) {
+      header {
+        padding: 0 14px;
+        height: 60px;
+      }
+
+      .login-box {
+        padding: 24px 18px;
+      }
+
+      .logo-title {
+        letter-spacing: 1px;
+        font-size: 0.95rem;
+      }
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <a href="index.html">← Accueil</a>
+    <div class="logo-title">SEBR.tech — Admin</div>
+    <div style="width:60px"></div>
+  </header>
+
+  <main>
+    <div class="login-box">
+      <div class="tabs">
+        <div class="tab active" id="tab-login">Connexion</div>
+        <div class="tab" id="tab-register">Créer un compte</div>
+      </div>
+
+      <h2 id="form-title" style="color: var(--poly-cyan); margin-bottom: 25px; text-align: center;">🔒 Accès Admin</h2>
+
+      <div class="form-group">
+        <label for="input-email">Email professionnel</label>
+        <input type="email" id="input-email" placeholder="nom@federp.fr" autocomplete="email">
+      </div>
+
+      <div id="pass-container" class="form-group">
+        <label for="input-password">Mot de passe</label>
+        <input type="password" id="input-password" placeholder="••••••••" autocomplete="current-password">
+        <span class="forgot-link" id="btn-forgot">Mot de passe oublié ?</span>
+      </div>
+
+      <button class="btn-action" id="btn-submit">Se connecter</button>
+
+      <div id="msg-feedback" aria-live="polite"></div>
+      <p class="recaptcha-notice">Protégé par reCAPTCHA v3</p>
+    </div>
+  </main>
+
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+    import { initializeAppCheck, ReCaptchaV3Provider } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app-check.js";
+    import {
+      getAuth,
+      signInWithEmailAndPassword,
+      createUserWithEmailAndPassword,
+      sendPasswordResetEmail,
+      onAuthStateChanged,
+      setPersistence,
+      browserSessionPersistence,
+      signOut
+    } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+    import { getFirestore, doc, getDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+
+    const firebaseConfig = {
+      apiKey: "AIzaSyB1_SgV4E80Qxs2vQ-_jIGexv6YYqaiARs",
+      authDomain: "sebr-dea8d.firebaseapp.com",
+      projectId: "sebr-dea8d",
+      storageBucket: "sebr-dea8d.firebasestorage.app",
+      messagingSenderId: "948314281215",
+      appId: "1:948314281215:web:1fddf38350d9a3663e68ca"
+    };
+
+    const app = initializeApp(firebaseConfig);
+
+    initializeAppCheck(app, {
+      provider: new ReCaptchaV3Provider("6LeAoJosAAAAADtz2OXhUt4t8Un4pdDjvXI98_rH"),
+      isTokenAutoRefreshEnabled: true
+    });
+
+    const auth = getAuth(app);
+    const db = getFirestore(app);
+
+    let isLoginMode = true;
+    let blockRedirect = false;
+
+    const tabLogin = document.getElementById('tab-login');
+    const tabRegister = document.getElementById('tab-register');
+    const passContainer = document.getElementById('pass-container');
+    const btnSubmit = document.getElementById('btn-submit');
+    const formTitle = document.getElementById('form-title');
+    const feedback = document.getElementById('msg-feedback');
+    const btnForgot = document.getElementById('btn-forgot');
+    const emailInput = document.getElementById('input-email');
+    const passwordInput = document.getElementById('input-password');
+
+    function setFeedback(type, message) {
+      feedback.className = type;
+      feedback.textContent = message;
+    }
+
+    function toggleMode(login) {
+      isLoginMode = login;
+      tabLogin.classList.toggle('active', login);
+      tabRegister.classList.toggle('active', !login);
+      passContainer.style.display = login ? 'block' : 'none';
+      btnSubmit.textContent = login ? 'Se connecter' : 'Vérifier mon autorisation';
+      formTitle.textContent = login ? '🔒 Accès Admin' : '📝 Inscription';
+      feedback.textContent = '';
+      feedback.className = '';
+      passwordInput.value = '';
+    }
+
+    tabLogin.addEventListener('click', () => toggleMode(true));
+    tabRegister.addEventListener('click', () => toggleMode(false));
+
+    onAuthStateChanged(auth, (user) => {
+      if (user && !blockRedirect) {
+        window.location.href = 'admin.html';
+      }
+    });
+
+    btnForgot.addEventListener('click', async () => {
+      const email = emailInput.value.trim().toLowerCase();
+      if (!email) {
+        setFeedback('error', "Saisissez votre e-mail d'abord.");
+        return;
+      }
+
+      try {
+        await sendPasswordResetEmail(auth, email);
+        setFeedback('success', "Lien de réinitialisation envoyé !");
+      } catch (e) {
+        setFeedback('error', "Erreur : " + (e?.message || "action impossible"));
+      }
+    });
+
+    btnSubmit.addEventListener('click', async () => {
+      const email = emailInput.value.trim().toLowerCase();
+      const password = passwordInput.value;
+
+      if (!email || (isLoginMode && !password)) {
+        setFeedback('error', "Veuillez remplir tous les champs.");
+        return;
+      }
+
+      btnSubmit.disabled = true;
+      setFeedback('', "Traitement...");
+
+      try {
+        if (isLoginMode) {
+          blockRedirect = false;
+          await setPersistence(auth, browserSessionPersistence);
+          await signInWithEmailAndPassword(auth, email, password);
+        } else {
+          const userRef = doc(db, "users", email);
+          const userSnap = await getDoc(userRef);
+
+          if (!userSnap.exists()) {
+            throw new Error("Cet email n'est pas pré-approuvé. Contactez un admin.");
+          }
+
+          blockRedirect = true;
+
+          const tempPass = Math.random().toString(36).slice(-10) + "Z9!";
+          await createUserWithEmailAndPassword(auth, email, tempPass);
+          await sendPasswordResetEmail(auth, email);
+          await signOut(auth);
+
+          setFeedback('success', "Compte créé avec succès ! Vérifiez vos e-mails et vos spams pour définir votre mot de passe avant de vous connecter.");
+          setTimeout(() => toggleMode(true), 6000);
+        }
+      } catch (e) {
+        blockRedirect = false;
+        let errMsg = e?.message || "Une erreur est survenue.";
+        if (e?.code === 'auth/email-already-in-use') errMsg = "Ce compte existe déjà.";
+        setFeedback('error', errMsg);
+      } finally {
+        btnSubmit.disabled = false;
+      }
+    });
+  </script>
+</body>
+</html>

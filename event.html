@@ -1,0 +1,102 @@
+<style>
+    .selector-bar { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; background: #0b1118; padding: 20px; border-radius: 10px; border: 1px solid #222; margin-bottom: 25px; }
+    select, input { width: 100%; padding: 10px; background: #161f2b; border: 1px solid #333; color: white; border-radius: 5px; margin-top: 5px; box-sizing: border-box;}
+    .admin-card { background: #0b1118; border: 1px solid #222; padding: 20px; border-radius: 10px; margin-bottom: 20px; }
+    h3 { margin-top: 0; text-transform: uppercase; font-size: 0.9em; }
+    .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 15px; }
+    .btn-push { color: white; border: none; padding: 12px; border-radius: 5px; cursor: pointer; font-weight: bold; width: 100%; margin-top: 10px; transition: 0.2s; }
+    .btn-push:hover { opacity: 0.8; }
+    label { font-size: 0.8em; color: #aaa; }
+    
+    .existing-item { display: flex; align-items: center; justify-content: space-between; background: #161f2b; padding: 10px 15px; margin-bottom: 10px; border-radius: 5px; border-left: 3px solid #f09433; }
+    .existing-info { flex: 1; }
+    .existing-name { font-weight: bold; font-size: 1em; display: block; color: white; }
+    .existing-desc { font-size: 0.85em; color: #aaa; }
+    
+    .action-buttons { display: flex; gap: 5px; }
+    .btn-edit { background: var(--poly-cyan); color: white; border: none; padding: 6px 12px; border-radius: 4px; cursor: pointer; font-size: 0.8em; font-weight: bold; transition: 0.2s; }
+    .btn-edit:hover { background: #007bb5; }
+    .btn-delete { background: #ed1c24; color: white; border: none; padding: 6px 12px; border-radius: 4px; cursor: pointer; font-size: 0.8em; font-weight: bold; transition: 0.2s; }
+    .btn-delete:hover { background: #c01017; }
+</style>
+
+<div class="selector-bar">
+    <div>
+        <label>École cible</label>
+        <select id="event-ecole-select">
+            <option value="lille">Lille</option>
+            <option value="sorbonne">Sorbonne</option>
+            <option value="saclay">Saclay</option>
+            <option value="nancy">Nancy</option>
+            <option value="nantes">Nantes</option>
+            <option value="angers">Angers</option>
+            <option value="orleans">Orléans</option>
+            <option value="tours">Tours</option>
+            <option value="clermont">Clermont</option>
+            <option value="lyon">Lyon</option>
+            <option value="dijon">Dijon</option>
+            <option value="annecy">Annecy</option>
+            <option value="grenoble">Grenoble</option>
+            <option value="montpellier">Montpellier</option>
+            <option value="marseille">Marseille</option>
+            <option value="nice">Nice</option>
+        </select>
+    </div>
+    <div>
+        <label>Année Universitaire</label>
+        <select id="event-annee-select">
+            <option value="2026-2027">2026-2027</option>
+            <option value="2025-2026" selected>2025-2026</option>
+            <option value="2024-2025">2024-2025</option>
+        </select>
+    </div>
+</div>
+
+<div class="admin-card" style="border-top: 3px solid var(--poly-cyan);">
+    <h3 style="color: var(--poly-cyan);">Événement Rezo</h3>
+    <div class="grid-2">
+        <div><label>Nom de l'event Rezo</label><input type="text" id="rezo-nom" placeholder="Ex: MNMS"></div>
+        <div><label>Date</label><input type="date" id="rezo-date"></div>
+    </div>
+    <button class="btn-push" id="btn-save-rezo" style="background: var(--poly-cyan);">💾 Mettre à jour l'event Rezo</button>
+</div>
+
+<div class="admin-card" style="border-top: 3px solid #f09433;" id="card-local">
+    <h3 style="color: #f09433;" id="title-local">Ajouter un événement local</h3>
+    <div class="grid-2">
+        <div>
+            <label>Organisateur</label>
+            <select id="local-orga">
+                <option value="BDE">BDE</option>
+                <option value="BDP">BDP</option>
+                <option value="Liste BDE">Liste BDE</option>
+                <option value="Liste BDP">Liste BDP</option>
+                <option value="Fakeliste">Fakeliste</option>
+            </select>
+        </div>
+        <div id="container-liste-liee" style="display: none;">
+            <label>Lier à la liste (Optionnel)</label>
+            <select id="local-liste-liee">
+                <option value="">-- Sélectionner une liste --</option>
+            </select>
+        </div>
+    </div>
+    <div class="grid-2">
+        <div><label>Nom de l'event</label><input type="text" id="local-nom" placeholder="Ex: Soirée Parrainage"></div>
+        <div><label>Date</label><input type="date" id="local-date"></div>
+    </div>
+    <div>
+        <label>Lieu / Description</label>
+        <input type="text" id="local-desc" placeholder="Ex: K-Fet / 5€" style="margin-bottom: 10px;">
+    </div>
+    
+    <button class="btn-push" id="btn-add-local" style="background: #f09433;">➕ Ajouter l'événement</button>
+    <button class="btn-push" id="btn-cancel-edit" style="background: #444; display: none;">❌ Annuler la modification</button>
+</div>
+
+<div class="admin-card" style="border-top: 3px solid #ed1c24;">
+    <h3 style="color: #ed1c24;">Gérer les événements locaux</h3>
+    <div id="existing-events-container">
+        <p style="color:#aaa;">Chargement...</p>
+    </div>
+</div>

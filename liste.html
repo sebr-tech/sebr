@@ -1,0 +1,374 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Détail - SEBR</title>
+
+    <!-- DOMPurify : protection XSS -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/dompurify/3.0.6/purify.min.js"
+            integrity="sha512-H+rglffZ6f5gF7UJgvH4Naa+fGCgjrHKMGoFOgmgA6bqyGSgFD6sho1N01lAqbKpER0we7rImn6lk7WFwITw=="
+            crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+
+    <style>
+        :root { --bg-dark: #050a0f; --poly-cyan: #009EE3; }
+        body {
+            margin: 0; font-family: 'Segoe UI', sans-serif;
+            background-color: var(--bg-dark); color: white;
+            display: flex; flex-direction: column; align-items: center; min-height: 100vh;
+        }
+        .header-nav {
+            width: 100%; padding: 20px; box-sizing: border-box;
+            background: #161f2b; border-bottom: 2px solid #333;
+        }
+        .btn-back {
+            color: #ccc; background: rgba(255,255,255,0.05); 
+            border: 1px solid #444; cursor: pointer;
+            font-size: 0.9em; font-weight: bold; padding: 8px 15px; border-radius: 5px;
+            transition: 0.2s; text-transform: uppercase; letter-spacing: 1px;
+        }
+        .btn-back:hover { 
+            color: white; background: rgba(255,255,255,0.1);
+            border-color: var(--theme-color, #009EE3);
+        }
+        
+        .main-content {
+            width: 100%; max-width: 800px; padding: 30px 20px; box-sizing: border-box;
+            display: flex; flex-direction: column; gap: 25px;
+        }
+        
+        .hero-section {
+            background: #0b1118; border-radius: 15px; padding: 25px;
+            display: flex; align-items: center; justify-content: space-between; gap: 20px; 
+            border-top: 5px solid var(--theme-color, #009EE3);
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+        }
+        
+        .hero-logo, .hero-prez { 
+            width: 110px; height: 110px; border-radius: 50%; 
+            object-fit: cover; box-shadow: 0 4px 10px rgba(0,0,0,0.3); 
+            background: #111; border: 2px solid #222;
+            flex-shrink: 0;
+        }
+        
+        .hero-info { flex: 1; text-align: left; }
+        .hero-info h1 { margin: 0; font-size: 1.8em; text-transform: uppercase; color: var(--theme-color, white); }
+        .hero-info h2 { margin: 5px 0 10px 0; font-size: 1.1em; color: #aaa; font-weight: normal; }
+        
+        .rank-badge {
+            display: inline-block; background: #ffd700; color: #000; font-weight: bold;
+            padding: 4px 12px; border-radius: 20px; text-transform: uppercase; font-size: 0.75em;
+        }
+
+        .photo-collective-container {
+            width: 100%; border-radius: 15px; overflow: hidden;
+            background: #161f2b; border: 1px solid #333;
+        }
+        .photo-collective { width: 100%; display: block; object-fit: cover; max-height: 500px; }
+        .no-photo { padding: 40px; text-align: center; color: #666; font-style: italic; }
+
+        .linked-events-section { width: 100%; margin-top: 10px; }
+        .linked-events-section h3 { 
+            font-size: 0.9em; letter-spacing: 2px; color: var(--theme-color); 
+            text-transform: uppercase; margin-bottom: 15px; border-left: 3px solid var(--theme-color); padding-left: 10px;
+        }
+        .events-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 15px; }
+        .event-mini-card {
+            background: #0b1118; padding: 15px; border-radius: 10px; border: 1px solid #222;
+        }
+        .event-mini-card.rezo-type { border: 1px solid var(--theme-color); background: rgba(0, 158, 227, 0.05); }
+        .event-mini-date { font-size: 0.75em; font-weight: bold; color: var(--theme-color); margin-bottom: 5px; text-transform: uppercase; }
+        .event-mini-nom { font-size: 1.1em; font-weight: bold; margin-bottom: 5px; }
+        .event-mini-desc { font-size: 0.85em; color: #888; line-height: 1.4; }
+
+        .insta-btn {
+            display: inline-flex; align-items: center; gap: 10px;
+            background: linear-gradient(45deg, #f09433 0%, #e6683c 25%, #dc2743 50%, #cc2366 75%, #bc1888 100%);
+            color: white; padding: 12px 25px; border-radius: 30px; text-decoration: none;
+            font-weight: bold; font-size: 1em; transition: transform 0.2s; align-self: center;
+        }
+        .insta-btn:hover { transform: scale(1.05); }
+
+        #loader { text-align: center; padding: 50px; color: #aaa; font-style: italic; }
+
+        @media (max-width: 600px) {
+            .hero-section { flex-direction: column; text-align: center; }
+            .hero-info { text-align: center; }
+            .hero-logo, .hero-prez { width: 100px; height: 100px; }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="header-nav">
+        <button class="btn-back" onclick="history.back();">← RETOUR</button>
+    </div>
+
+    <div id="loader">Chargement...</div>
+    <div id="main-content" class="main-content" style="display: none;"></div>
+
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+        import { getFirestore, doc, getDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyB1_SgV4E80Qxs2vQ-_jIGexv6YYqaiARs",
+            authDomain: "sebr-dea8d.firebaseapp.com",
+            projectId: "sebr-dea8d",
+            storageBucket: "sebr-dea8d.firebasestorage.app",
+            messagingSenderId: "948314281215",
+            appId: "1:948314281215:web:1fddf38350d9a3663e68ca"
+        };
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
+
+        // --- Helpers sécurisés ---
+
+        // Échappe le texte brut pour éviter toute injection via textContent
+        function t(str) {
+            return str ? String(str) : '';
+        }
+
+        // Valide qu'une URL d'image est bien une URL http/https ou un chemin relatif simple
+        // Bloque les javascript:, data:, etc.
+        function safeImgSrc(src) {
+            if (!src) return '';
+            const s = String(src).trim();
+            if (/^(https?:\/\/|\/|[a-zA-Z0-9_\-]+\.(png|jpg|jpeg|gif|webp))/.test(s)) return s;
+            return '';
+        }
+
+        // Valide un lien Instagram : doit pointer vers instagram.com uniquement
+        function safeInstaLink(instaString) {
+            if (!instaString) return null;
+            let link = String(instaString).trim();
+            if (link.startsWith('@')) link = 'https://www.instagram.com/' + link.substring(1);
+            else if (!link.startsWith('http')) link = 'https://www.instagram.com/' + link;
+            try {
+                const url = new URL(link);
+                if (url.hostname === 'www.instagram.com' || url.hostname === 'instagram.com') {
+                    return url.href;
+                }
+            } catch (_) {}
+            return null;
+        }
+
+        // Valide la couleur CSS (hex uniquement) pour éviter injection CSS
+        function safeColor(color) {
+            if (!color) return '#009EE3';
+            return /^#[0-9A-Fa-f]{3,8}$/.test(String(color).trim()) ? color : '#009EE3';
+        }
+
+        // Valide les paramètres URL : ecoleId, annee, typeKey, itemId
+        // N'accepte que des caractères alphanumériques, tirets et underscores
+        function safeParam(val) {
+            if (!val) return null;
+            return /^[a-zA-Z0-9_\-]+$/.test(val) ? val : null;
+        }
+
+        // Pour annee : format YYYY-YYYY
+        function safeAnnee(val) {
+            if (!val) return null;
+            return /^\d{4}-\d{4}$/.test(val) ? val : null;
+        }
+
+        // Pour itemId : peut contenir des espaces et accents (noms de listes)
+        // mais on bloque les caractères dangereux
+        function safeItemId(val) {
+            if (!val) return null;
+            const decoded = decodeURIComponent(val);
+            // Bloque < > " ' ` ; ( ) { } \ /
+            return /[<>"'`;(){}\\/]/.test(decoded) ? null : decoded;
+        }
+
+        // --- Lecture des params URL ---
+        const params = new URLSearchParams(window.location.search);
+        const ecoleId  = safeParam(params.get('ecole'));
+        const annee    = safeAnnee(params.get('annee'));
+        const typeKey  = safeParam(params.get('type'));
+        const itemId   = safeItemId(params.get('id'));
+
+        const ALLOWED_TYPES = ['bde_actuel', 'bdp_actuel', 'listes_bde', 'listes_bdp', 'fakelistes'];
+
+        async function loadData() {
+            const loader = document.getElementById('loader');
+
+            if (!ecoleId || !annee || !typeKey || !itemId) {
+                loader.textContent = "Paramètres invalides.";
+                return;
+            }
+
+            if (!ALLOWED_TYPES.includes(typeKey)) {
+                loader.textContent = "Type inconnu.";
+                return;
+            }
+
+            try {
+                const archiveSnap = await getDoc(doc(db, "ecoles", ecoleId, "archives", annee));
+                if (!archiveSnap.exists()) {
+                    loader.textContent = "Données introuvables.";
+                    return;
+                }
+                const archiveData = archiveSnap.data();
+
+                let item = null;
+                const section = archiveData[typeKey];
+
+                if (Array.isArray(section)) {
+                    item = section.find(i => (i.nom || i.prez) === itemId);
+                } else if (section && typeof section === 'object') {
+                    item = section;
+                }
+
+                if (!item) {
+                    loader.textContent = "Élément introuvable.";
+                    return;
+                }
+
+                const eventSnap = await getDoc(doc(db, "ecoles", ecoleId, "events", annee));
+                const eventsData = eventSnap.exists() ? eventSnap.data() : { locaux: [] };
+
+                renderPage(item, eventsData, typeKey);
+
+            } catch (error) {
+                console.error("Erreur:", error);
+                document.getElementById('loader').textContent = "Erreur lors du chargement.";
+            }
+        }
+
+        // --- Construction DOM sécurisée (sans innerHTML sur des données non fiables) ---
+        function createElement(tag, attrs = {}, textContent = null) {
+            const el = document.createElement(tag);
+            for (const [k, v] of Object.entries(attrs)) {
+                if (k === 'style') {
+                    el.setAttribute('style', v);
+                } else {
+                    el.setAttribute(k, v);
+                }
+            }
+            if (textContent !== null) el.textContent = textContent;
+            return el;
+        }
+
+        function renderPage(item, eventsData, typeKey) {
+            document.getElementById('loader').style.display = 'none';
+            const content = document.getElementById('main-content');
+            content.style.display = 'flex';
+            content.innerHTML = ''; // reset
+
+            const themeColor = safeColor(item.couleur);
+            document.documentElement.style.setProperty('--theme-color', themeColor);
+
+            // --- HERO ---
+            const heroSection = createElement('div', { class: 'hero-section' });
+
+            const logoSrc = safeImgSrc(
+                (typeKey === 'bde_actuel' || typeKey === 'bdp_actuel')
+                    ? `${ecoleId}.png`
+                    : (item.logo || `${ecoleId}.png`)
+            );
+            const logoImg = createElement('img', { class: 'hero-logo', src: logoSrc || '' });
+            // onerror sécurisé via addEventListener (pas d'inline JS)
+            logoImg.addEventListener('error', () => { logoImg.src = 'default.png'; });
+            heroSection.appendChild(logoImg);
+
+            const heroInfo = createElement('div', { class: 'hero-info' });
+
+            const h1 = createElement('h1', {}, t(item.nom || (typeKey === 'bde_actuel' ? 'BDE' : 'BDP')));
+            heroInfo.appendChild(h1);
+
+            const h2 = createElement('h2', {}, `Prez : ${t(item.prez || 'Inconnu')}`);
+            heroInfo.appendChild(h2);
+
+            if (item.classement) {
+                const badge = createElement('div', { class: 'rank-badge' }, t(item.classement));
+                heroInfo.appendChild(badge);
+            }
+
+            heroSection.appendChild(heroInfo);
+
+            const prezPhotoSrc = safeImgSrc(item.photo);
+            if (prezPhotoSrc && prezPhotoSrc !== logoSrc) {
+                const prezImg = createElement('img', { class: 'hero-prez', src: prezPhotoSrc, alt: 'Prez' });
+                prezImg.addEventListener('error', () => { prezImg.style.display = 'none'; });
+                heroSection.appendChild(prezImg);
+            }
+
+            content.appendChild(heroSection);
+
+            // --- PHOTO COLLECTIVE ---
+            const photoCollContainer = createElement('div', { class: 'photo-collective-container' });
+            const photoCollSrc = safeImgSrc(item.photo_coll);
+            if (photoCollSrc) {
+                const img = createElement('img', { class: 'photo-collective', src: photoCollSrc, alt: 'Photo collective' });
+                img.addEventListener('error', () => {
+                    img.replaceWith(createElement('div', { class: 'no-photo' }, 'Photo non disponible.'));
+                });
+                photoCollContainer.appendChild(img);
+            } else {
+                photoCollContainer.appendChild(createElement('div', { class: 'no-photo' }, 'Pas de photo collective disponible.'));
+            }
+            content.appendChild(photoCollContainer);
+
+            // --- INSTAGRAM ---
+            const instaLink = safeInstaLink(item.insta);
+            if (instaLink) {
+                const a = createElement('a', {
+                    href: instaLink,
+                    target: '_blank',
+                    rel: 'noopener noreferrer',
+                    class: 'insta-btn'
+                }, '📸 INSTAGRAM');
+                content.appendChild(a);
+            }
+
+            // --- ÉVÉNEMENTS ---
+            let linkedEvents = [];
+            const locaux = Array.isArray(eventsData.locaux) ? eventsData.locaux : [];
+
+            if (typeKey === 'bde_actuel') {
+                linkedEvents = locaux.filter(ev => ev.orga === 'BDE');
+            } else if (typeKey === 'bdp_actuel') {
+                linkedEvents = locaux.filter(ev => ev.orga === 'BDP');
+            } else {
+                linkedEvents = locaux.filter(ev => ev.listeLiee === item.nom);
+            }
+
+            if (typeKey === 'bde_actuel' && eventsData.soiree) {
+                linkedEvents.unshift({
+                    nom: `SOIRÉE REZO : ${eventsData.soiree.nom}`,
+                    date: eventsData.soiree.date,
+                    desc: "L'événement majeur du réseau !",
+                    isRezo: true
+                });
+            }
+
+            if (linkedEvents.length > 0) {
+                linkedEvents.sort((a, b) => (a.date?.seconds || 0) - (b.date?.seconds || 0));
+
+                const section = createElement('div', { class: 'linked-events-section' });
+                const h3 = createElement('h3', {}, 'Événements');
+                section.appendChild(h3);
+
+                const grid = createElement('div', { class: 'events-grid' });
+
+                linkedEvents.forEach(ev => {
+                    const d = ev.date?.toDate ? ev.date.toDate() : (ev.date ? new Date(ev.date) : null);
+                    const dateStr = d ? d.toLocaleDateString('fr-FR', { day: 'numeric', month: 'long' }) : 'À venir';
+
+                    const card = createElement('div', { class: `event-mini-card${ev.isRezo ? ' rezo-type' : ''}` });
+                    card.appendChild(createElement('div', { class: 'event-mini-date' }, dateStr));
+                    card.appendChild(createElement('div', { class: 'event-mini-nom' }, t(ev.nom).toUpperCase()));
+                    card.appendChild(createElement('div', { class: 'event-mini-desc' }, t(ev.desc)));
+                    grid.appendChild(card);
+                });
+
+                section.appendChild(grid);
+                content.appendChild(section);
+            }
+        }
+
+        loadData();
+    </script>
+</body>
+</html>
