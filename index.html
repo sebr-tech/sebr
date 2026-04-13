@@ -5,6 +5,9 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="icon" type="image/png" href="image.png">
     <title>SEBR.tech - Rezo Polytech</title>
+    
+    <script src="https://www.google.com/recaptcha/enterprise.js?render=6LeAoJosAAAAADtz2OXhUt4t8Un4pdDjvXI98_rH"></script>
+    
     <style>
         :root {
             --poly-blue: #003057;
@@ -301,6 +304,8 @@
 <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
     import { getFirestore, doc, getDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+    // Ajout de l'import App Check en version 10.7.1 pour correspondre aux autres imports
+    import { initializeAppCheck, ReCaptchaV3Provider } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app-check.js";
 
     const firebaseConfig = {
         apiKey: "AIzaSyB1_SgV4E80Qxs2vQ-_jIGexv6YYqaiARs",
@@ -312,6 +317,13 @@
     };
 
     const app = initializeApp(firebaseConfig);
+
+    // Initialisation de Firebase App Check
+    const appCheck = initializeAppCheck(app, {
+        provider: new ReCaptchaV3Provider('6LeAoJosAAAAADtz2OXhUt4t8Un4pdDjvXI98_rH'),
+        isTokenAutoRefreshEnabled: true
+    });
+
     const db = getFirestore(app);
 
     // ==========================================
