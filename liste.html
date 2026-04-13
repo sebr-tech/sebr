@@ -334,7 +334,7 @@
                 linkedEvents = locaux.filter(ev => ev.listeLiee === item.nom);
             }
 
-            if (typeKey === 'bde_actuel' && eventsData.soiree) {
+            if (typeKey === 'bde_actuel' && eventsData.soiree && eventsData.soiree.nom && eventsData.soiree.nom.trim() !== "") {
                 linkedEvents.unshift({
                     nom: `SOIRÉE REZO : ${eventsData.soiree.nom}`,
                     date: eventsData.soiree.date,
