@@ -194,7 +194,7 @@
 
         .list-card:hover { transform: translateX(5px); border-color: #444; }
 
-        .list-logo { width: 50px; height: 50px; border-radius: 50%; object-fit: cover; background: #eee; }
+        .list-logo { width: 50px; height: 50px; border-radius: 50%; object-fit: cover; background: transparent; }
         .list-name { font-weight: bold; flex: 1; font-size: 1.05em; }
         .list-prez { font-size: 0.85em; color: #aaa; }
 
@@ -313,10 +313,14 @@
     const app = initializeApp(firebaseConfig);
     const db = getFirestore(app);
 
+    // ==========================================
+    // CACHE DE LECTURE (RAM + SessionStorage)
+    // ==========================================
     const memoryCache = {};
 
     async function fetchWithCache(collection, ecoleId, subCollection, annee) {
         const cacheKey = `sebr_cache_${collection}_${ecoleId}_${subCollection}_${annee}`;
+
         if (memoryCache[cacheKey]) return memoryCache[cacheKey];
 
         const sessionData = sessionStorage.getItem(cacheKey);
@@ -341,6 +345,8 @@
             const data = snap.data();
             const mockSnap = { exists: () => true, data: () => data };
             memoryCache[cacheKey] = mockSnap;
+            
+            // On stocke tel quel, la fonction formaterDate gérera la transformation
             sessionStorage.setItem(cacheKey, JSON.stringify(data));
             return mockSnap;
         } else {
@@ -351,10 +357,16 @@
         }
     }
 
+    // ==========================================
+    // LOGIQUE DE TRAITEMENT DES DATES (SÉCURISÉE)
+    // ==========================================
     function parseAnyDate(val) {
         if (!val) return null;
+        // 1. Si c'est un vrai Timestamp Firestore
         if (val.toDate && typeof val.toDate === 'function') return val.toDate();
+        // 2. Si c'est un objet Timestamp venant du JSON (cache)
         if (val.seconds !== undefined) return new Date(val.seconds * 1000);
+        // 3. Si c'est une String ou autre
         const d = new Date(val);
         return isNaN(d.getTime()) ? null : d;
     }
@@ -366,6 +378,8 @@
             return d.toLocaleDateString('fr-FR', { day: 'numeric', month: 'long', year: 'numeric' }).toUpperCase();
         } catch(e) { return ""; }
     }
+
+    // ==========================================
 
     const points = document.querySelectorAll('.ecole-point');
     const sideContent = document.getElementById('side-content');
@@ -490,26 +504,26 @@
 
     function renderSection(title, data, cityColor, ecoleId, annee, type) {
         if (!data || (Array.isArray(data) && data.length === 0)) return "";
+        
         let items = Array.isArray(data) ? data : [data];
         items.sort((a, b) => (parseInt(a.classement) || 99) - (parseInt(b.classement) || 99));
-        
-        // MODIFICATION ICI : On définit l'image par défaut selon le type
-        const defaultImage = (type === 'bde_actuel' || type === 'bdp_actuel') ? 'ecole.png' : 'default.png';
+
+        // Détermine l'image de secours dynamique : {ecoleId}.png (ex: lille.png, nantes.png...)
+        const isBureau = (type === 'bde_actuel' || type === 'bdp_actuel');
+        const fallback = isBureau ? `${ecoleId}.png` : 'default.png';
 
         const cards = items.map(i => {
             const color = i.couleur || cityColor;
-            let identifier;
-            if (type === 'bde_actuel') identifier = "BDE";
-            else if (type === 'bdp_actuel') identifier = "BDP";
-            else identifier = encodeURIComponent(i.nom || i.prez || "inconnu");
-
+            let identifier = (isBureau) ? type.split('_')[0].toUpperCase() : encodeURIComponent(i.nom || i.prez || "inconnu");
             const url = `liste.html?ecole=${ecoleId}&annee=${annee}&type=${type}&id=${identifier}`;
             
-            // Utilisation de defaultImage pour src et onerror
+            // On prend la photo spécifique si elle existe, sinon le logo de l'école ($ecole.png)
+            const photoSrc = (i.logo || i.photo) ? (i.logo || i.photo) : fallback;
+
             return `
                 <div class="list-card" onclick="window.location.href='${url}'" style="border-left: 4px solid ${color}">
                     ${i.classement ? `<div class="rank-badge">${i.classement}</div>` : ''}
-                    <img src="${i.logo || i.photo || defaultImage}" class="list-logo" onerror="this.src='${defaultImage}'">
+                    <img src="${photoSrc}" class="list-logo" onerror="this.src='${fallback}'">
                     <div style="flex:1;">
                         <div class="list-name">${i.nom || ''}</div>
                         <div class="list-prez">Prez: ${i.prez || 'N/A'}</div>
@@ -517,7 +531,7 @@
                 </div>
             `;
         }).join('');
-
+        
         return `<div class="category-wrapper"><div class="category-title">${title}</div>${cards}</div>`;
     }
 
