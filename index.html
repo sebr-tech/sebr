@@ -293,22 +293,133 @@
         <div id="tooltip" class="hidden"></div>
         <div class="map-wrapper">
             <img src="france.svg" class="france-svg" alt="Carte de France">
-            <div class="ecole-point" style="top: 8%; left: 58%; --halo-color: #ed1c24;" data-name="Lille" data-folder="lille"><img src="lille.png" alt="Lille"></div>
-            <div class="ecole-point" style="top: 21%; left: 53%; --halo-color: #b2b2b2;" data-name="Paris-Sorbonne" data-folder="sorbonne"><img src="sorbonne.png" alt="Sorbonne"></div>
-            <div class="ecole-point" style="top: 26%; left: 52%; --halo-color: #8e95b3;" data-name="Paris-Saclay" data-folder="saclay"><img src="saclay.png" alt="Saclay"></div>
-            <div class="ecole-point" style="top: 24%; left: 76%; --halo-color: #f04e23;" data-name="Nancy" data-folder="nancy"><img src="nancy.png" alt="Nancy"></div>
-            <div class="ecole-point" style="top: 42%; left: 24%; --halo-color: #ffc20e;" data-name="Nantes" data-folder="nantes"><img src="nantes.png" alt="Nantes"></div>
-            <div class="ecole-point" style="top: 40%; left: 32%; --halo-color: #ff8368;" data-name="Angers" data-folder="angers"><img src="angers.png" alt="Angers"></div>
-            <div class="ecole-point" style="top: 36%; left: 49%; --halo-color: #f37021;" data-name="Orléans" data-folder="orleans"><img src="orleans.png" alt="Orléans"></div>
-            <div class="ecole-point" style="top: 41%; left: 40%; --halo-color: #8c4799;" data-name="Tours" data-folder="tours"><img src="tours.png" alt="Tours"></div>
-            <div class="ecole-point" style="top: 58%; left: 55%; --halo-color: #8dc63f;" data-name="Clermont-Ferrand" data-folder="clermont"><img src="clermont.png" alt="Clermont"></div>
-            <div class="ecole-point" style="top: 57%; left: 70%; --halo-color: #781716;" data-name="Lyon" data-folder="lyon"><img src="lyon.png" alt="Lyon"></div>
-            <div class="ecole-point" style="top: 53%; left: 78%; --halo-color: #ea1d8e;" data-name="Annecy-Chambéry" data-folder="annecy"><img src="annecy.png" alt="Annecy"></div>
-            <div class="ecole-point" style="top: 63%; left: 76%; --halo-color: #b49a71;" data-name="Grenoble" data-folder="grenoble"><img src="grenoble.png" alt="Grenoble"></div>
-            <div class="ecole-point" style="top: 78%; left: 59%; --halo-color: #1674b9;" data-name="Montpellier" data-folder="montpellier"><img src="montpellier.png" alt="Montpellier"></div>
-            <div class="ecole-point" style="top: 78%; left: 71%; --halo-color: #00a5b5;" data-name="Marseille" data-folder="marseille"><img src="marseille.png" alt="Marseille"></div>
-            <div class="ecole-point" style="top: 80%; left: 83%; --halo-color: #b3d334;" data-name="Nice Sophia" data-folder="nice"><img src="nice.png" alt="Nice"></div>
-            <div class="ecole-point" style="top: 42%; left: 70%; --halo-color: #d3d3ff;" data-name="Dijon" data-folder="dijon"><img src="dijon.png" alt="Dijon"></div>
+            <div class="ecole-point" style="top: 8%; left: 58%; --halo-color: #ed1c24;" data-name="Lille" data-folder="lille"
+                 onmouseenter="handleTooltip(event, '<b>Polytech Lille</b><br><small>Infos à venir</small>')" 
+                 onmousemove="handleTooltip(event, '<b>Polytech Lille</b><br><small>Infos à venir</small>')" 
+                 onmouseleave="hideBox()" 
+                 onclick="ouvrirEcole('lille', 'Polytech Lille', '#ed1c24')">
+                <img src="lille.png" alt="Lille">
+            </div>
+            
+            <div class="ecole-point" style="top: 21%; left: 53%; --halo-color: #b2b2b2;" data-name="Paris-Sorbonne" data-folder="sorbonne"
+                 onmouseenter="handleTooltip(event, '<b>Polytech Paris-Sorbonne</b>')" 
+                 onmousemove="handleTooltip(event, '<b>Polytech Paris-Sorbonne</b>')" 
+                 onmouseleave="hideBox()" 
+                 onclick="ouvrirEcole('sorbonne', 'Polytech Paris-Sorbonne', '#b2b2b2')">
+                <img src="sorbonne.png" alt="Sorbonne">
+            </div>
+            
+            <div class="ecole-point" style="top: 26%; left: 52%; --halo-color: #8e95b3;" data-name="Paris-Saclay" data-folder="saclay"
+                 onmouseenter="handleTooltip(event, '<b>Polytech Paris-Saclay</b>')" 
+                 onmousemove="handleTooltip(event, '<b>Polytech Paris-Saclay</b>')" 
+                 onmouseleave="hideBox()" 
+                 onclick="ouvrirEcole('saclay', 'Polytech Paris-Saclay', '#8e95b3')">
+                <img src="saclay.png" alt="Saclay">
+            </div>
+            
+            <div class="ecole-point" style="top: 24%; left: 76%; --halo-color: #f04e23;" data-name="Nancy" data-folder="nancy"
+                 onmouseenter="handleTooltip(event, '<b>Polytech Nancy</b>')" 
+                 onmousemove="handleTooltip(event, '<b>Polytech Nancy</b>')" 
+                 onmouseleave="hideBox()" 
+                 onclick="ouvrirEcole('nancy', 'Polytech Nancy', '#f04e23')">
+                <img src="nancy.png" alt="Nancy">
+            </div>
+            
+            <div class="ecole-point" style="top: 42%; left: 24%; --halo-color: #ffc20e;" data-name="Nantes" data-folder="nantes"
+                 onmouseenter="handleTooltip(event, '<b>Polytech Nantes</b>')" 
+                 onmousemove="handleTooltip(event, '<b>Polytech Nantes</b>')" 
+                 onmouseleave="hideBox()" 
+                 onclick="ouvrirEcole('nantes', 'Polytech Nantes', '#ffc20e')">
+                <img src="nantes.png" alt="Nantes">
+            </div>
+            
+            <div class="ecole-point" style="top: 40%; left: 32%; --halo-color: #ff8368;" data-name="Angers" data-folder="angers"
+                 onmouseenter="handleTooltip(event, '<b>Polytech Angers</b>')" 
+                 onmousemove="handleTooltip(event, '<b>Polytech Angers</b>')" 
+                 onmouseleave="hideBox()" 
+                 onclick="ouvrirEcole('angers', 'Polytech Angers', '#ff8368')">
+                <img src="angers.png" alt="Angers">
+            </div>
+            
+            <div class="ecole-point" style="top: 36%; left: 49%; --halo-color: #f37021;" data-name="Orléans" data-folder="orleans"
+                 onmouseenter="handleTooltip(event, '<b>Polytech Orléans</b>')" 
+                 onmousemove="handleTooltip(event, '<b>Polytech Orléans</b>')" 
+                 onmouseleave="hideBox()" 
+                 onclick="ouvrirEcole('orleans', 'Polytech Orléans', '#f37021')">
+                <img src="orleans.png" alt="Orléans">
+            </div>
+            
+            <div class="ecole-point" style="top: 41%; left: 40%; --halo-color: #8c4799;" data-name="Tours" data-folder="tours"
+                 onmouseenter="handleTooltip(event, '<b>Polytech Tours</b>')" 
+                 onmousemove="handleTooltip(event, '<b>Polytech Tours</b>')" 
+                 onmouseleave="hideBox()" 
+                 onclick="ouvrirEcole('tours', 'Polytech Tours', '#8c4799')">
+                <img src="tours.png" alt="Tours">
+            </div>
+            
+            <div class="ecole-point" style="top: 58%; left: 55%; --halo-color: #8dc63f;" data-name="Clermont-Ferrand" data-folder="clermont"
+                 onmouseenter="handleTooltip(event, '<b>Polytech Clermont</b>')" 
+                 onmousemove="handleTooltip(event, '<b>Polytech Clermont</b>')" 
+                 onmouseleave="hideBox()" 
+                 onclick="ouvrirEcole('clermont', 'Polytech Clermont-Ferrand', '#8dc63f')">
+                <img src="clermont.png" alt="Clermont">
+            </div>
+            
+            <div class="ecole-point" style="top: 57%; left: 70%; --halo-color: #781716;" data-name="Lyon" data-folder="lyon"
+                 onmouseenter="handleTooltip(event, '<b>Polytech Lyon</b>')" 
+                 onmousemove="handleTooltip(event, '<b>Polytech Lyon</b>')" 
+                 onmouseleave="hideBox()" 
+                 onclick="ouvrirEcole('lyon', 'Polytech Lyon', '#781716')">
+                <img src="lyon.png" alt="Lyon">
+            </div>
+            
+            <div class="ecole-point" style="top: 53%; left: 78%; --halo-color: #ea1d8e;" data-name="Annecy-Chambéry" data-folder="annecy"
+                 onmouseenter="handleTooltip(event, '<b>Polytech Annecy-Chambéry</b><br><small>🗓️ 24 JANVIER 2026</small>')" 
+                 onmousemove="handleTooltip(event, '<b>Polytech Annecy-Chambéry</b><br><small>🗓️ 24 JANVIER 2026</small>')" 
+                 onmouseleave="hideBox()" 
+                 onclick="ouvrirEcole('annecy', 'Polytech Annecy-Chambéry', '#ea1d8e')">
+                <img src="annecy.png" alt="Annecy">
+            </div>
+            
+            <div class="ecole-point" style="top: 63%; left: 76%; --halo-color: #b49a71;" data-name="Grenoble" data-folder="grenoble"
+                 onmouseenter="handleTooltip(event, '<b>Polytech Grenoble</b>')" 
+                 onmousemove="handleTooltip(event, '<b>Polytech Grenoble</b>')" 
+                 onmouseleave="hideBox()" 
+                 onclick="ouvrirEcole('grenoble', 'Polytech Grenoble', '#b49a71')">
+                <img src="grenoble.png" alt="Grenoble">
+            </div>
+            
+            <div class="ecole-point" style="top: 78%; left: 59%; --halo-color: #1674b9;" data-name="Montpellier" data-folder="montpellier"
+                 onmouseenter="handleTooltip(event, '<b>Polytech Montpellier</b>')" 
+                 onmousemove="handleTooltip(event, '<b>Polytech Montpellier</b>')" 
+                 onmouseleave="hideBox()" 
+                 onclick="ouvrirEcole('montpellier', 'Polytech Montpellier', '#1674b9')">
+                <img src="montpellier.png" alt="Montpellier">
+            </div>
+            
+            <div class="ecole-point" style="top: 78%; left: 71%; --halo-color: #00a5b5;" data-name="Marseille" data-folder="marseille"
+                 onmouseenter="handleTooltip(event, '<b>Polytech Marseille</b>')" 
+                 onmousemove="handleTooltip(event, '<b>Polytech Marseille</b>')" 
+                 onmouseleave="hideBox()" 
+                 onclick="ouvrirEcole('marseille', 'Polytech Marseille', '#00a5b5')">
+                <img src="marseille.png" alt="Marseille">
+            </div>
+            
+            <div class="ecole-point" style="top: 80%; left: 83%; --halo-color: #b3d334;" data-name="Nice Sophia" data-folder="nice"
+                 onmouseenter="handleTooltip(event, '<b>Polytech Nice Sophia</b><br><small>🗓️ Date à venir</small>')" 
+                 onmousemove="handleTooltip(event, '<b>Polytech Nice Sophia</b><br><small>🗓️ Date à venir</small>')" 
+                 onmouseleave="hideBox()" 
+                 onclick="ouvrirEcole('nice', 'Polytech Nice Sophia', '#b3d334')">
+                <img src="nice.png" alt="Nice">
+            </div>
+            
+            <div class="ecole-point" style="top: 42%; left: 70%; --halo-color: #d3d3ff;" data-name="Dijon" data-folder="dijon"
+                 onmouseenter="handleTooltip(event, '<b>Polytech Dijon</b>')" 
+                 onmousemove="handleTooltip(event, '<b>Polytech Dijon</b>')" 
+                 onmouseleave="hideBox()" 
+                 onclick="ouvrirEcole('dijon', 'Polytech Dijon', '#d3d3ff')">
+                <img src="dijon.png" alt="Dijon">
+            </div>
         </div>
     </div>
 
@@ -588,26 +699,60 @@
 
     return `<div class="category-wrapper"><div class="category-title">${title}</div>${cards}</div>`;
 }
+    function handleTooltip(e, text) {
+    const t = document.getElementById('tooltip');
+    if (!t) return;
+    t.innerHTML = text;
+    t.style.display = 'block';
+    t.style.opacity = '1';
+
+    let left = e.pageX + 15;
+    let top = e.pageY + 15;
+
+    // Si on dépasse à droite (seuil de 200px pour la box), on bascule à gauche
+    if (left + 200 > window.innerWidth) {
+        left = e.pageX - 215; // 200 (largeur) + 15 (marge)
+    }
+
+    t.style.left = left + 'px';
+    t.style.top = top + 'px';
+}
+
+function hideBox() {
+    const t = document.getElementById('tooltip');
+    if(t) {
+        t.style.display = 'none';
+        t.style.opacity = '0';
+    }
+}
     window.addEventListener('load', () => {
         const h = window.location.hash.replace('#','');
         if(h) {
             const p = document.querySelector(`.ecole-point[data-folder="${h}"]`);
             if(p) ouvrirEcole(h, p.dataset.name, p.style.getPropertyValue('--halo-color'));
         }
-    
-        // 1. Cacher quand on défile sur la fenêtre entière
-        window.addEventListener('scroll', () => hideTooltip(), { passive: true });
-    
-        // 2. Cacher spécifiquement quand on défile dans la barre latérale (Mobile)
+
+        // 1. On définit la fonction qui cache la box
+        const hideBox = () => {
+            const t = document.getElementById('tooltip');
+            if(t) {
+                t.style.display = 'none';
+                t.style.opacity = '0';
+            }
+        };
+
+        // 2. Cacher quand on défile (fenêtre entière ou sidebar)
+        window.addEventListener('scroll', hideBox, { passive: true });
+        
         const sidebar = document.getElementById('sidebar-section');
         if(sidebar) {
-            sidebar.addEventListener('scroll', () => hideTooltip(), { passive: true });
+            sidebar.addEventListener('scroll', hideBox, { passive: true });
         }
-        
-        // 3. Cacher si on touche n'importe où qui n'est pas un point d'école
+
+        // 3. Cacher si on touche l'écran ailleurs que sur un point
         document.addEventListener('touchstart', (e) => {
             if (!e.target.closest('.ecole-point')) {
-                hideTooltip();
+                hideBox();
             }
         }, { passive: true });
     });
