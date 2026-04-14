@@ -184,6 +184,8 @@ async function loadArchive() {
             currentData = { ...currentData, ...snap.data() };
             document.getElementById('bde-prez').value = currentData.bde_actuel?.prez || "";
             document.getElementById('bdp-prez').value = currentData.bdp_actuel?.prez || "";
+            document.getElementById('bde-vp').value = currentData.bde_actuel?.vp || "";
+            document.getElementById('bde-rr').value = currentData.bde_actuel?.rr || "";
             document.getElementById('bde-insta').value = currentData.bde_actuel?.insta || "";
             document.getElementById('bdp-insta').value = currentData.bdp_actuel?.insta || "";
             const formatDate = (val) => {
@@ -202,8 +204,10 @@ async function loadArchive() {
             status.innerText = `✅ Données "${ecole}" chargées.`;
         } else {
             status.innerText = "Nouvelle archive vide.";
-            ['bde-prez', 'bdp-prez', 'bde-insta', 'bdp-insta', 'date-debut-campagne', 'date-fin-campagne', 'date-passation'].forEach(id => document.getElementById(id).value = "");
-        }
+            ['bde-prez', 'bde-vp', 'bde-rr', 'bdp-prez', 'bde-insta', 'bdp-insta', 'date-debut-campagne', 'date-fin-campagne', 'date-passation'].forEach(id => {
+            const el = document.getElementById(id);
+            if(el) el.value = "";
+        });
         renderExistingLists();
     } catch(e) { status.innerText = "Erreur de chargement."; }
 }
@@ -244,6 +248,8 @@ export function initAjoutListe(userData) {
         currentData.bdp_actuel.prez = document.getElementById('bdp-prez').value || "";
         currentData.bde_actuel.insta = document.getElementById('bde-insta').value || "";
         currentData.bdp_actuel.insta = document.getElementById('bdp-insta').value || "";
+        currentData.bde_actuel.vp = document.getElementById('bde-vp').value || "";
+        currentData.bde_actuel.rr = document.getElementById('bde-rr').value || "";
         const dStart = document.getElementById('date-debut-campagne').value;
         const dEnd = document.getElementById('date-fin-campagne').value;
         const dPass = document.getElementById('date-passation').value;
