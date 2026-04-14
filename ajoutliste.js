@@ -16,8 +16,9 @@ const db = getFirestore(app);
 const IMGBB_API_KEY = "9d62b3a6a9d75ffdc8621c7eb58f1181";
 const REMOVE_BG_API_KEY = "GzD4aRxmuijz2vhL7xAkrmy3";
 
+// --- STRUCTURE INITIALE (CORRIGÉE AVEC VP ET RR) ---
 let currentData = {
-    bde_actuel: { prez: "", photo: "", insta: "", photo_coll: "" },
+    bde_actuel: { prez: "", vp: "", rr: "", photo: "", insta: "", photo_coll: "" },
     bdp_actuel: { prez: "", photo: "", insta: "", photo_coll: "" },
     listes_bde: [], listes_bdp: [], fakelistes: [],
     campagne_start: null, campagne_end: null, passation_date: null
@@ -26,6 +27,7 @@ let currentData = {
 let editingType = null;
 let editingIndex = null;
 
+// --- UTILS IMAGES ---
 async function removeBackground(file) {
     const formData = new FormData();
     formData.append("image_file", file);
@@ -72,6 +74,7 @@ async function uploadToImgBB(file, isPhoto = false, shouldRemoveBg = false) {
     } catch(e) { return null; }
 }
 
+// --- GESTION DES LISTES (EDIT / CANCEL) ---
 function cancelEditList() {
     editingType = null; editingIndex = null;
     document.getElementById('title-listes').innerText = "Ajouter une Liste (Campagne)";
@@ -105,6 +108,7 @@ function startEditList(type, index) {
     document.getElementById('card-listes').scrollIntoView({ behavior: 'smooth' });
 }
 
+// --- SYNC FIRESTORE ---
 async function saveAll() {
     const ecole = document.getElementById('ecole-select').value;
     const annee = document.getElementById('annee-select').value;
@@ -174,20 +178,34 @@ async function loadArchive() {
     const status = document.getElementById('status');
     try {
         const snap = await getDoc(doc(db, "ecoles", ecole, "archives", annee));
+        
+        // RE-INITIALISATION PROPRE AVEC TOUTES LES CLES
         currentData = {
-            bde_actuel: { prez: "", photo: "", insta: "", photo_coll: "" },
+            bde_actuel: { prez: "", vp: "", rr: "", photo: "", insta: "", photo_coll: "" },
             bdp_actuel: { prez: "", photo: "", insta: "", photo_coll: "" },
             listes_bde: [], listes_bdp: [], fakelistes: [],
             campagne_start: null, campagne_end: null, passation_date: null
         };
+
         if (snap.exists()) {
-            currentData = { ...currentData, ...snap.data() };
-            document.getElementById('bde-prez').value = currentData.bde_actuel?.prez || "";
-            document.getElementById('bdp-prez').value = currentData.bdp_actuel?.prez || "";
-            document.getElementById('bde-vp').value = currentData.bde_actuel?.vp || "";
-            document.getElementById('bde-rr').value = currentData.bde_actuel?.rr || "";
-            document.getElementById('bde-insta').value = currentData.bde_actuel?.insta || "";
-            document.getElementById('bdp-insta').value = currentData.bdp_actuel?.insta || "";
+            const data = snap.data();
+            // Fusion sécurisée pour ne pas perdre les nouvelles clés (vp, rr) si l'ancien doc ne les a pas
+            currentData = {
+                ...currentData,
+                ...data,
+                bde_actuel: { ...currentData.bde_actuel, ...(data.bde_actuel || {}) },
+                bdp_actuel: { ...currentData.bdp_actuel, ...(data.bdp_actuel || {}) }
+            };
+
+            // Remplissage des champs BDE / BDP
+            document.getElementById('bde-prez').value = currentData.bde_actuel.prez || "";
+            document.getElementById('bde-vp').value = currentData.bde_actuel.vp || "";
+            document.getElementById('bde-rr').value = currentData.bde_actuel.rr || "";
+            document.getElementById('bde-insta').value = currentData.bde_actuel.insta || "";
+            
+            document.getElementById('bdp-prez').value = currentData.bdp_actuel.prez || "";
+            document.getElementById('bdp-insta').value = currentData.bdp_actuel.insta || "";
+
             const formatDate = (val) => {
                 if (!val) return "";
                 try {
@@ -208,18 +226,18 @@ async function loadArchive() {
                 const el = document.getElementById(id);
                 if(el) el.value = "";
             });
-        } // ✅ ACCOLADE AJOUTÉE ICI
-
-        renderExistingLists(); // On appelle cette fonction que l'archive existe ou non
+        }
+        renderExistingLists();
     } catch(e) { 
+        console.error(e);
         status.innerText = "Erreur de chargement."; 
     }
 }
 
+// --- INITIALISATION DU MODULE ---
 export function initAjoutListe(userData) {
     const schoolSelect = document.getElementById('ecole-select');
     
-    // FILTRAGE : Si l'utilisateur n'est pas admin total, on limite ses écoles
     if (userData && userData.role !== 'admin') {
         const allowed = Array.isArray(userData.ecole) ? userData.ecole : [userData.ecole];
         Array.from(schoolSelect.options).forEach(opt => {
@@ -231,15 +249,18 @@ export function initAjoutListe(userData) {
     document.getElementById('annee-select').onchange = loadArchive;
     loadArchive();
 
+    // SAUVEGARDE DES INFOS OFFICIELLES (BDE / BDP)
     document.getElementById('btn-save-officiels').onclick = async () => {
         const btn = document.getElementById('btn-save-officiels');
         btn.disabled = true; btn.innerText = "⏳ Sauvegarde...";
+        
         const filesMap = [
             { id: 'bde-photo-file', key: 'photo', target: currentData.bde_actuel, sq: true, rb: 'bde-remove-bg' },
             { id: 'bdp-photo-file', key: 'photo', target: currentData.bdp_actuel, sq: true, rb: 'bdp-remove-bg' },
             { id: 'bde-photo-coll-file', key: 'photo_coll', target: currentData.bde_actuel, sq: false, rb: null },
             { id: 'bdp-photo-coll-file', key: 'photo_coll', target: currentData.bdp_actuel, sq: false, rb: null }
         ];
+
         for (const item of filesMap) {
             const file = document.getElementById(item.id)?.files[0];
             const rbChecked = item.rb ? document.getElementById(item.rb)?.checked : false;
@@ -248,22 +269,29 @@ export function initAjoutListe(userData) {
                 if (url) item.target[item.key] = url;
             }
         }
+
+        // --- CAPTURE DES VALEURS (VP ET RR INCLUS) ---
         currentData.bde_actuel.prez = document.getElementById('bde-prez').value || "";
-        currentData.bdp_actuel.prez = document.getElementById('bdp-prez').value || "";
-        currentData.bde_actuel.insta = document.getElementById('bde-insta').value || "";
-        currentData.bdp_actuel.insta = document.getElementById('bdp-insta').value || "";
         currentData.bde_actuel.vp = document.getElementById('bde-vp').value || "";
         currentData.bde_actuel.rr = document.getElementById('bde-rr').value || "";
+        currentData.bde_actuel.insta = document.getElementById('bde-insta').value || "";
+
+        currentData.bdp_actuel.prez = document.getElementById('bdp-prez').value || "";
+        currentData.bdp_actuel.insta = document.getElementById('bdp-insta').value || "";
+
         const dStart = document.getElementById('date-debut-campagne').value;
         const dEnd = document.getElementById('date-fin-campagne').value;
         const dPass = document.getElementById('date-passation').value;
+        
         currentData.campagne_start = dStart ? Timestamp.fromDate(new Date(dStart + "T12:00:00")) : null;
         currentData.campagne_end = dEnd ? Timestamp.fromDate(new Date(dEnd + "T12:00:00")) : null;
         currentData.passation_date = dPass ? Timestamp.fromDate(new Date(dPass + "T12:00:00")) : null;
+
         await saveAll();
         btn.disabled = false; btn.innerText = "💾 Sauvegarder Infos & Dates";
     };
 
+    // AJOUT / MODIF D'UNE LISTE
     document.getElementById('btn-add-item').onclick = async () => {
         const btn = document.getElementById('btn-add-item');
         const type = document.getElementById('type-liste').value;
@@ -272,20 +300,39 @@ export function initAjoutListe(userData) {
         const fileLogo = document.getElementById('new-logo-file').files[0];
         const fileColl = document.getElementById('new-photo-coll-file').files[0];
         const rbLogo = document.getElementById('list-remove-bg')?.checked;
+
         if (!nom) return alert("Nom requis !");
+        
         btn.disabled = true; btn.innerText = "⏳ Envoi...";
+
         let finalLogo = editingType !== null ? (currentData[editingType][editingIndex].logo || "") : "";
         let finalColl = editingType !== null ? (currentData[editingType][editingIndex].photo_coll || "") : "";
         let finalRank = editingType !== null ? (currentData[editingType][editingIndex].classement || "") : "";
+
         if (fileLogo) finalLogo = await uploadToImgBB(fileLogo, true, rbLogo);
         if (fileColl) finalColl = await uploadToImgBB(fileColl, false, false);
-        const listObj = { nom, prez, logo: finalLogo, couleur: document.getElementById('new-couleur').value || "#009EE3", insta: document.getElementById('new-insta').value.trim() || "", photo_coll: finalColl, classement: finalRank };
-        if (editingType !== null) currentData[editingType][editingIndex] = listObj;
-        else {
-            if (!fileLogo) { alert("Logo requis !"); btn.disabled = false; return; }
+
+        const listObj = { 
+            nom, 
+            prez, 
+            logo: finalLogo, 
+            couleur: document.getElementById('new-couleur').value || "#009EE3", 
+            insta: document.getElementById('new-insta').value.trim() || "", 
+            photo_coll: finalColl, 
+            classement: finalRank 
+        };
+
+        if (editingType !== null) {
+            currentData[editingType][editingIndex] = listObj;
+        } else {
+            if (!finalLogo) { alert("Logo requis !"); btn.disabled = false; return; }
             currentData[type].push(listObj);
         }
-        await saveAll(); cancelEditList(); btn.disabled = false;
+
+        await saveAll(); 
+        cancelEditList(); 
+        btn.disabled = false;
     };
+
     document.getElementById('btn-cancel-edit-list').onclick = cancelEditList;
 }
