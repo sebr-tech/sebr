@@ -91,11 +91,11 @@
         }
 
         .map-wrapper {
-            position: relative;
-            width: 100%;
-            max-width: 900px; 
-            aspect-ratio: 1 / 1;
-        }
+              position: relative;
+              width: 100%;
+              max-width: 900px; 
+              aspect-ratio: 1 / 1;
+            }
 
         .france-svg { width: 100%; height: 100%; filter: drop-shadow(0 0 15px rgba(0, 158, 227, 0.2)); }
 
@@ -113,7 +113,6 @@
             transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
             z-index: 10;
             filter: drop-shadow(0 2px 4px rgba(0,0,0,0.5));
-            -webkit-tap-highlight-color: transparent; /* Évite l'effet de sélection bleu sur mobile */
         }
 
         .ecole-point img {
@@ -219,56 +218,59 @@
         }
 
         #tooltip {
-            position: absolute;
-            z-index: 9999;
-            pointer-events: none; /* TRÈS IMPORTANT */
-            max-width: 200px;
-            background: rgba(0, 0, 0, 0.9);
-            color: white;
-            padding: 8px;
-            border-radius: 5px;
-            font-size: 13px;
-            border: 1px solid #333;
-            display: none;
-            transition: opacity 0.2s;
+            position: fixed;
+            background: rgba(5, 10, 15, 0.95);
+            padding: 12px;
+            border: 1px solid var(--poly-cyan);
+            border-radius: 8px;
+            pointer-events: none;
+            z-index: 1000;
+            font-size: 0.9em;
+            box-shadow: 0 8px 25px rgba(0,0,0,0.6);
+            backdrop-filter: blur(5px);
         }
 
         .hidden { display: none !important; }
 
         @media (max-width: 850px) {
-            body { 
+              body { 
                 overflow-y: auto; 
                 height: auto; 
-            }
-            #main-container { 
+              }
+              #main-container { 
                 flex-direction: column; 
-            }
-            header { 
+              }
+              header { 
                 height: auto; 
                 padding: 15px; 
                 flex-direction: column; 
                 gap: 15px; 
-            }
-            #map-section {
-                padding: 0;
-                height: auto;
-                min-height: 400px;
+              }
+            
+              /* --- LA CORRECTION EST ICI --- */
+              #map-section {
+                padding: 0;           /* On supprime les marges sur les côtés */
+                height: auto;         /* On laisse la hauteur s'adapter à la carte */
+                min-height: 400px;    /* Sécurité pour l'affichage */
                 flex: none;
-                background: #050a0f;
-            }
-            .map-wrapper {
-                width: 100%;
-                max-width: 100%;
+                background: #050a0f;  /* Fond uni pour éviter les fuites de dégradé */
+              }
+            
+              .map-wrapper {
+                width: 100%;          /* La carte prend TOUTE la largeur de l'écran */
+                max-width: 100%;      /* On lève la restriction des 600px/700px sur mobile */
                 margin: 0 auto;
-                transform: scale(1.05);
-            }
-            #sidebar-section { 
+                transform: scale(1.05); /* Optionnel : petit zoom pour grappiller encore de l'espace */
+              }
+              /* ---------------------------- */
+            
+              #sidebar-section { 
                 min-width: 100%; 
                 border-left: none; 
                 border-top: 2px solid #222; 
                 padding: 20px;
+              }
             }
-        }
     </style>
 </head>
 <body>
@@ -291,70 +293,22 @@
         <div id="tooltip" class="hidden"></div>
         <div class="map-wrapper">
             <img src="france.svg" class="france-svg" alt="Carte de France">
-            
-            <div class="ecole-point" style="top: 8%; left: 58%; --halo-color: #ed1c24;" data-name="Lille" data-folder="lille" data-subtext="Infos à venir">
-                <img src="lille.png" alt="Lille">
-            </div>
-            
-            <div class="ecole-point" style="top: 21%; left: 53%; --halo-color: #b2b2b2;" data-name="Paris-Sorbonne" data-folder="sorbonne">
-                <img src="sorbonne.png" alt="Sorbonne">
-            </div>
-            
-            <div class="ecole-point" style="top: 26%; left: 52%; --halo-color: #8e95b3;" data-name="Paris-Saclay" data-folder="saclay">
-                <img src="saclay.png" alt="Saclay">
-            </div>
-            
-            <div class="ecole-point" style="top: 24%; left: 76%; --halo-color: #f04e23;" data-name="Nancy" data-folder="nancy">
-                <img src="nancy.png" alt="Nancy">
-            </div>
-            
-            <div class="ecole-point" style="top: 42%; left: 24%; --halo-color: #ffc20e;" data-name="Nantes" data-folder="nantes">
-                <img src="nantes.png" alt="Nantes">
-            </div>
-            
-            <div class="ecole-point" style="top: 40%; left: 32%; --halo-color: #ff8368;" data-name="Angers" data-folder="angers">
-                <img src="angers.png" alt="Angers">
-            </div>
-            
-            <div class="ecole-point" style="top: 36%; left: 49%; --halo-color: #f37021;" data-name="Orléans" data-folder="orleans">
-                <img src="orleans.png" alt="Orléans">
-            </div>
-            
-            <div class="ecole-point" style="top: 41%; left: 40%; --halo-color: #8c4799;" data-name="Tours" data-folder="tours">
-                <img src="tours.png" alt="Tours">
-            </div>
-            
-            <div class="ecole-point" style="top: 58%; left: 55%; --halo-color: #8dc63f;" data-name="Clermont-Ferrand" data-folder="clermont">
-                <img src="clermont.png" alt="Clermont">
-            </div>
-            
-            <div class="ecole-point" style="top: 57%; left: 70%; --halo-color: #781716;" data-name="Lyon" data-folder="lyon">
-                <img src="lyon.png" alt="Lyon">
-            </div>
-            
-            <div class="ecole-point" style="top: 53%; left: 78%; --halo-color: #ea1d8e;" data-name="Annecy-Chambéry" data-folder="annecy" data-subtext="🗓️ 24 JANVIER 2026">
-                <img src="annecy.png" alt="Annecy">
-            </div>
-            
-            <div class="ecole-point" style="top: 63%; left: 76%; --halo-color: #b49a71;" data-name="Grenoble" data-folder="grenoble">
-                <img src="grenoble.png" alt="Grenoble">
-            </div>
-            
-            <div class="ecole-point" style="top: 78%; left: 59%; --halo-color: #1674b9;" data-name="Montpellier" data-folder="montpellier">
-                <img src="montpellier.png" alt="Montpellier">
-            </div>
-            
-            <div class="ecole-point" style="top: 78%; left: 71%; --halo-color: #00a5b5;" data-name="Marseille" data-folder="marseille">
-                <img src="marseille.png" alt="Marseille">
-            </div>
-            
-            <div class="ecole-point" style="top: 80%; left: 83%; --halo-color: #b3d334;" data-name="Nice Sophia" data-folder="nice" data-subtext="🗓️ Date à venir">
-                <img src="nice.png" alt="Nice">
-            </div>
-            
-            <div class="ecole-point" style="top: 42%; left: 70%; --halo-color: #d3d3ff;" data-name="Dijon" data-folder="dijon">
-                <img src="dijon.png" alt="Dijon">
-            </div>
+            <div class="ecole-point" style="top: 8%; left: 58%; --halo-color: #ed1c24;" data-name="Lille" data-folder="lille"><img src="lille.png" alt="Lille"></div>
+            <div class="ecole-point" style="top: 21%; left: 53%; --halo-color: #b2b2b2;" data-name="Paris-Sorbonne" data-folder="sorbonne"><img src="sorbonne.png" alt="Sorbonne"></div>
+            <div class="ecole-point" style="top: 26%; left: 52%; --halo-color: #8e95b3;" data-name="Paris-Saclay" data-folder="saclay"><img src="saclay.png" alt="Saclay"></div>
+            <div class="ecole-point" style="top: 24%; left: 76%; --halo-color: #f04e23;" data-name="Nancy" data-folder="nancy"><img src="nancy.png" alt="Nancy"></div>
+            <div class="ecole-point" style="top: 42%; left: 24%; --halo-color: #ffc20e;" data-name="Nantes" data-folder="nantes"><img src="nantes.png" alt="Nantes"></div>
+            <div class="ecole-point" style="top: 40%; left: 32%; --halo-color: #ff8368;" data-name="Angers" data-folder="angers"><img src="angers.png" alt="Angers"></div>
+            <div class="ecole-point" style="top: 36%; left: 49%; --halo-color: #f37021;" data-name="Orléans" data-folder="orleans"><img src="orleans.png" alt="Orléans"></div>
+            <div class="ecole-point" style="top: 41%; left: 40%; --halo-color: #8c4799;" data-name="Tours" data-folder="tours"><img src="tours.png" alt="Tours"></div>
+            <div class="ecole-point" style="top: 58%; left: 55%; --halo-color: #8dc63f;" data-name="Clermont-Ferrand" data-folder="clermont"><img src="clermont.png" alt="Clermont"></div>
+            <div class="ecole-point" style="top: 57%; left: 70%; --halo-color: #781716;" data-name="Lyon" data-folder="lyon"><img src="lyon.png" alt="Lyon"></div>
+            <div class="ecole-point" style="top: 53%; left: 78%; --halo-color: #ea1d8e;" data-name="Annecy-Chambéry" data-folder="annecy"><img src="annecy.png" alt="Annecy"></div>
+            <div class="ecole-point" style="top: 63%; left: 76%; --halo-color: #b49a71;" data-name="Grenoble" data-folder="grenoble"><img src="grenoble.png" alt="Grenoble"></div>
+            <div class="ecole-point" style="top: 78%; left: 59%; --halo-color: #1674b9;" data-name="Montpellier" data-folder="montpellier"><img src="montpellier.png" alt="Montpellier"></div>
+            <div class="ecole-point" style="top: 78%; left: 71%; --halo-color: #00a5b5;" data-name="Marseille" data-folder="marseille"><img src="marseille.png" alt="Marseille"></div>
+            <div class="ecole-point" style="top: 80%; left: 83%; --halo-color: #b3d334;" data-name="Nice Sophia" data-folder="nice"><img src="nice.png" alt="Nice"></div>
+            <div class="ecole-point" style="top: 42%; left: 70%; --halo-color: #d3d3ff;" data-name="Dijon" data-folder="dijon"><img src="dijon.png" alt="Dijon"></div>
         </div>
     </div>
 
@@ -392,10 +346,14 @@
     const app = initializeApp(firebaseConfig);
     const db = getFirestore(app);
 
+    // ==========================================
+    // CACHE DE LECTURE (RAM + SessionStorage)
+    // ==========================================
     const memoryCache = {};
 
     async function fetchWithCache(collection, ecoleId, subCollection, annee) {
         const cacheKey = `sebr_cache_${collection}_${ecoleId}_${subCollection}_${annee}`;
+
         if (memoryCache[cacheKey]) return memoryCache[cacheKey];
 
         const sessionData = sessionStorage.getItem(cacheKey);
@@ -420,6 +378,8 @@
             const data = snap.data();
             const mockSnap = { exists: () => true, data: () => data };
             memoryCache[cacheKey] = mockSnap;
+            
+            // On stocke tel quel, la fonction formaterDate gérera la transformation
             sessionStorage.setItem(cacheKey, JSON.stringify(data));
             return mockSnap;
         } else {
@@ -430,10 +390,16 @@
         }
     }
 
+    // ==========================================
+    // LOGIQUE DE TRAITEMENT DES DATES (SÉCURISÉE)
+    // ==========================================
     function parseAnyDate(val) {
         if (!val) return null;
+        // 1. Si c'est un vrai Timestamp Firestore
         if (val.toDate && typeof val.toDate === 'function') return val.toDate();
+        // 2. Si c'est un objet Timestamp venant du JSON (cache)
         if (val.seconds !== undefined) return new Date(val.seconds * 1000);
+        // 3. Si c'est une String ou autre
         const d = new Date(val);
         return isNaN(d.getTime()) ? null : d;
     }
@@ -445,6 +411,8 @@
             return d.toLocaleDateString('fr-FR', { day: 'numeric', month: 'long', year: 'numeric' }).toUpperCase();
         } catch(e) { return ""; }
     }
+
+    // ==========================================
 
     const points = document.querySelectorAll('.ecole-point');
     const sideContent = document.getElementById('side-content');
@@ -460,44 +428,13 @@
         }
     });
 
-    // Fonction de placement propre pour le tooltip
-    function positionTooltip(e) {
-        const tooltipWidth = tooltip.offsetWidth || 180;
-        const windowWidth = window.innerWidth;
-        const gap = 15;
-        
-        let left = e.pageX + gap;
-        let top = e.pageY + gap;
-        
-        if (left + tooltipWidth > windowWidth) {
-            left = e.pageX - tooltipWidth - gap;
-        }
-        if (left < 0) left = 5;
-        
-        tooltip.style.left = left + 'px';
-        tooltip.style.top = top + 'px';
-    }
-
-    // Assignation UNIFIÉE des événements Javascript pour chaque école
     points.forEach(p => {
         const haloColor = p.style.getPropertyValue('--halo-color');
         
-        p.addEventListener('mouseenter', async (e) => {
-            // Désactivation du tooltip au survol sur Mobile (pour laisser la place au clic)
-            if (window.innerWidth <= 850) return;
-
+        p.addEventListener('mouseenter', async () => {
             tooltip.classList.remove('hidden');
-            tooltip.style.display = 'block';
             tooltip.style.borderColor = haloColor;
-            
-            // On compile les informations de base et sous-texte (via l'attribut data-subtext)
-            let baseHtml = `<strong style="color: ${haloColor};">Polytech ${p.dataset.name}</strong>`;
-            if (p.dataset.subtext) {
-                baseHtml += `<br><small>${p.dataset.subtext}</small>`;
-            }
-            tooltip.innerHTML = baseHtml;
-            
-            positionTooltip(e);
+            tooltip.innerHTML = `<strong style="color: ${haloColor};">Polytech ${p.dataset.name}</strong>`;
             
             try {
                 const snap = await fetchWithCache("ecoles", p.dataset.folder, "events", anneeSelector.value);
@@ -505,44 +442,26 @@
                     const data = snap.data();
                     if (data.soiree && data.soiree.nom) {
                         const dateSimple = formaterDate(data.soiree.date);
-                        // On vérifie qu'on est bien toujours sur la même école avant d'ajouter le texte
-                        if (tooltip.innerHTML.includes(`Polytech ${p.dataset.name}`)) {
-                            tooltip.innerHTML = baseHtml + `
-                                <div style="margin-top: 8px; border-top: 1px solid #333; padding-top: 5px;">
-                                    <span style="font-size:0.85em; color:#fff; display:block;">🎉 ${data.soiree.nom.toUpperCase()}</span>
-                                    <span style="font-size:0.75em; color:var(--poly-cyan); font-weight:bold;">📅 ${dateSimple}</span>
-                                </div>`;
-                        }
+                        tooltip.innerHTML += `
+                            <div style="margin-top: 8px; border-top: 1px solid #333; padding-top: 5px;">
+                                <span style="font-size:0.85em; color:#fff; display:block;">🎉 ${data.soiree.nom.toUpperCase()}</span>
+                                <span style="font-size:0.75em; color:var(--poly-cyan); font-weight:bold;">📅 ${dateSimple}</span>
+                            </div>`;
                     }
                 }
             } catch(e) { console.error("Erreur tooltip:", e); }
         });
 
+        p.addEventListener('mouseleave', () => tooltip.classList.add('hidden'));
+
         p.addEventListener('mousemove', (e) => {
-            if (window.innerWidth > 850) {
-                positionTooltip(e);
-            }
+            tooltip.style.left = (e.clientX + 15) + 'px';
+            tooltip.style.top = (e.clientY + 15) + 'px';
         });
 
-        p.addEventListener('mouseleave', () => {
-            tooltip.classList.add('hidden');
-            tooltip.style.display = 'none';
-        });
-
-        p.addEventListener('click', (e) => {
-            e.preventDefault();
-            
-            // Masquer le tooltip au clic (indispensable pour que le tactile mobile ne reste pas bloqué)
-            tooltip.classList.add('hidden');
-            tooltip.style.display = 'none';
-            
+        p.addEventListener('click', () => {
             window.location.hash = p.dataset.folder;
             ouvrirEcole(p.dataset.folder, p.dataset.name, haloColor);
-            
-            // Sur mobile, scroller automatiquement vers la barre latérale une fois cliqué
-            if (window.innerWidth <= 850) {
-                document.getElementById('sidebar-section').scrollIntoView({ behavior: 'smooth' });
-            }
         });
     });
 
@@ -617,50 +536,65 @@
     }
 
     function renderSection(title, data, cityColor, ecoleId, annee, type) {
-        const hasRealContent = (i) => {
-            if (!i) return false;
-            const hasNom = i.nom && i.nom.trim() !== "";
-            const hasPrez = i.prez && i.prez.trim() !== "" && i.prez.toUpperCase() !== "N/A";
-            return hasNom || hasPrez;
-        };
+    // 1. On définit ce qu'est une donnée "valide"
+    const hasRealContent = (i) => {
+        if (!i) return false;
+        // On considère que c'est vide si pas de nom ET (pas de prez ou prez est "N/A")
+        const hasNom = i.nom && i.nom.trim() !== "";
+        const hasPrez = i.prez && i.prez.trim() !== "" && i.prez.toUpperCase() !== "N/A";
+        return hasNom || hasPrez;
+    };
 
-        let items = Array.isArray(data) ? data : (data ? [data] : []);
-        
-        if (type === 'bdp_actuel') {
-            if (!items.some(hasRealContent)) return "";
-        } 
-        else if (type === 'bde_actuel') {
-            if (items.length === 0) {
-                items = [{ nom: "Non renseigné", prez: "N/A" }];
-            }
-        } 
-        else {
-            if (items.length === 0 || !items.some(hasRealContent)) return "";
+    let items = Array.isArray(data) ? data : (data ? [data] : []);
+    
+    // 2. Logique de filtrage selon le type
+    if (type === 'bdp_actuel') {
+        // Pour le BDP : si aucune donnée réelle, on ne renvoie rien du tout (bandeau caché)
+        if (!items.some(hasRealContent)) return "";
+    } 
+    else if (type === 'bde_actuel') {
+        // Pour le BDE : on ne filtre pas, on veut le voir "tout le temps" comme demandé
+        if (items.length === 0) {
+            // Si vraiment aucune donnée en base, on crée un item vide pour l'affichage
+            items = [{ nom: "Non renseigné", prez: "N/A" }];
         }
-
-        items.sort((a, b) => (parseInt(a.classement) || 99) - (parseInt(b.classement) || 99));
-        const isBureau = (type === 'bde_actuel' || type === 'bdp_actuel');
-        const fallback = isBureau ? `${ecoleId}.png` : 'default.png';
-
-        const cards = items.map(i => {
-            const color = i.couleur || cityColor;
-            let identifier = (isBureau) ? type.split('_')[0].toUpperCase() : encodeURIComponent(i.nom || i.prez || "inconnu");
-            const url = `liste.html?ecole=${ecoleId}&annee=${annee}&type=${type}&id=${identifier}`;
-            const photoSrc = (i.logo || i.photo) ? (i.logo || i.photo) : fallback;
-
-            return `
-                <div class="list-card" onclick="window.location.href='${url}'" style="border-left: 4px solid ${color}">
-                    ${i.classement ? `<div class="rank-badge">${i.classement}</div>` : ''}
-                    <img src="${photoSrc}" class="list-logo" onerror="this.src='${fallback}'">
-                    <div style="flex:1;">
-                        <div class="list-name">${i.nom || 'Équipe ' + title}</div>
-                        <div class="list-prez">Prez: ${i.prez || 'N/A'}</div>
-                    </div>
-                </div>`;
-        }).join('');
-
-        return `<div class="category-wrapper"><div class="category-title">${title}</div>${cards}</div>`;
+    } 
+    else {
+        // Pour les listes et fakelistes : on cache si c'est vide
+        if (items.length === 0 || !items.some(hasRealContent)) return "";
     }
+
+    // 3. Rendu classique du HTML
+    items.sort((a, b) => (parseInt(a.classement) || 99) - (parseInt(b.classement) || 99));
+    const isBureau = (type === 'bde_actuel' || type === 'bdp_actuel');
+    const fallback = isBureau ? `${ecoleId}.png` : 'default.png';
+
+    const cards = items.map(i => {
+        const color = i.couleur || cityColor;
+        let identifier = (isBureau) ? type.split('_')[0].toUpperCase() : encodeURIComponent(i.nom || i.prez || "inconnu");
+        const url = `liste.html?ecole=${ecoleId}&annee=${annee}&type=${type}&id=${identifier}`;
+        const photoSrc = (i.logo || i.photo) ? (i.logo || i.photo) : fallback;
+
+        return `
+            <div class="list-card" onclick="window.location.href='${url}'" style="border-left: 4px solid ${color}">
+                ${i.classement ? `<div class="rank-badge">${i.classement}</div>` : ''}
+                <img src="${photoSrc}" class="list-logo" onerror="this.src='${fallback}'">
+                <div style="flex:1;">
+                    <div class="list-name">${i.nom || 'Équipe ' + title}</div>
+                    <div class="list-prez">Prez: ${i.prez || 'N/A'}</div>
+                </div>
+            </div>`;
+    }).join('');
+
+    return `<div class="category-wrapper"><div class="category-title">${title}</div>${cards}</div>`;
+}
+    window.addEventListener('load', () => {
+        const h = window.location.hash.replace('#','');
+        if(h) {
+            const p = document.querySelector(`.ecole-point[data-folder="${h}"]`);
+            if(p) ouvrirEcole(h, p.dataset.name, p.style.getPropertyValue('--halo-color'));
+        }
+    });
 </script>
 </body>
 </html>
