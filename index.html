@@ -594,6 +594,19 @@
             const p = document.querySelector(`.ecole-point[data-folder="${h}"]`);
             if(p) ouvrirEcole(h, p.dataset.name, p.style.getPropertyValue('--halo-color'));
         }
+
+        // On cache l'infobulle dès que l'utilisateur scrolle (utile pour le mobile)
+        window.addEventListener('scroll', function() {
+            hideTooltip();
+        }, { passive: true });
+        
+        // On la cache si on touche l'écran en dehors d'un point d'école
+        document.addEventListener('touchstart', function(e) {
+            // Changé .city-icon par .ecole-point pour correspondre à ton code
+            if (!e.target.closest('.ecole-point')) {
+                hideTooltip();
+            }
+        }, { passive: true });
     });
 </script>
 </body>
