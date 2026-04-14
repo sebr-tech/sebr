@@ -594,15 +594,18 @@
             const p = document.querySelector(`.ecole-point[data-folder="${h}"]`);
             if(p) ouvrirEcole(h, p.dataset.name, p.style.getPropertyValue('--halo-color'));
         }
-
-        // On cache l'infobulle dès que l'utilisateur scrolle (utile pour le mobile)
-        window.addEventListener('scroll', function() {
-            hideTooltip();
-        }, { passive: true });
+    
+        // 1. Cacher quand on défile sur la fenêtre entière
+        window.addEventListener('scroll', () => hideTooltip(), { passive: true });
+    
+        // 2. Cacher spécifiquement quand on défile dans la barre latérale (Mobile)
+        const sidebar = document.getElementById('sidebar-section');
+        if(sidebar) {
+            sidebar.addEventListener('scroll', () => hideTooltip(), { passive: true });
+        }
         
-        // On la cache si on touche l'écran en dehors d'un point d'école
-        document.addEventListener('touchstart', function(e) {
-            // Changé .city-icon par .ecole-point pour correspondre à ton code
+        // 3. Cacher si on touche n'importe où qui n'est pas un point d'école
+        document.addEventListener('touchstart', (e) => {
             if (!e.target.closest('.ecole-point')) {
                 hideTooltip();
             }
