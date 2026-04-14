@@ -54,6 +54,26 @@
             flex-shrink: 0;
         }
 
+        .site-footer {
+            text-align: center;
+            padding: 12px 20px 18px;
+            font-size: 0.9em;
+            background: #050a0f;
+            border-top: 1px solid #1f2a36;
+            flex-shrink: 0;
+        }
+        
+        .site-footer a {
+            color: #9aa6b2;
+            text-decoration: none;
+            transition: color 0.2s ease;
+        }
+        
+        .site-footer a:hover {
+            color: var(--poly-cyan);
+            text-decoration: underline;
+        }
+
         .header-left, .header-right { display: flex; gap: 10px; align-items: center; flex: 1; }
         .header-right { justify-content: flex-end; }
 
@@ -295,7 +315,6 @@
     <div class="header-left">
         <a href="index.html" class="btn-nav">ACCUEIL</a>
         <a href="calendrier.html" class="btn-nav">📅 CALENDRIER</a>
-        <a href="mentions-legales.html" class="btn-nav">Mentions légales</a>
     </div>
 
     <div class="logo-title">SEBR.tech<br><span style="font-size: 0.7em; font-weight: normal; color: #ccc;">Site d'Exploration des Bureaux du Rezo Polytech</span></div>
@@ -304,6 +323,10 @@
         <button class="btn-admin" onclick="window.location.href='authentification.html'">ADMIN 🔒</button>
     </div>
 </header>
+
+<footer class="site-footer">
+    <a href="mentions-legales.html">Mentions légales</a>
+</footer>
 
 <div id="main-container">
     <div id="map-section">
