@@ -205,11 +205,15 @@ async function loadArchive() {
         } else {
             status.innerText = "Nouvelle archive vide.";
             ['bde-prez', 'bde-vp', 'bde-rr', 'bdp-prez', 'bde-insta', 'bdp-insta', 'date-debut-campagne', 'date-fin-campagne', 'date-passation'].forEach(id => {
-            const el = document.getElementById(id);
-            if(el) el.value = "";
-        });
-        renderExistingLists();
-    } catch(e) { status.innerText = "Erreur de chargement."; }
+                const el = document.getElementById(id);
+                if(el) el.value = "";
+            });
+        } // ✅ ACCOLADE AJOUTÉE ICI
+
+        renderExistingLists(); // On appelle cette fonction que l'archive existe ou non
+    } catch(e) { 
+        status.innerText = "Erreur de chargement."; 
+    }
 }
 
 export function initAjoutListe(userData) {
