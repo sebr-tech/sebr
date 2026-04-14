@@ -218,16 +218,18 @@
         }
 
         #tooltip {
-            position: fixed;
-            background: rgba(5, 10, 15, 0.95);
-            padding: 12px;
-            border: 1px solid var(--poly-cyan);
-            border-radius: 8px;
-            pointer-events: none;
-            z-index: 1000;
-            font-size: 0.9em;
-            box-shadow: 0 8px 25px rgba(0,0,0,0.6);
-            backdrop-filter: blur(5px);
+            position: absolute;
+            z-index: 9999;
+            pointer-events: none; /* TRÈS IMPORTANT pour ne pas bloquer le scroll */
+            max-width: 200px;     /* Empêche la box d'être immense */
+            background: rgba(0, 0, 0, 0.9);
+            color: white;
+            padding: 8px;
+            border-radius: 5px;
+            font-size: 13px;
+            border: 1px solid #333;
+            display: none;
+            transition: opacity 0.2s;
         }
 
         .hidden { display: none !important; }
@@ -699,32 +701,49 @@
 
     return `<div class="category-wrapper"><div class="category-title">${title}</div>${cards}</div>`;
 }
+    let lastShowTime = 0;
+
     function handleTooltip(e, text) {
-    const t = document.getElementById('tooltip');
-    if (!t) return;
-    t.innerHTML = text;
-    t.style.display = 'block';
-    t.style.opacity = '1';
-
-    let left = e.pageX + 15;
-    let top = e.pageY + 15;
-
-    // Si on dépasse à droite (seuil de 200px pour la box), on bascule à gauche
-    if (left + 200 > window.innerWidth) {
-        left = e.pageX - 215; // 200 (largeur) + 15 (marge)
+        const t = document.getElementById('tooltip');
+        if (!t) return;
+    
+        t.innerHTML = text;
+        t.style.display = 'block';
+        
+        // On laisse le temps au navigateur de calculer la taille réelle
+        const tooltipWidth = t.offsetWidth || 180;
+        const windowWidth = window.innerWidth;
+        const gap = 15;
+    
+        let left = e.pageX + gap;
+        let top = e.pageY + gap;
+    
+        // Si on dépasse à droite, on bascule à gauche de l'icône
+        if (left + tooltipWidth > windowWidth) {
+            left = e.pageX - tooltipWidth - gap;
+        }
+    
+        // Sécurité pour ne pas que ça sorte à gauche non plus (petit écran)
+        if (left < 0) left = 5;
+    
+        t.style.left = left + 'px';
+        t.style.top = top + 'px';
+        t.style.opacity = '1';
+        
+        lastShowTime = Date.now(); // On note l'heure d'affichage
     }
-
-    t.style.left = left + 'px';
-    t.style.top = top + 'px';
-}
-
-function hideBox() {
-    const t = document.getElementById('tooltip');
-    if(t) {
-        t.style.display = 'none';
-        t.style.opacity = '0';
+    
+    function hideBox() {
+        // Si la box vient d'être affichée (moins de 300ms), on ne la cache pas
+        // Ça évite que le clic/scroll du doigt ne la ferme instantanément
+        if (Date.now() - lastShowTime < 300) return;
+    
+        const t = document.getElementById('tooltip');
+        if(t) {
+            t.style.display = 'none';
+            t.style.opacity = '0';
+        }
     }
-}
     window.addEventListener('load', () => {
         const h = window.location.hash.replace('#','');
         if(h) {
