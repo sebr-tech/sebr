@@ -233,12 +233,43 @@
         .hidden { display: none !important; }
 
         @media (max-width: 850px) {
-            body { overflow-y: auto; height: auto; }
-            #main-container { flex-direction: column; }
-            header { height: auto; padding: 15px; flex-direction: column; gap: 15px; }
-            #map-section { height: 670px; flex: none; }
-            #sidebar-section { min-width: 100%; border-left: none; border-top: 2px solid #222; }
-        }
+              body { 
+                overflow-y: auto; 
+                height: auto; 
+              }
+              #main-container { 
+                flex-direction: column; 
+              }
+              header { 
+                height: auto; 
+                padding: 15px; 
+                flex-direction: column; 
+                gap: 15px; 
+              }
+            
+              /* --- MODIFICATIONS ICI --- */
+              #map-section {
+                height: 550px; /* On définit une hauteur pour le conteneur */
+                flex: none;
+                padding: 5px; /* On réduit le padding pour laisser la carte grandir */
+                display: flex;
+                justify-content: center;
+                align-items: center;
+              }
+            
+              .map-wrapper {
+                width: 95%; /* La carte prend 95% de la largeur du téléphone */
+                max-width: 500px; /* On peut monter cette limite si on veut */
+                /* L'aspect-ratio 1/1 s'occupe de la hauteur automatiquement */
+              }
+              /* -------------------------- */
+            
+              #sidebar-section { 
+                min-width: 100%; 
+                border-left: none; 
+                border-top: 2px solid #222; 
+              }
+            }
     </style>
 </head>
 <body>
