@@ -64,8 +64,7 @@ async function resizeAndCrop(file, size = 200) {
 async function uploadToImgBB(file, isPhoto = false, shouldRemoveBg = false) {
     let fileToProcess = file;
     if (shouldRemoveBg) fileToProcess = await removeBackground(fileToProcess);
-    const fileToUpload = isPhoto ? await resizeAndCrop(fileToProcess) : fileToProcess;
-    const formData = new FormData();
+    const fileToUpload = isPhoto ? await resizeAndCrop(fileToProcess, 300) : await resizeAndCrop(fileToProcess, 1200);    const formData = new FormData();
     formData.append("image", fileToUpload);
     try {
         const response = await fetch(`https://api.imgbb.com/1/upload?key=${IMGBB_API_KEY}`, { method: "POST", body: formData });
@@ -319,7 +318,7 @@ export function initAjoutListe(userData) {
             couleur: document.getElementById('new-couleur').value || "#009EE3", 
             insta: document.getElementById('new-insta').value.trim() || "", 
             photo_coll: finalColl, 
-            classement: finalRank 
+            classement: finalRank
         };
 
         if (editingType !== null) {
