@@ -279,6 +279,15 @@
 
             const h2 = createElement('h2', {}, `Prez : ${t(item.prez || 'Inconnu')}`);
             heroInfo.appendChild(h2);
+            
+            if (item.vp && item.vp.trim() !== "") {
+                const h2Vp = createElement('h2', { style: 'margin-bottom: 5px; color: #ccc; font-size: 1em;' }, `VP : ${t(item.vp)}`);
+                heroInfo.appendChild(h2Vp);
+            }
+            if (item.rr && item.rr.trim() !== "") {
+                const h2Rr = createElement('h2', { style: 'margin-bottom: 5px; color: #ccc; font-size: 1em;' }, `RR : ${t(item.rr)}`);
+                heroInfo.appendChild(h2Rr);
+            }
 
             if (item.classement) {
                 const badge = createElement('div', { class: 'rank-badge' }, t(item.classement));
