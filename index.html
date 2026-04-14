@@ -504,38 +504,58 @@
     }
 
     function renderSection(title, data, cityColor, ecoleId, annee, type) {
-        if (!data || (Array.isArray(data) && data.length === 0)) return "";
-        
-        let items = Array.isArray(data) ? data : [data];
-        items.sort((a, b) => (parseInt(a.classement) || 99) - (parseInt(b.classement) || 99));
+    // 1. On définit ce qu'est une donnée "valide"
+    const hasRealContent = (i) => {
+        if (!i) return false;
+        // On considère que c'est vide si pas de nom ET (pas de prez ou prez est "N/A")
+        const hasNom = i.nom && i.nom.trim() !== "";
+        const hasPrez = i.prez && i.prez.trim() !== "" && i.prez.toUpperCase() !== "N/A";
+        return hasNom || hasPrez;
+    };
 
-        // Détermine l'image de secours dynamique : {ecoleId}.png (ex: lille.png, nantes.png...)
-        const isBureau = (type === 'bde_actuel' || type === 'bdp_actuel');
-        const fallback = isBureau ? `${ecoleId}.png` : 'default.png';
-
-        const cards = items.map(i => {
-            const color = i.couleur || cityColor;
-            let identifier = (isBureau) ? type.split('_')[0].toUpperCase() : encodeURIComponent(i.nom || i.prez || "inconnu");
-            const url = `liste.html?ecole=${ecoleId}&annee=${annee}&type=${type}&id=${identifier}`;
-            
-            // On prend la photo spécifique si elle existe, sinon le logo de l'école ($ecole.png)
-            const photoSrc = (i.logo || i.photo) ? (i.logo || i.photo) : fallback;
-
-            return `
-                <div class="list-card" onclick="window.location.href='${url}'" style="border-left: 4px solid ${color}">
-                    ${i.classement ? `<div class="rank-badge">${i.classement}</div>` : ''}
-                    <img src="${photoSrc}" class="list-logo" onerror="this.src='${fallback}'">
-                    <div style="flex:1;">
-                        <div class="list-name">${i.nom || ''}</div>
-                        <div class="list-prez">Prez: ${i.prez || 'N/A'}</div>
-                    </div>
-                </div>
-            `;
-        }).join('');
-        
-        return `<div class="category-wrapper"><div class="category-title">${title}</div>${cards}</div>`;
+    let items = Array.isArray(data) ? data : (data ? [data] : []);
+    
+    // 2. Logique de filtrage selon le type
+    if (type === 'bdp_actuel') {
+        // Pour le BDP : si aucune donnée réelle, on ne renvoie rien du tout (bandeau caché)
+        if (!items.some(hasRealContent)) return "";
+    } 
+    else if (type === 'bde_actuel') {
+        // Pour le BDE : on ne filtre pas, on veut le voir "tout le temps" comme demandé
+        if (items.length === 0) {
+            // Si vraiment aucune donnée en base, on crée un item vide pour l'affichage
+            items = [{ nom: "Non renseigné", prez: "N/A" }];
+        }
+    } 
+    else {
+        // Pour les listes et fakelistes : on cache si c'est vide
+        if (items.length === 0 || !items.some(hasRealContent)) return "";
     }
 
+    // 3. Rendu classique du HTML
+    items.sort((a, b) => (parseInt(a.classement) || 99) - (parseInt(b.classement) || 99));
+    const isBureau = (type === 'bde_actuel' || type === 'bdp_actuel');
+    const fallback = isBureau ? `${ecoleId}.png` : 'default.png';
+
+    const cards = items.map(i => {
+        const color = i.couleur || cityColor;
+        let identifier = (isBureau) ? type.split('_')[0].toUpperCase() : encodeURIComponent(i.nom || i.prez || "inconnu");
+        const url = `liste.html?ecole=${ecoleId}&annee=${annee}&type=${type}&id=${identifier}`;
+        const photoSrc = (i.logo || i.photo) ? (i.logo || i.photo) : fallback;
+
+        return `
+            <div class="list-card" onclick="window.location.href='${url}'" style="border-left: 4px solid ${color}">
+                ${i.classement ? `<div class="rank-badge">${i.classement}</div>` : ''}
+                <img src="${photoSrc}" class="list-logo" onerror="this.src='${fallback}'">
+                <div style="flex:1;">
+                    <div class="list-name">${i.nom || 'Équipe ' + title}</div>
+                    <div class="list-prez">Prez: ${i.prez || 'N/A'}</div>
+                </div>
+            </div>`;
+    }).join('');
+
+    return `<div class="category-wrapper"><div class="category-title">${title}</div>${cards}</div>`;
+}
     window.addEventListener('load', () => {
         const h = window.location.hash.replace('#','');
         if(h) {
