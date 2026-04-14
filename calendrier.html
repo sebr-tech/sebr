@@ -72,6 +72,22 @@
         #filter-list { display: grid; grid-template-columns: 1fr 1fr; gap: 5px 15px; }
         .calendar-section { flex: 1; padding: 10px; }
     }
+
+        /* Remplace les icônes (carrés) par des caractères texte standards */
+        .fc .fc-button .fc-icon {
+            font-family: sans-serif !important; /* Force une police standard */
+        }
+        
+        /* Définit le contenu des flèches manuellement */
+        .fc-icon-chevron-left::before {
+            content: '<' !important;
+            font-weight: bold;
+        }
+        
+        .fc-icon-chevron-right::before {
+            content: '>' !important;
+            font-weight: bold;
+        }
 </style>
 </head>
 <body>
