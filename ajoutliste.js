@@ -27,6 +27,19 @@ let currentData = {
 let editingType = null;
 let editingIndex = null;
 
+function showStatus(message, isError = false) {
+    const statusEl = document.getElementById('status');
+    if (statusEl) {
+        statusEl.innerText = message;
+        statusEl.style.color = isError ? "#ff4b2b" : "#28a745";
+        
+        // Optionnel : remet le message en blanc/gris après 5 secondes si c'est un succès
+        if (!isError) {
+            setTimeout(() => { statusEl.style.color = ""; }, 5000);
+        }
+    }
+}
+
 // --- UTILS IMAGES ---
 async function removeBackground(file) {
     const formData = new FormData();
@@ -62,14 +75,33 @@ async function resizeAndCrop(file, size = 200) {
 }
 
 async function uploadToImgBB(file, isPhoto = false, shouldRemoveBg = false) {
-    let fileToProcess = file;
-    if (shouldRemoveBg) fileToProcess = await removeBackground(fileToProcess);
-    const fileToUpload = isPhoto ? await resizeAndCrop(fileToProcess) : fileToProcess;    formData.append("image", fileToUpload);
     try {
-        const response = await fetch(`https://api.imgbb.com/1/upload?key=${IMGBB_API_KEY}`, { method: "POST", body: formData });
+        let fileToProcess = file;
+        if (shouldRemoveBg) fileToProcess = await removeBackground(fileToProcess);
+        
+        // Redimensionnement 1 ligne comme demandé : Portrait -> 300px | Groupe -> 1000px
+        const fileToUpload = isPhoto ? await resizeAndCrop(fileToProcess, 300) : await resizeAndCrop(fileToProcess, 1000);
+        
+        const formData = new FormData(); // <--- ÉTAIT MAL PLACÉ OU MANQUANT
+        formData.append("image", fileToUpload);
+
+        const response = await fetch(`https://api.imgbb.com/1/upload?key=${IMGBB_API_KEY}`, { 
+            method: "POST", 
+            body: formData 
+        });
+        
         const result = await response.json();
-        return result.success ? result.data.url : null;
-    } catch(e) { return null; }
+        if (result.success) {
+            showStatus("📸 Image uploadée avec succès !");
+            return result.data.url;
+        } else {
+            showStatus("❌ Erreur ImgBB : " + result.error.message, true);
+            return null;
+        }
+    } catch(e) { 
+        showStatus("❌ Erreur de connexion (Vérifie ta CSP)", true);
+        return null; 
+    }
 }
 
 // --- GESTION DES LISTES (EDIT / CANCEL) ---
@@ -110,11 +142,21 @@ function startEditList(type, index) {
 async function saveAll() {
     const ecole = document.getElementById('ecole-select').value;
     const annee = document.getElementById('annee-select').value;
+    const btnSave = document.getElementById('btn-save-officiels');
+    const btnAdd = document.getElementById('btn-add-item');
+
     try {
         await setDoc(doc(db, "ecoles", ecole, "archives", annee), currentData);
         renderExistingLists();
-        document.getElementById('status').innerText = "✅ Données synchronisées !";
-    } catch (e) { alert("Erreur : " + e.message); }
+        showStatus("✅ Données synchronisées avec succès !");
+    } catch (e) { 
+        showStatus("❌ Erreur Firestore : " + e.message, true);
+        alert("Erreur critique : " + e.message);
+    } finally {
+        // On s'assure de débloquer les boutons quoi qu'il arrive
+        if (btnSave) { btnSave.disabled = false; btnSave.innerText = "💾 Sauvegarder Infos & Dates"; }
+        if (btnAdd) { btnAdd.disabled = false; btnAdd.innerText = "➕ Envoyer & Ajouter"; }
+    }
 }
 
 function renderExistingLists() {
@@ -294,42 +336,55 @@ export function initAjoutListe(userData) {
         const btn = document.getElementById('btn-add-item');
         const type = document.getElementById('type-liste').value;
         const nom = document.getElementById('new-nom').value.trim();
-        const prez = document.getElementById('new-prez').value.trim();
-        const fileLogo = document.getElementById('new-logo-file').files[0];
-        const fileColl = document.getElementById('new-photo-coll-file').files[0];
-        const rbLogo = document.getElementById('list-remove-bg')?.checked;
-
-        if (!nom) return alert("Nom requis !");
         
-        btn.disabled = true; btn.innerText = "⏳ Envoi...";
-
-        let finalLogo = editingType !== null ? (currentData[editingType][editingIndex].logo || "") : "";
-        let finalColl = editingType !== null ? (currentData[editingType][editingIndex].photo_coll || "") : "";
-        let finalRank = editingType !== null ? (currentData[editingType][editingIndex].classement || "") : "";
-
-        if (fileLogo) finalLogo = await uploadToImgBB(fileLogo, true, rbLogo);
-        if (fileColl) finalColl = await uploadToImgBB(fileColl, false, false);
-
-        const listObj = { 
-            nom, 
-            prez, 
-            logo: finalLogo, 
-            couleur: document.getElementById('new-couleur').value || "#009EE3", 
-            insta: document.getElementById('new-insta').value.trim() || "", 
-            photo_coll: finalColl, 
-            classement: finalRank
-        };
-
-        if (editingType !== null) {
-            currentData[editingType][editingIndex] = listObj;
-        } else {
-            if (!finalLogo) { alert("Logo requis !"); btn.disabled = false; return; }
-            currentData[type].push(listObj);
+        if (!nom) return showStatus("❌ Nom requis !", true);
+        
+        btn.disabled = true; 
+        btn.innerText = "⏳ Envoi en cours...";
+        showStatus("⏳ Traitement des images...");
+    
+        try {
+            let finalLogo = editingType !== null ? (currentData[editingType][editingIndex].logo || "") : "";
+            let finalColl = editingType !== null ? (currentData[editingType][editingIndex].photo_coll || "") : "";
+            let finalRank = editingType !== null ? (currentData[editingType][editingIndex].classement || "") : "";
+    
+            const fileLogo = document.getElementById('new-logo-file').files[0];
+            const fileColl = document.getElementById('new-photo-coll-file').files[0];
+            const rbLogo = document.getElementById('list-remove-bg')?.checked;
+    
+            if (fileLogo) {
+                const url = await uploadToImgBB(fileLogo, true, rbLogo);
+                if (url) finalLogo = url;
+            }
+            
+            if (fileColl) {
+                const url = await uploadToImgBB(fileColl, false, false);
+                if (url) finalColl = url;
+            }
+    
+            const listObj = { 
+                nom, prez: document.getElementById('new-prez').value.trim(), 
+                logo: finalLogo, 
+                couleur: document.getElementById('new-couleur').value || "#009EE3", 
+                insta: document.getElementById('new-insta').value.trim() || "", 
+                photo_coll: finalColl, 
+                classement: finalRank 
+            };
+    
+            if (editingType !== null) {
+                currentData[editingType][editingIndex] = listObj;
+            } else {
+                if (!finalLogo) throw new Error("Le logo est obligatoire pour une nouvelle liste");
+                currentData[type].push(listObj);
+            }
+    
+            await saveAll();
+            cancelEditList();
+        } catch (err) {
+            showStatus("❌ " + err.message, true);
+            btn.disabled = false;
+            btn.innerText = "💾 Réessayer";
         }
-
-        await saveAll(); 
-        cancelEditList(); 
-        btn.disabled = false;
     };
 
     document.getElementById('btn-cancel-edit-list').onclick = cancelEditList;
