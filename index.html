@@ -54,40 +54,6 @@
             flex-shrink: 0;
         }
 
-        .site-footer {
-            text-align: center;
-            padding: 12px 20px 18px;
-            font-size: 0.9em;
-            background: #050a0f;
-            border-top: 1px solid #1f2a36;
-            flex-shrink: 0;
-        
-        }
-
-        .search-wrapper { position: relative; width: 100%; max-width: 500px; margin: 20px auto; }
-        #barreRecherche { width: 100%; padding: 12px; border-radius: 8px; border: 1px solid var(--poly-cyan); background: #161f2b; color: white; }
-        #resultatsRecherche { 
-            position: absolute; top: 100%; left: 0; right: 0; 
-            background: #161f2b; border: 1px solid #333; z-index: 1000; 
-            border-radius: 0 0 8px 8px; overflow: hidden;
-        }
-        .resultat-item { 
-            padding: 10px; cursor: pointer; border-bottom: 1px solid #222; font-size: 0.9em;
-        }
-        .resultat-item:hover { background: var(--poly-cyan); color: white; }
-        
-        
-        .site-footer a {
-            color: #9aa6b2;
-            text-decoration: none;
-            transition: color 0.2s ease;
-        }
-        
-        .site-footer a:hover {
-            color: var(--poly-cyan);
-            text-decoration: underline;
-        }
-
         .header-left, .header-right { display: flex; gap: 10px; align-items: center; flex: 1; }
         .header-right { justify-content: flex-end; }
 
@@ -101,226 +67,133 @@
             flex: 2;
         }
 
-        .btn-nav {
-            background: rgba(255,255,255,0.05);
-            border: 1px solid var(--poly-cyan);
-            color: white;
-            padding: 8px 15px;
-            border-radius: 5px;
-            cursor: pointer;
-            font-weight: bold;
-            font-size: 0.85em;
-            text-decoration: none;
-            transition: 0.2s;
-            white-space: nowrap;
+        .search-container { position: relative; width: 100%; max-width: 400px; margin: 0 15px; }
+        #barreRecherche { 
+            width: 100%; padding: 10px; border-radius: 6px; 
+            border: 1px solid var(--poly-cyan); background: #0b1118; color: white; 
         }
 
-        .btn-nav:hover { background: var(--poly-cyan); color: white; }
-        .btn-active { background: var(--poly-cyan); }
+        .search-results-dropdown {
+            position: absolute; top: 100%; left: 0; right: 0;
+            background: #161f2b; border: 1px solid var(--poly-cyan);
+            border-top: none; z-index: 1000; max-height: 300px;
+            overflow-y: auto; display: none; border-radius: 0 0 8px 8px;
+        }
+
+        .result-item {
+            padding: 10px 15px; border-bottom: 1px solid #2a3544;
+            cursor: pointer; transition: background 0.2s;
+        }
+        .result-item:hover { background: var(--poly-cyan); color: #000; }
+        .result-item .type-badge {
+            font-size: 0.7em; background: rgba(255,255,255,0.1);
+            padding: 2px 5px; border-radius: 4px; margin-left: 10px;
+        }
+
+        .btn-nav {
+            background: rgba(255,255,255,0.05); border: 1px solid var(--poly-cyan);
+            color: white; padding: 8px 15px; border-radius: 5px;
+            cursor: pointer; font-weight: bold; font-size: 0.85em;
+            text-decoration: none; transition: 0.2s; white-space: nowrap;
+        }
+        .btn-nav:hover { background: var(--poly-cyan); color: #000; }
 
         .btn-admin {
-            background: transparent;
-            border: 1px solid #444;
-            color: #888;
-            padding: 8px 12px;
-            border-radius: 5px;
-            cursor: pointer;
-            font-size: 0.8em;
+            background: transparent; border: 1px solid #444;
+            color: #888; padding: 8px 12px; border-radius: 5px;
+            cursor: pointer; font-size: 0.8em;
         }
 
         #main-container { display: flex; flex: 1; overflow: hidden; }
 
         #map-section {
-            flex: 2;
-            position: relative;
-            display: flex;
-            justify-content: center;
-            align-items: center;
+            flex: 2; position: relative; display: flex;
+            justify-content: center; align-items: center;
             background: radial-gradient(circle at center, #111b2d 0%, #050a0f 100%);
             padding: 20px;
         }
 
-        .map-wrapper {
-              position: relative;
-              width: 100%;
-              max-width: 750px; 
-              aspect-ratio: 1 / 1;
-            }
-
+        .map-wrapper { position: relative; width: 100%; max-width: 750px; aspect-ratio: 1 / 1; }
         .france-svg { width: 100%; height: 100%; filter: drop-shadow(0 0 15px rgba(0, 158, 227, 0.2)); }
 
         .ecole-point {
-            position: absolute;
-            width: 7.5%;
-            aspect-ratio: 1/1;
-            background: transparent; 
-            border: none; 
-            border-radius: 50%;
-            cursor: pointer;
-            display: flex;
-            justify-content: center;
-            align-items: center;
+            position: absolute; width: 7.5%; aspect-ratio: 1/1;
+            border-radius: 50%; cursor: pointer; display: flex;
+            justify-content: center; align-items: center;
             transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-            z-index: 10;
-            filter: drop-shadow(0 2px 4px rgba(0,0,0,0.5));
+            z-index: 10; filter: drop-shadow(0 2px 4px rgba(0,0,0,0.5));
         }
-
-        .ecole-point img {
-            width: 100%;
-            height: 100%;
-            object-fit: contain;
-            border-radius: 50%;
-        }
-
+        .ecole-point img { width: 100%; height: 100%; object-fit: contain; border-radius: 50%; }
         .ecole-point:hover {
-            transform: scale(1.4);
-            z-index: 100;
+            transform: scale(1.4); z-index: 100;
             box-shadow: 0 0 0 3px white, 0 0 20px 5px var(--halo-color);
-            filter: drop-shadow(0 4px 8px rgba(0,0,0,0.7));
         }
 
         #sidebar-section {
-            flex: 1;
-            min-width: 380px;
-            background: #0b1118;
-            border-left: 1px solid #222;
-            overflow-y: auto;
-            padding: 25px;
+            flex: 1; min-width: 380px; background: #0b1118;
+            border-left: 1px solid #222; overflow-y: auto; padding: 25px;
         }
 
         .side-header-flex {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            gap: 10px;
-            margin-bottom: 15px;
+            display: flex; align-items: center; justify-content: space-between;
+            gap: 10px; margin-bottom: 15px;
         }
-
         #side-title { color: var(--poly-cyan); margin: 0; font-size: 1.4em; flex: 1; }
 
         #annee-selector {
-            background: #161f2b;
-            color: white;
-            border: 1px solid #444;
-            padding: 5px 10px;
-            border-radius: 5px;
-            font-size: 0.85em;
-            cursor: pointer;
+            background: #161f2b; color: white; border: 1px solid #444;
+            padding: 5px 10px; border-radius: 5px; cursor: pointer;
         }
 
         .btn-back {
-            display: block;
-            color: #888;
-            text-decoration: none;
-            font-weight: bold;
-            margin-bottom: 20px;
-            font-size: 0.9em;
-            cursor: pointer;
+            display: block; color: #888; text-decoration: none;
+            font-weight: bold; margin-bottom: 20px; font-size: 0.9em; cursor: pointer;
         }
 
         .category-wrapper {
-            margin-top: 20px;
-            background: rgba(22, 31, 43, 0.5);
-            padding: 15px;
-            border-radius: 8px;
-            border: 1px solid #222;
+            margin-top: 20px; background: rgba(22, 31, 43, 0.5);
+            padding: 15px; border-radius: 8px; border: 1px solid #222;
         }
-
-        .category-title { margin: 0 0 15px 0; font-size: 0.9em; text-transform: uppercase; color: #888; font-weight: bold; letter-spacing: 1px; }
+        .category-title { margin: 0 0 15px 0; font-size: 0.9em; text-transform: uppercase; color: #888; font-weight: bold; }
 
         .list-card {
-            background: var(--card-bg);
-            padding: 12px;
-            border-radius: 8px;
-            display: flex;
-            align-items: center;
-            gap: 12px;
-            margin-bottom: 10px;
-            cursor: pointer;
-            transition: 0.2s;
-            position: relative;
-            border: 1px solid transparent;
+            background: var(--card-bg); padding: 12px; border-radius: 8px;
+            display: flex; align-items: center; gap: 12px; margin-bottom: 10px;
+            cursor: pointer; transition: 0.2s; position: relative; border: 1px solid transparent;
         }
-
         .list-card:hover { transform: translateX(5px); border-color: #444; }
-
-        .list-logo { width: 50px; height: 50px; border-radius: 50%; object-fit: cover; background: transparent; }
+        .list-logo { width: 50px; height: 50px; border-radius: 50%; object-fit: cover; }
         .list-name { font-weight: bold; flex: 1; font-size: 1.05em; }
         .list-prez { font-size: 0.85em; color: #aaa; }
 
         .rank-badge {
-            position: absolute;
-            top: -5px; right: -5px;
-            background: #ffd700; color: black;
-            font-weight: bold; font-size: 0.7em;
-            padding: 2px 8px; border-radius: 10px;
-            z-index: 5;
+            position: absolute; top: -5px; right: -5px;
+            background: #ffd700; color: black; font-weight: bold;
+            font-size: 0.7em; padding: 2px 8px; border-radius: 10px; z-index: 5;
         }
 
         .rezo-banner {
-            background: rgba(255, 255, 255, 0.03);
-            border: 1px dashed #444;
-            padding: 12px;
-            border-radius: 8px;
-            margin-bottom: 15px;
-            font-size: 0.9em;
-            line-height: 1.4;
+            background: rgba(255, 255, 255, 0.03); border: 1px dashed #444;
+            padding: 12px; border-radius: 8px; margin-bottom: 15px; font-size: 0.9em;
         }
 
         #tooltip {
-            position: fixed;
-            background: rgba(5, 10, 15, 0.95);
-            padding: 12px;
-            border: 1px solid var(--poly-cyan);
-            border-radius: 8px;
-            pointer-events: none;
-            z-index: 1000;
-            font-size: 0.9em;
-            box-shadow: 0 8px 25px rgba(0,0,0,0.6);
-            backdrop-filter: blur(5px);
+            position: fixed; background: rgba(5, 10, 15, 0.95);
+            padding: 12px; border: 1px solid var(--poly-cyan);
+            border-radius: 8px; pointer-events: none; z-index: 1000;
+            font-size: 0.9em; box-shadow: 0 8px 25px rgba(0,0,0,0.6); backdrop-filter: blur(5px);
         }
 
         .hidden { display: none !important; }
 
         @media (max-width: 850px) {
-              body { 
-                overflow-y: auto; 
-                height: auto; 
-              }
-              #main-container { 
-                flex-direction: column; 
-              }
-              header { 
-                height: auto; 
-                padding: 15px; 
-                flex-direction: column; 
-                gap: 15px; 
-              }
-            
-              /* --- LA CORRECTION EST ICI --- */
-              #map-section {
-                padding: 0;           /* On supprime les marges sur les côtés */
-                height: auto;         /* On laisse la hauteur s'adapter à la carte */
-                min-height: 400px;    /* Sécurité pour l'affichage */
-                flex: none;
-                background: #050a0f;  /* Fond uni pour éviter les fuites de dégradé */
-              }
-            
-              .map-wrapper {
-                width: 100%;          /* La carte prend TOUTE la largeur de l'écran */
-                max-width: 100%;      /* On lève la restriction des 600px/700px sur mobile */
-                margin: 0 auto;
-                transform: scale(1.05); /* Optionnel : petit zoom pour grappiller encore de l'espace */
-              }
-              /* ---------------------------- */
-            
-              #sidebar-section { 
-                min-width: 100%; 
-                border-left: none; 
-                border-top: 2px solid #222; 
-                padding: 20px;
-              }
-            }
+            body { overflow-y: auto; height: auto; }
+            #main-container { flex-direction: column; }
+            header { height: auto; padding: 15px; flex-direction: column; gap: 15px; }
+            #map-section { padding: 0; min-height: 400px; flex: none; background: #050a0f; }
+            .map-wrapper { width: 100%; transform: scale(1.05); }
+            #sidebar-section { min-width: 100%; border-left: none; border-top: 2px solid #222; }
+        }
     </style>
 </head>
 <body>
@@ -332,11 +205,8 @@
     </div>
     
     <div class="search-container">
-        <input 
-            type="text" 
-            id="barreRecherche" 
-            placeholder="Rechercher une liste, un événement, une personne..."
-        >
+        <input type="text" id="barreRecherche" placeholder="Rechercher une liste, un prez...">
+        <div id="resultatsRecherche" class="search-results-dropdown"></div>
     </div>
     
     <div class="logo-title">SEBR.tech<br><span style="font-size: 0.7em; font-weight: normal; color: #ccc;">Site d'Exploration des Bureaux du Rezo Polytech</span></div>
@@ -390,7 +260,7 @@
 
 <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-    import { getFirestore, doc, getDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+    import { getFirestore, doc, getDoc, collectionGroup, getDocs } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
     const firebaseConfig = {
         apiKey: "AIzaSyB1_SgV4E80Qxs2vQ-_jIGexv6YYqaiARs",
@@ -405,73 +275,43 @@
     const db = getFirestore(app);
 
     // ==========================================
-    // CACHE DE LECTURE (RAM + SessionStorage)
+    // GESTION DU CACHE ET DATES
     // ==========================================
     const memoryCache = {};
 
     async function fetchWithCache(collection, ecoleId, subCollection, annee) {
         const cacheKey = `sebr_cache_${collection}_${ecoleId}_${subCollection}_${annee}`;
-
         if (memoryCache[cacheKey]) return memoryCache[cacheKey];
 
         const sessionData = sessionStorage.getItem(cacheKey);
         if (sessionData) {
-            try {
-                const parsed = JSON.parse(sessionData);
-                const mockSnap = {
-                    exists: () => !parsed._empty,
-                    data: () => parsed._empty ? null : parsed
-                };
-                memoryCache[cacheKey] = mockSnap;
-                return mockSnap;
-            } catch (e) {
-                console.warn("Erreur de parsing cache.");
-            }
+            const parsed = JSON.parse(sessionData);
+            const mockSnap = { exists: () => !parsed._empty, data: () => parsed._empty ? null : parsed };
+            memoryCache[cacheKey] = mockSnap;
+            return mockSnap;
         }
 
         const docRef = doc(db, collection, ecoleId, subCollection, annee);
         const snap = await getDoc(docRef);
-
-        if (snap.exists()) {
-            const data = snap.data();
-            const mockSnap = { exists: () => true, data: () => data };
-            memoryCache[cacheKey] = mockSnap;
-            
-            // On stocke tel quel, la fonction formaterDate gérera la transformation
-            sessionStorage.setItem(cacheKey, JSON.stringify(data));
-            return mockSnap;
-        } else {
-            const mockEmpty = { exists: () => false, data: () => null };
-            memoryCache[cacheKey] = mockEmpty;
-            sessionStorage.setItem(cacheKey, JSON.stringify({ _empty: true }));
-            return mockEmpty;
-        }
-    }
-
-    // ==========================================
-    // LOGIQUE DE TRAITEMENT DES DATES (SÉCURISÉE)
-    // ==========================================
-    function parseAnyDate(val) {
-        if (!val) return null;
-        // 1. Si c'est un vrai Timestamp Firestore
-        if (val.toDate && typeof val.toDate === 'function') return val.toDate();
-        // 2. Si c'est un objet Timestamp venant du JSON (cache)
-        if (val.seconds !== undefined) return new Date(val.seconds * 1000);
-        // 3. Si c'est une String ou autre
-        const d = new Date(val);
-        return isNaN(d.getTime()) ? null : d;
+        const dataToStore = snap.exists() ? snap.data() : { _empty: true };
+        sessionStorage.setItem(cacheKey, JSON.stringify(dataToStore));
+        return snap;
     }
 
     function formaterDate(val) {
-        const d = parseAnyDate(val);
-        if (!d) return "";
-        try {
-            return d.toLocaleDateString('fr-FR', { day: 'numeric', month: 'long', year: 'numeric' }).toUpperCase();
-        } catch(e) { return ""; }
+        if (!val) return "";
+        let d;
+        if (val.toDate) d = val.toDate();
+        else if (val.seconds) d = new Date(val.seconds * 1000);
+        else d = new Date(val);
+        
+        if (isNaN(d.getTime())) return "";
+        return d.toLocaleDateString('fr-FR', { day: 'numeric', month: 'long', year: 'numeric' }).toUpperCase();
     }
 
     // ==========================================
-
+    // UI & CARTE
+    // ==========================================
     const points = document.querySelectorAll('.ecole-point');
     const sideContent = document.getElementById('side-content');
     const sideTitle = document.getElementById('side-title');
@@ -481,37 +321,28 @@
     let currentEcole = null;
 
     anneeSelector.addEventListener('change', () => {
-        if (currentEcole) {
-            ouvrirEcole(currentEcole.id, currentEcole.name, currentEcole.color);
-        }
+        if (currentEcole) ouvrirEcole(currentEcole.id, currentEcole.name, currentEcole.color);
     });
 
     points.forEach(p => {
-        const haloColor = p.style.getPropertyValue('--halo-color');
+        const color = p.style.getPropertyValue('--halo-color');
         
         p.addEventListener('mouseenter', async () => {
             tooltip.classList.remove('hidden');
-            tooltip.style.borderColor = haloColor;
-            tooltip.innerHTML = `<strong style="color: ${haloColor};">Polytech ${p.dataset.name}</strong>`;
+            tooltip.style.borderColor = color;
+            tooltip.innerHTML = `<strong style="color: ${color};">Polytech ${p.dataset.name}</strong>`;
             
-            try {
-                const snap = await fetchWithCache("ecoles", p.dataset.folder, "events", anneeSelector.value);
-                if (snap.exists()) {
-                    const data = snap.data();
-                    if (data.soiree && data.soiree.nom) {
-                        const dateSimple = formaterDate(data.soiree.date);
-                        tooltip.innerHTML += `
-                            <div style="margin-top: 8px; border-top: 1px solid #333; padding-top: 5px;">
-                                <span style="font-size:0.85em; color:#fff; display:block;">🎉 ${data.soiree.nom.toUpperCase()}</span>
-                                <span style="font-size:0.75em; color:var(--poly-cyan); font-weight:bold;">📅 ${dateSimple}</span>
-                            </div>`;
-                    }
-                }
-            } catch(e) { console.error("Erreur tooltip:", e); }
+            const snap = await fetchWithCache("ecoles", p.dataset.folder, "events", anneeSelector.value);
+            if (snap.exists() && snap.data().soiree) {
+                const s = snap.data().soiree;
+                tooltip.innerHTML += `<div style="margin-top:8px; border-top:1px solid #333; padding-top:5px;">
+                    <span style="font-size:0.85em; color:#fff; display:block;">🎉 ${s.nom.toUpperCase()}</span>
+                    <span style="font-size:0.75em; color:var(--poly-cyan); font-weight:bold;">📅 ${formaterDate(s.date)}</span>
+                </div>`;
+            }
         });
 
         p.addEventListener('mouseleave', () => tooltip.classList.add('hidden'));
-
         p.addEventListener('mousemove', (e) => {
             tooltip.style.left = (e.clientX + 15) + 'px';
             tooltip.style.top = (e.clientY + 15) + 'px';
@@ -519,7 +350,7 @@
 
         p.addEventListener('click', () => {
             window.location.hash = p.dataset.folder;
-            ouvrirEcole(p.dataset.folder, p.dataset.name, haloColor);
+            ouvrirEcole(p.dataset.folder, p.dataset.name, color);
         });
     });
 
@@ -531,7 +362,7 @@
         sideTitle.style.color = cityColor;
 
         sideContent.innerHTML = `
-            <div class="btn-back" onclick="location.reload()">← Retour à la carte</div>
+            <div class="btn-back" onclick="location.hash=''; location.reload()">← Retour à la carte</div>
             <div id="dynamic-area"><div style="text-align:center; padding:20px;">Chargement ${annee}...</div></div>
         `;
 
@@ -540,188 +371,137 @@
         try {
             const eventSnap = await fetchWithCache("ecoles", ecoleId, "events", annee);
             let eventHtml = "";
-            if (eventSnap.exists()) {
-                const eData = eventSnap.data();
-                if (eData.soiree) {
-                    eventHtml = `
-                        <div class="rezo-banner" style="border-bottom: 3px solid ${cityColor}; margin-bottom: 20px; padding-bottom: 15px;">
-                            <span style="color:var(--poly-cyan); font-weight:bold; font-size:1.1em;">REZO 🎉 ${eData.soiree.nom.toUpperCase()}</span><br>
-                            <span style="color:#aaa; font-size:0.9em;">📅 ${formaterDate(eData.soiree.date) || 'Date à venir'}</span>
-                        </div>`;
-                }
+            if (eventSnap.exists() && eventSnap.data().soiree) {
+                const e = eventSnap.data().soiree;
+                eventHtml = `<div class="rezo-banner" style="border-bottom: 3px solid ${cityColor};">
+                    <span style="color:var(--poly-cyan); font-weight:bold; font-size:1.1em;">REZO 🎉 ${e.nom.toUpperCase()}</span><br>
+                    <span style="color:#aaa; font-size:0.9em;">📅 ${formaterDate(e.date) || 'À venir'}</span>
+                </div>`;
             }
 
-            const archiveSnap = await fetchWithCache("ecoles", ecoleId, "archives", annee);
-            let calendarHtml = "";
-            let sectionsHtml = "";
-
-            if (archiveSnap.exists()) {
-                const d = archiveSnap.data();
-                const dStart = formaterDate(d.campagne_start);
-                const dEnd = formaterDate(d.campagne_end);
-                const dPass = formaterDate(d.passation_date);
-
-                if (dStart || dPass) {
-                    calendarHtml = `
-                        <div class="category-wrapper" style="border-top: 2px solid ${cityColor}66; background: rgba(255,255,255,0.02); margin-bottom: 20px;">
-                            <div class="category-title" style="color:${cityColor}">Calendrier local</div>
-                            ${dStart ? `
-                                <div class="info-banner" style="margin-bottom: 10px; background: rgba(255,255,255,0.03); padding: 10px; border-radius: 5px;">
-                                    <span style="color: #888; font-size: 0.75em; text-transform: uppercase; display: block; margin-bottom: 4px;">Campagne Listes</span>
-                                    <span style="font-weight: bold; font-size: 0.9em;">🗳️ Du ${dStart} au ${dEnd || '...'}</span>
-                                </div>
-                            ` : ''}
-                            ${dPass ? `
-                                <div class="info-banner" style="background: rgba(255,255,255,0.03); padding: 10px; border-radius: 5px;">
-                                    <span style="color: #888; font-size: 0.75em; text-transform: uppercase; display: block; margin-bottom: 4px;">Passation</span>
-                                    <span style="font-weight: bold; font-size: 0.9em;">🤝 ${dPass}</span>
-                                </div>
-                            ` : ''}
-                        </div>`;
-                }
-
-                sectionsHtml += renderSection("BDE", d.bde_actuel, cityColor, ecoleId, annee, "bde_actuel");
-                sectionsHtml += renderSection("BDP", d.bdp_actuel, cityColor, ecoleId, annee, "bdp_actuel");
-                sectionsHtml += renderSection("Listes BDE", d.listes_bde, cityColor, ecoleId, annee, "listes_bde");
-                sectionsHtml += renderSection("Listes BDP", d.listes_bdp, cityColor, ecoleId, annee, "listes_bdp");
-                sectionsHtml += renderSection("Fakelistes", d.fakelistes, cityColor, ecoleId, annee, "fakelistes");
+            const archSnap = await fetchWithCache("ecoles", ecoleId, "archives", annee);
+            if (archSnap.exists()) {
+                const d = archSnap.data();
+                let sections = "";
                 
-                dynamicArea.innerHTML = eventHtml + calendarHtml + sectionsHtml;
+                // Calendrier local
+                if (d.campagne_start || d.passation_date) {
+                    sections += `<div class="category-wrapper">
+                        <div class="category-title" style="color:${cityColor}">Calendrier local</div>
+                        ${d.campagne_start ? `<div class="rezo-banner">🗳️ Campagne : ${formaterDate(d.campagne_start)} au ${formaterDate(d.campagne_end) || '...'}</div>` : ''}
+                        ${d.passation_date ? `<div class="rezo-banner">🤝 Passation : ${formaterDate(d.passation_date)}</div>` : ''}
+                    </div>`;
+                }
+
+                sections += renderSection("BDE", d.bde_actuel, cityColor, ecoleId, annee, "bde_actuel");
+                sections += renderSection("BDP", d.bdp_actuel, cityColor, ecoleId, annee, "bdp_actuel");
+                sections += renderSection("Listes BDE", d.listes_bde, cityColor, ecoleId, annee, "listes_bde");
+                sections += renderSection("Listes BDP", d.listes_bdp, cityColor, ecoleId, annee, "listes_bdp");
+                sections += renderSection("Fakelistes", d.fakelistes, cityColor, ecoleId, annee, "fakelistes");
+                
+                dynamicArea.innerHTML = eventHtml + sections;
             } else {
-                dynamicArea.innerHTML = eventHtml + `<p style='color:#666; margin-top:20px; text-align:center;'>Pas de données pour ${annee}.</p>`;
+                dynamicArea.innerHTML = eventHtml + `<p style='color:#666; text-align:center;'>Aucune donnée pour cette année.</p>`;
             }
-        } catch(e) { console.error("Erreur Firestore:", e); }
+        } catch(e) { console.error(e); }
     }
 
     function renderSection(title, data, cityColor, ecoleId, annee, type) {
-    // 1. On définit ce qu'est une donnée "valide"
-    const hasRealContent = (i) => {
-        if (!i) return false;
-        // On considère que c'est vide si pas de nom ET (pas de prez ou prez est "N/A")
-        const hasNom = i.nom && i.nom.trim() !== "";
-        const hasPrez = i.prez && i.prez.trim() !== "" && i.prez.toUpperCase() !== "N/A";
-        return hasNom || hasPrez;
-    };
-
-    let items = Array.isArray(data) ? data : (data ? [data] : []);
-    
-    // 2. Logique de filtrage selon le type
-    if (type === 'bdp_actuel') {
-        // Pour le BDP : si aucune donnée réelle, on ne renvoie rien du tout (bandeau caché)
-        if (!items.some(hasRealContent)) return "";
-    } 
-    else if (type === 'bde_actuel') {
-        // Pour le BDE : on ne filtre pas, on veut le voir "tout le temps" comme demandé
-        if (items.length === 0) {
-            // Si vraiment aucune donnée en base, on crée un item vide pour l'affichage
-            items = [{ nom: "Non renseigné", prez: "N/A" }];
+        if (!data || (Array.isArray(data) && data.length === 0)) {
+            if (type === 'bde_actuel') data = [{ nom: "Non renseigné", prez: "N/A" }];
+            else return "";
         }
-    } 
-    else {
-        // Pour les listes et fakelistes : on cache si c'est vide
-        if (items.length === 0 || !items.some(hasRealContent)) return "";
-    }
 
-    // 3. Rendu classique du HTML
-    items.sort((a, b) => (parseInt(a.classement) || 99) - (parseInt(b.classement) || 99));
-    const isBureau = (type === 'bde_actuel' || type === 'bdp_actuel');
-    const fallback = isBureau ? `${ecoleId}.png` : 'default.png';
+        let items = Array.isArray(data) ? data : [data];
+        const isBureau = type.includes('actuel');
+        const fallback = isBureau ? `${ecoleId}.png` : 'default.png';
 
-    const cards = items.map(i => {
-        const color = i.couleur || cityColor;
-        let identifier = (isBureau) ? type.split('_')[0].toUpperCase() : encodeURIComponent(i.nom || i.prez || "inconnu");
-        const url = `liste.html?ecole=${ecoleId}&annee=${annee}&type=${type}&id=${identifier}`;
-        const photoSrc = (i.logo || i.photo) ? (i.logo || i.photo) : fallback;
-
-        return `
-            <div class="list-card" onclick="window.location.href='${url}'" style="border-left: 4px solid ${color}">
+        const cards = items.map(i => {
+            const url = `liste.html?ecole=${ecoleId}&annee=${annee}&type=${type}&id=${encodeURIComponent(i.nom || "bureau")}`;
+            return `<div class="list-card" onclick="window.location.href='${url}'" style="border-left: 4px solid ${i.couleur || cityColor}">
                 ${i.classement ? `<div class="rank-badge">${i.classement}</div>` : ''}
-                <img src="${photoSrc}" class="list-logo" onerror="this.src='${fallback}'">
+                <img src="${i.logo || i.photo || fallback}" class="list-logo" onerror="this.src='default.png'">
                 <div style="flex:1;">
                     <div class="list-name">${i.nom || 'Équipe ' + title}</div>
                     <div class="list-prez">Prez: ${i.prez || 'N/A'}</div>
                 </div>
             </div>`;
-    }).join('');
+        }).join('');
 
-    return `<div class="category-wrapper"><div class="category-title">${title}</div>${cards}</div>`;
-}
+        return `<div class="category-wrapper"><div class="category-title">${title}</div>${cards}</div>`;
+    }
+
+    // ==========================================
+    // RECHERCHE GLOBALE
+    // ==========================================
+    let indexRecherche = [];
+    const barre = document.getElementById('barreRecherche');
+    const listeResultats = document.getElementById('resultatsRecherche');
+
+    async function preparerIndex() {
+        const querySnapshot = await getDocs(collectionGroup(db, "archives"));
+        querySnapshot.forEach((doc) => {
+            const data = doc.data();
+            const annee = doc.id;
+            const ecoleId = doc.ref.parent.parent.id;
+
+            ['listes_bde', 'listes_bdp', 'fakelistes', 'bde_actuel', 'bdp_actuel'].forEach(type => {
+                if (data[type]) {
+                    const items = Array.isArray(data[type]) ? data[type] : [data[type]];
+                    items.forEach(item => {
+                        if (item.nom || item.prez) {
+                            indexRecherche.push({
+                                nom: item.nom || (type.includes('bde') ? 'BDE' : 'BDP'),
+                                prez: item.prez || '',
+                                ecole: ecoleId,
+                                annee: annee,
+                                type: type,
+                                searchKey: `${item.nom} ${item.prez} ${ecoleId}`.toLowerCase()
+                            });
+                        }
+                    });
+                }
+            });
+        });
+    }
+
+    barre.addEventListener('input', (e) => {
+        const val = e.target.value.toLowerCase();
+        if (val.length < 2) { listeResultats.style.display = 'none'; return; }
+
+        const filtres = indexRecherche.filter(i => i.searchKey.includes(val)).slice(0, 8);
+        
+        if (filtres.length > 0) {
+            listeResultats.innerHTML = filtres.map(f => `
+                <div class="result-item" onclick="window.location.href='liste.html?ecole=${f.ecole}&annee=${f.annee}&type=${f.type}&id=${encodeURIComponent(f.nom)}'">
+                    <strong>${f.nom}</strong> <span class="type-badge">${f.ecole.toUpperCase()}</span>
+                    <div style="font-size: 0.8em; color: #aaa;">Prez: ${f.prez} (${f.annee})</div>
+                </div>
+            `).join('');
+            listeResultats.style.display = 'block';
+        } else {
+            listeResultats.style.display = 'none';
+        }
+    });
+
+    document.addEventListener('click', (e) => {
+        if (!barre.contains(e.target)) listeResultats.style.display = 'none';
+    });
+
+    // Init au chargement
     window.addEventListener('load', () => {
+        preparerIndex();
         const h = window.location.hash.replace('#','');
         if(h) {
             const p = document.querySelector(`.ecole-point[data-folder="${h}"]`);
             if(p) ouvrirEcole(h, p.dataset.name, p.style.getPropertyValue('--halo-color'));
         }
     });
-
-    import { collection, getDocs, collectionGroup } from "firebase/firestore";
-import { db } from "./firebase-config.js"; 
-
-let indexRecherche = [];
-
-    // 1. Charger TOUTES les données une seule fois pour la recherche
-    async function initialiserRecherche() {
-        // On utilise collectionGroup pour chercher dans tous les "archives" de toutes les écoles d'un coup
-        const querySnapshot = await getDocs(collectionGroup(db, "archives"));
-        
-        querySnapshot.forEach((doc) => {
-            const data = doc.data();
-            const annee = doc.id; // ex: 2024-2025
-            const ecoleId = doc.ref.parent.parent.id; // On remonte pour avoir l'ID de l'école
-    
-            // On indexe les listes BDE, BDP et FakeListes
-            ['listes_bde', 'listes_bdp', 'fakelistes', 'bde_actuel', 'bdp_actuel'].forEach(type => {
-                if (data[type]) {
-                    const items = Array.isArray(data[type]) ? data[type] : [data[type]];
-                    items.forEach(item => {
-                        indexRecherche.push({
-                            nom: item.nom || (type.includes('bde') ? 'BDE' : 'BDP'),
-                            prez: item.prez || '',
-                            vp: item.vp || '',
-                            ecole: ecoleId,
-                            type: type,
-                            annee: annee,
-                            // Texte global pour faciliter la recherche
-                            searchString: `${item.nom} ${item.prez} ${item.vp} ${ecoleId}`.toLowerCase()
-                        });
-                    });
-                }
-            });
-        });
-        console.log("Recherche prête !");
-    }
-    
-    // 2. Écouter la barre de recherche
-    const input = document.getElementById('barreRecherche');
-    const resultatsDiv = document.getElementById('resultatsRecherche'); // Un div pour afficher les suggestions
-    
-    input.addEventListener('input', (e) => {
-        const search = e.target.value.toLowerCase();
-        if (search.length < 2) {
-            resultatsDiv.innerHTML = '';
-            return;
-        }
-    
-        const matches = indexRecherche.filter(i => i.searchString.includes(search)).slice(0, 5);
-        
-        // Affichage des résultats sous forme de liste
-        resultatsDiv.innerHTML = matches.map(m => `
-            <div class="resultat-item" onclick="allerVersListe('${m.ecole}', '${m.annee}', '${m.type}', '${m.nom}')">
-                <strong>${m.nom}</strong> (${m.ecole}) - Prez: ${m.prez}
-            </div>
-        `).join('');
-    });
-    
-    // 3. Fonction de redirection (pour tomber sur la carte)
-    window.allerVersListe = (ecole, annee, type, id) => {
-        window.location.href = `liste.html?ecole=${ecole}&annee=${annee}&type=${type}&id=${encodeURIComponent(id)}`;
-    };
-    
-    initialiserRecherche();
-    
 </script>
-    <footer class="site-footer">
-    <a href="mentions-legales.html">Mentions légales</a>
+
+<footer class="site-footer">
+    &copy; 2025 SEBR.tech - Réalisé pour le Rezo Polytech | <a href="mentions.html">Mentions Légales</a>
 </footer>
+
 </body>
 </html>
