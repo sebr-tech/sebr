@@ -316,7 +316,15 @@
         <a href="index.html" class="btn-nav">ACCUEIL</a>
         <a href="calendrier.html" class="btn-nav">CALENDRIER</a>
     </div>
-
+    
+    <div class="search-container">
+        <input 
+            type="text" 
+            id="barreRecherche" 
+            placeholder="Rechercher une liste, un événement, une personne..."
+        >
+    </div>
+    
     <div class="logo-title">SEBR.tech<br><span style="font-size: 0.7em; font-weight: normal; color: #ccc;">Site d'Exploration des Bureaux du Rezo Polytech</span></div>
 
     <div class="header-right">
@@ -631,6 +639,31 @@
             if(p) ouvrirEcole(h, p.dataset.name, p.style.getPropertyValue('--halo-color'));
         }
     });
+
+    // On attend que la page soit bien chargée
+    document.addEventListener('DOMContentLoaded', () => {
+        const searchInput = document.getElementById('barreRecherche');
+        
+        // Remplacez '.carte-liste' par la classe réelle de vos cartes dans index.html
+        const cartes = document.querySelectorAll('.carte-liste'); 
+    
+        searchInput.addEventListener('input', function(e) {
+            const motCle = e.target.value.toLowerCase(); // On passe en minuscules pour la recherche
+    
+            cartes.forEach(carte => {
+                // On récupère tout le texte de la carte (titre, orateurs, lieu, etc.)
+                const texteCarte = carte.textContent.toLowerCase();
+    
+                // Si le texte de la carte contient le mot-clé tapé
+                if (texteCarte.includes(motCle)) {
+                    carte.style.display = 'block'; // On affiche la carte (ou 'flex' selon votre CSS)
+                } else {
+                    carte.style.display = 'none'; // On cache la carte
+                }
+            });
+        });
+    });
+    
 </script>
     <footer class="site-footer">
     <a href="mentions-legales.html">Mentions légales</a>
