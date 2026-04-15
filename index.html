@@ -148,10 +148,20 @@
             justify-content: center; align-items: center;
             transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
             z-index: 10; filter: drop-shadow(0 2px 4px rgba(0,0,0,0.5));
-            animation: pulse 2s infinite;
-            --pulse-color: var(--halo-color);
-
         }
+
+        .ecole-point:not(.active):hover {
+            transform: scale(1.4);
+            z-index: 100;
+            box-shadow: 0 0 0 3px white, 0 0 20px 5px var(--halo-color);
+        }
+        
+        .ecole-point.active {
+            animation: pulse 2s infinite;
+            z-index: 20;
+            transform: scale(1.2); /* Un peu plus grosse pour qu'on la voie bien */
+        }
+        
         .ecole-point img { width: 100%; height: 100%; object-fit: contain; border-radius: 50%; }
         .ecole-point:hover {
             transform: scale(1.4); z-index: 100;
@@ -394,6 +404,13 @@
     });
 
     async function ouvrirEcole(ecoleId, name, cityColor) {
+        // 1. On retire la classe active de TOUS les points
+        document.querySelectorAll('.ecole-point').forEach(p => p.classList.remove('active'));
+    
+        // 2. On ajoute la classe active au point sélectionné
+        const pointActif = document.querySelector(`.ecole-point[data-folder="${ecoleId}"]`);
+        if (pointActif) pointActif.classList.add('active');
+        
         currentEcole = { id: ecoleId, name: name, color: cityColor };
         const annee = anneeSelector.value;
 
