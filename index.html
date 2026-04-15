@@ -472,14 +472,27 @@
                 if (data[type]) {
                     const items = Array.isArray(data[type]) ? data[type] : [data[type]];
                     items.forEach(item => {
-                        if (item.nom || item.prez) {
-                            indexRecherche.push({
-                                nom: item.nom || (type.includes('bde') ? 'BDE' : 'BDP'),
-                                prez: item.prez || '',
-                                ecole: ecoleId,
-                                annee: annee,
-                                type: type,
-                                searchKey: `${item.nom} ${item.prez} ${ecoleId}`.toLowerCase()
+                        items.forEach(item => {
+                            if (item.nom || item.prez) {
+                                // On définit des valeurs de secours pour éviter le texte "undefined"
+                                const nom = item.nom || (type.includes('bde') ? 'BDE' : 'BDP');
+                                const prez = item.prez || '';
+                                const vp = item.vp || '';
+                                const rr = item.rr || '';
+                        
+                                indexRecherche.push({
+                                    nom: nom,
+                                    prez: prez,
+                                    vp: vp,
+                                    rr: rr,
+                                    ecole: ecoleId,
+                                    annee: annee,
+                                    type: type,
+                                    // Ici, on concatène tout proprement
+                                    searchKey: `${nom} ${prez} ${vp} ${rr} ${ecoleId}`.toLowerCase()
+                                });
+                            }
+                        });
                             });
                         }
                     });
