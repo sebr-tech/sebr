@@ -393,8 +393,16 @@
                     </div>`;
                 }
 
+               // --- BDE actuel (on l'affiche toujours) ---
                 sections += renderSection("BDE", d.bde_actuel, cityColor, ecoleId, annee, "bde_actuel");
-                sections += renderSection("BDP", d.bdp_actuel, cityColor, ecoleId, annee, "bdp_actuel");
+                
+                // --- BDP actuel (Conditionnel) ---
+                // Note : j'ai corrigé le "f" en "if" et "sectionsHtml" en "sections"
+                if (d.bdp_actuel && (d.bdp_actuel.nom || d.bdp_actuel.prez)) {
+                    sections += renderSection("BDP", d.bdp_actuel, cityColor, ecoleId, annee, "bdp_actuel");
+                }
+                
+                // --- Listes et autres (on les affiche s'ils existent via renderSection) ---
                 sections += renderSection("Listes BDE", d.listes_bde, cityColor, ecoleId, annee, "listes_bde");
                 sections += renderSection("Listes BDP", d.listes_bdp, cityColor, ecoleId, annee, "listes_bdp");
                 sections += renderSection("Fakelistes", d.fakelistes, cityColor, ecoleId, annee, "fakelistes");
@@ -500,7 +508,7 @@
 </script>
 
 <footer class="site-footer">
-    &copy; 2025 SEBR.tech - Réalisé pour le Rezo Polytech | <a href="mentions.html">Mentions Légales</a>
+    &copy; 2026 SEBR.tech - le site du Rezo Polytech | <a href="mentions-legales.html">Mentions Légales</a>
 </footer>
 
 </body>
