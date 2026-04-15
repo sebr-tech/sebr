@@ -447,12 +447,13 @@
     const listeResultats = document.getElementById('resultatsRecherche');
 
     async function preparerIndex() {
-        const querySnapshot = await getDocs(collectionGroup(db, "archives"));
-        querySnapshot.forEach((doc) => {
+        // 1. On récupère les ARCHIVES (BDE, BDP, Listes)
+        const archiveSnapshot = await getDocs(collectionGroup(db, "archives"));
+        archiveSnapshot.forEach((doc) => {
             const data = doc.data();
             const annee = doc.id;
             const ecoleId = doc.ref.parent.parent.id;
-
+    
             ['listes_bde', 'listes_bdp', 'fakelistes', 'bde_actuel', 'bdp_actuel'].forEach(type => {
                 if (data[type]) {
                     const items = Array.isArray(data[type]) ? data[type] : [data[type]];
@@ -470,6 +471,39 @@
                     });
                 }
             });
+        });
+    
+        // 2. On récupère les ÉVÉNEMENTS (via ton autre collectionGroup)
+        const eventSnapshot = await getDocs(collectionGroup(db, "events"));
+        eventSnapshot.forEach((doc) => {
+            const data = doc.data();
+            const annee = doc.id; // "2025-2026" selon ta photo
+            const ecoleId = doc.ref.parent.parent.id; // "marseille" selon ta photo
+    
+            // On indexe les "locaux" et la "soiree" (selon tes champs Firestore)
+            if (data.locaux && Array.isArray(data.locaux)) {
+                data.locaux.forEach(ev => {
+                    indexRecherche.push({
+                        nom: ev.nom,
+                        prez: "Événement Local",
+                        ecole: ecoleId,
+                        annee: annee,
+                        type: "event",
+                        searchKey: `${ev.nom} event ${ecoleId}`.toLowerCase()
+                    });
+                });
+            }
+            
+            if (data.soiree && data.soiree.nom) {
+                 indexRecherche.push({
+                    nom: data.soiree.nom,
+                    prez: "Soirée Rezo",
+                    ecole: ecoleId,
+                    annee: annee,
+                    type: "rezo",
+                    searchKey: `${data.soiree.nom} rezo ${ecoleId}`.toLowerCase()
+                });
+            }
         });
     }
 
