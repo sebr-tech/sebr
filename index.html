@@ -200,6 +200,16 @@
 
         .hidden { display: none !important; }
 
+        .site-footer {
+            text-align: center;
+            padding: 15px;
+            font-size: 0.8em;
+            color: #555;
+            background: #050a0f;
+            border-top: 1px solid #111;
+            flex-shrink: 0;
+        }
+
         @media (max-width: 850px) {
             body { overflow-y: auto; height: auto; }
             #main-container { flex-direction: column; }
@@ -457,29 +467,31 @@
     // RECHERCHE GLOBALE
     // ==========================================
     let indexRecherche = [];
-    const barre = document.getElementById('barreRecherche');
-    const listeResultats = document.getElementById('resultatsRecherche');
-
-    async function preparerIndex() {
-        // 1. On récupère les ARCHIVES (BDE, BDP, Listes)
-        const archiveSnapshot = await getDocs(collectionGroup(db, "archives"));
-        archiveSnapshot.forEach((doc) => {
-            const data = doc.data();
-            const annee = doc.id;
-            const ecoleId = doc.ref.parent.parent.id;
-    
-            ['listes_bde', 'listes_bdp', 'fakelistes', 'bde_actuel', 'bdp_actuel'].forEach(type => {
-                if (data[type]) {
-                    const items = Array.isArray(data[type]) ? data[type] : [data[type]];
-                    items.forEach(item => {
+        const barre = document.getElementById('barreRecherche');
+        const listeResultats = document.getElementById('resultatsRecherche');
+        
+        async function preparerIndex() {
+            indexRecherche = []; // On vide au cas où
+            
+            // 1. On récupère les ARCHIVES (BDE, BDP, Listes)
+            const archiveSnapshot = await getDocs(collectionGroup(db, "archives"));
+            archiveSnapshot.forEach((doc) => {
+                const data = doc.data();
+                const annee = doc.id;
+                const ecoleId = doc.ref.parent.parent.id;
+        
+                ['listes_bde', 'listes_bdp', 'fakelistes', 'bde_actuel', 'bdp_actuel'].forEach(type => {
+                    if (data[type]) {
+                        const items = Array.isArray(data[type]) ? data[type] : [data[type]];
+                        
                         items.forEach(item => {
+                            // Condition : il faut au moins un nom ou un prez pour indexer
                             if (item.nom || item.prez) {
-                                // On définit des valeurs de secours pour éviter le texte "undefined"
                                 const nom = item.nom || (type.includes('bde') ? 'BDE' : 'BDP');
                                 const prez = item.prez || '';
                                 const vp = item.vp || '';
                                 const rr = item.rr || '';
-                        
+        
                                 indexRecherche.push({
                                     nom: nom,
                                     prez: prez,
@@ -488,51 +500,47 @@
                                     ecole: ecoleId,
                                     annee: annee,
                                     type: type,
-                                    // Ici, on concatène tout proprement
-                                    searchKey: `${nom} ${prez} ${vp} ${rr} ${ecoleId}`.toLowerCase()
+                                    // On ajoute "annee" dans la clé pour pouvoir chercher par année aussi
+                                    searchKey: `${nom} ${prez} ${vp} ${rr} ${ecoleId} ${annee}`.toLowerCase()
                                 });
                             }
                         });
-                            });
-                        }
+                    }
+                });
+            });
+        
+            // 2. On récupère les ÉVÉNEMENTS
+            const eventSnapshot = await getDocs(collectionGroup(db, "events"));
+            eventSnapshot.forEach((doc) => {
+                const data = doc.data();
+                const annee = doc.id;
+                const ecoleId = doc.ref.parent.parent.id;
+        
+                if (data.locaux && Array.isArray(data.locaux)) {
+                    data.locaux.forEach(ev => {
+                        indexRecherche.push({
+                            nom: ev.nom,
+                            typeInfo: "Événement Local",
+                            ecole: ecoleId,
+                            annee: annee,
+                            type: "event",
+                            searchKey: `${ev.nom} event ${ecoleId} ${annee}`.toLowerCase()
+                        });
+                    });
+                }
+                
+                if (data.soiree && data.soiree.nom) {
+                     indexRecherche.push({
+                        nom: data.soiree.nom,
+                        typeInfo: "Soirée Rezo",
+                        ecole: ecoleId,
+                        annee: annee,
+                        type: "rezo",
+                        searchKey: `${data.soiree.nom} rezo ${ecoleId} ${annee}`.toLowerCase()
                     });
                 }
             });
-        });
-    
-        // 2. On récupère les ÉVÉNEMENTS (via ton autre collectionGroup)
-        const eventSnapshot = await getDocs(collectionGroup(db, "events"));
-        eventSnapshot.forEach((doc) => {
-            const data = doc.data();
-            const annee = doc.id; // "2025-2026" selon ta photo
-            const ecoleId = doc.ref.parent.parent.id; // "marseille" selon ta photo
-    
-            // On indexe les "locaux" et la "soiree" (selon tes champs Firestore)
-            if (data.locaux && Array.isArray(data.locaux)) {
-                data.locaux.forEach(ev => {
-                    indexRecherche.push({
-                        nom: ev.nom,
-                        typeInfo: "Événement Local",
-                        ecole: ecoleId,
-                        annee: annee,
-                        type: "event",
-                        searchKey: `${ev.nom} event ${ecoleId}`.toLowerCase()
-                    });
-                });
-            }
-            
-            if (data.soiree && data.soiree.nom) {
-                 indexRecherche.push({
-                    nom: data.soiree.nom,
-                    typeInfo: "Soirée Rezo",
-                    ecole: ecoleId,
-                    annee: annee,
-                    type: "rezo",
-                    searchKey: `${data.soiree.nom} rezo ${ecoleId}`.toLowerCase()
-                });
-            }
-        });
-    }
+        }
 
     barre.addEventListener('input', (e) => {
         const val = e.target.value.toLowerCase();
