@@ -499,7 +499,7 @@
                 data.locaux.forEach(ev => {
                     indexRecherche.push({
                         nom: ev.nom,
-                        "Événement Local",
+                        typeInfo: "Événement Local",
                         ecole: ecoleId,
                         annee: annee,
                         type: "event",
@@ -511,7 +511,7 @@
             if (data.soiree && data.soiree.nom) {
                  indexRecherche.push({
                     nom: data.soiree.nom,
-                    "Soirée Rezo",
+                    typeInfo: "Soirée Rezo",
                     ecole: ecoleId,
                     annee: annee,
                     type: "rezo",
