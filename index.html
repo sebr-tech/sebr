@@ -528,12 +528,21 @@
         const filtres = indexRecherche.filter(i => i.searchKey.includes(val)).slice(0, 8);
         
         if (filtres.length > 0) {
-            listeResultats.innerHTML = filtres.map(f => `
-                <div class="result-item" onclick="window.location.href='liste.html?ecole=${f.ecole}&annee=${f.annee}&type=${f.type}&id=${encodeURIComponent(f.nom)}'">
-                    <strong>${f.nom}</strong> <span class="type-badge">${f.ecole.toUpperCase()}</span>
-                    <div style="font-size: 0.8em; color: #aaa;">Prez: ${f.prez} (${f.annee})</div>
-                </div>
-            `).join('');
+            listeResultats.innerHTML = filtres.map(f => {
+                // On définit ce qu'on affiche en deuxième ligne
+                // Si typeInfo existe (pour les events), on l'affiche. Sinon, on affiche le Prez.
+                const sousTitre = f.typeInfo 
+                    ? `${f.typeInfo}` 
+                    : `Prez: ${f.prez || 'N/A'}`;
+            
+                return `
+                    <div class="result-item" onclick="window.location.href='liste.html?ecole=${f.ecole}&annee=${f.annee}&type=${f.type}&id=${encodeURIComponent(f.nom)}'">
+                        <strong>${f.nom}</strong> <span class="type-badge">${f.ecole.toUpperCase()}</span>
+                        <div style="font-size: 0.8em; color: #aaa;">${sousTitre} (${f.annee})</div>
+                    </div>
+                `;
+            }).join('');
+            
             listeResultats.style.display = 'block';
         } else {
             listeResultats.style.display = 'none';
