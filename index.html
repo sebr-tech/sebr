@@ -61,7 +61,21 @@
             background: #050a0f;
             border-top: 1px solid #1f2a36;
             flex-shrink: 0;
+        
         }
+
+        .search-wrapper { position: relative; width: 100%; max-width: 500px; margin: 20px auto; }
+        #barreRecherche { width: 100%; padding: 12px; border-radius: 8px; border: 1px solid var(--poly-cyan); background: #161f2b; color: white; }
+        #resultatsRecherche { 
+            position: absolute; top: 100%; left: 0; right: 0; 
+            background: #161f2b; border: 1px solid #333; z-index: 1000; 
+            border-radius: 0 0 8px 8px; overflow: hidden;
+        }
+        .resultat-item { 
+            padding: 10px; cursor: pointer; border-bottom: 1px solid #222; font-size: 0.9em;
+        }
+        .resultat-item:hover { background: var(--poly-cyan); color: white; }
+        
         
         .site-footer a {
             color: #9aa6b2;
@@ -640,29 +654,70 @@
         }
     });
 
-    // On attend que la page soit bien chargée
-    document.addEventListener('DOMContentLoaded', () => {
-        const searchInput = document.getElementById('barreRecherche');
+    import { collection, getDocs, collectionGroup } from "firebase/firestore";
+import { db } from "./firebase-config.js"; 
+
+let indexRecherche = [];
+
+    // 1. Charger TOUTES les données une seule fois pour la recherche
+    async function initialiserRecherche() {
+        // On utilise collectionGroup pour chercher dans tous les "archives" de toutes les écoles d'un coup
+        const querySnapshot = await getDocs(collectionGroup(db, "archives"));
         
-        // Remplacez '.carte-liste' par la classe réelle de vos cartes dans index.html
-        const cartes = document.querySelectorAll('.carte-liste'); 
+        querySnapshot.forEach((doc) => {
+            const data = doc.data();
+            const annee = doc.id; // ex: 2024-2025
+            const ecoleId = doc.ref.parent.parent.id; // On remonte pour avoir l'ID de l'école
     
-        searchInput.addEventListener('input', function(e) {
-            const motCle = e.target.value.toLowerCase(); // On passe en minuscules pour la recherche
-    
-            cartes.forEach(carte => {
-                // On récupère tout le texte de la carte (titre, orateurs, lieu, etc.)
-                const texteCarte = carte.textContent.toLowerCase();
-    
-                // Si le texte de la carte contient le mot-clé tapé
-                if (texteCarte.includes(motCle)) {
-                    carte.style.display = 'block'; // On affiche la carte (ou 'flex' selon votre CSS)
-                } else {
-                    carte.style.display = 'none'; // On cache la carte
+            // On indexe les listes BDE, BDP et FakeListes
+            ['listes_bde', 'listes_bdp', 'fakelistes', 'bde_actuel', 'bdp_actuel'].forEach(type => {
+                if (data[type]) {
+                    const items = Array.isArray(data[type]) ? data[type] : [data[type]];
+                    items.forEach(item => {
+                        indexRecherche.push({
+                            nom: item.nom || (type.includes('bde') ? 'BDE' : 'BDP'),
+                            prez: item.prez || '',
+                            vp: item.vp || '',
+                            ecole: ecoleId,
+                            type: type,
+                            annee: annee,
+                            // Texte global pour faciliter la recherche
+                            searchString: `${item.nom} ${item.prez} ${item.vp} ${ecoleId}`.toLowerCase()
+                        });
+                    });
                 }
             });
         });
+        console.log("Recherche prête !");
+    }
+    
+    // 2. Écouter la barre de recherche
+    const input = document.getElementById('barreRecherche');
+    const resultatsDiv = document.getElementById('resultatsRecherche'); // Un div pour afficher les suggestions
+    
+    input.addEventListener('input', (e) => {
+        const search = e.target.value.toLowerCase();
+        if (search.length < 2) {
+            resultatsDiv.innerHTML = '';
+            return;
+        }
+    
+        const matches = indexRecherche.filter(i => i.searchString.includes(search)).slice(0, 5);
+        
+        // Affichage des résultats sous forme de liste
+        resultatsDiv.innerHTML = matches.map(m => `
+            <div class="resultat-item" onclick="allerVersListe('${m.ecole}', '${m.annee}', '${m.type}', '${m.nom}')">
+                <strong>${m.nom}</strong> (${m.ecole}) - Prez: ${m.prez}
+            </div>
+        `).join('');
     });
+    
+    // 3. Fonction de redirection (pour tomber sur la carte)
+    window.allerVersListe = (ecole, annee, type, id) => {
+        window.location.href = `liste.html?ecole=${ecole}&annee=${annee}&type=${type}&id=${encodeURIComponent(id)}`;
+    };
+    
+    initialiserRecherche();
     
 </script>
     <footer class="site-footer">
