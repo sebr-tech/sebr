@@ -262,7 +262,19 @@
     <div class="header-left">
         <a href="index.html" class="btn-nav">ACCUEIL</a>
         <a href="calendrier.html" class="btn-nav">CALENDRIER</a>
+        <button id="btn-bracelets" class="btn-nav">BRACELETS</button> 
+</div>
+
+<div id="main-container">
+    <div id="default-view" style="display: flex; width: 100%; flex: 1; overflow: hidden;">
+        <div id="map-section"> ... </div>
+        <div id="sidebar-section"> ... </div>
     </div>
+
+    <div id="external-view" class="hidden" style="flex: 1; width: 100%; height: 100%;">
+        <iframe id="content-iframe" src="" style="width: 100%; height: 100%; border: none;"></iframe>
+    </div>
+</div>
     
     <div class="search-container">
         <input type="text" id="barreRecherche" placeholder="Rechercher une liste, un prez...">
@@ -643,6 +655,38 @@
             if(p) ouvrirEcole(h, p.dataset.name, p.style.getPropertyValue('--halo-color'));
         }
     });
+
+    const btnBracelets = document.getElementById('btn-bracelets');
+    const defaultView = document.getElementById('default-view');
+    const externalView = document.getElementById('external-view');
+    const contentIframe = document.getElementById('content-iframe');
+    
+    btnBracelets.addEventListener('click', (e) => {
+        e.preventDefault();
+        
+        // 1. Masquer la carte et la sidebar
+        defaultView.classList.add('hidden');
+        
+        // 2. Afficher la vue externe
+        externalView.classList.remove('hidden');
+        
+        // 3. Charger la page bracelets.html
+        contentIframe.src = 'bracelets.html';
+        
+        // Facultatif : changer l'URL sans recharger pour que l'utilisateur s'y retrouve
+        history.pushState(null, "", "#bracelets");
+    });
+    
+    // Gérer le retour à l'accueil via le bouton ACCUEIL existant
+    document.querySelector('a[href="index.html"]').addEventListener('click', (e) => {
+        if (!externalView.classList.contains('hidden')) {
+            e.preventDefault();
+            externalView.classList.add('hidden');
+            defaultView.classList.remove('hidden');
+            history.pushState(null, "", "index.html");
+        }
+    });
+    
 </script>
 
 <footer class="site-footer">
