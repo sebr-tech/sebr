@@ -119,23 +119,18 @@
 
         .map-wrapper {
             position: relative;
-            /* La carte s'adapte à la hauteur pour rester toujours visible sans scroll */
-            height: 80vh; 
-            /* Elle garde son ratio 1/1 */
-            aspect-ratio: 1 / 1; 
-            /* On limite sa largeur maximale pour les très grands écrans */
-            max-width: 800px; 
-            /* On limite aussi sa hauteur pour les petits écrans de PC */
-            max-height: 600px;
-            margin: auto;
-        }
+            /* La carte fera 50% de la largeur de l'écran, sans jamais dépasser 700px */
+            width: 50vw; 
+            max-width: 550px;
+            /* On laisse de la marge autour pour l'effet visuel */
+            margin: 2rem auto; 
+            aspect-ratio: 1 / 1;
         }
         
         .france-svg {
             width: 100%;
             height: auto;
             display: block;
-            object-fit: contain; /* Garde les proportions de la France peu importe le conteneur */
             /* Ajoute un filtre de luminosité ou une ombre portée plus diffuse */
             filter: drop-shadow(0 0 15px rgba(0, 158, 227, 0.2)) brightness(1.2);
         }
