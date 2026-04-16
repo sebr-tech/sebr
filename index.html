@@ -107,9 +107,13 @@
         #main-container { display: flex; flex: 1; overflow: hidden; }
 
         #map-section {
-            flex: 2; position: relative; display: flex;
-            justify-content: center; align-items: center;
-            background: radial-gradient(circle at center, #111b2d 0%, #050a0f 100%);
+            flex: 2;
+            position: relative;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            /* On utilise un bleu plus lumineux au centre (25% de luminosité au lieu de 10%) */
+            background: radial-gradient(circle at center, #1e2f4d 0%, #050a0f 100%);
             padding: 20px;
         }
 
@@ -259,7 +263,7 @@
         <div id="resultatsRecherche" class="search-results-dropdown"></div>
     </div>
     
-    <div class="logo-title">SEBR.tech<br><span style="font-size: 0.7em; font-weight: normal; color: #ccc;">Site d'Exploration des Bureaux du Rezo Polytech</span></div>
+    <div class="logo-title">✊SEBR.tech<br><span style="font-size: 0.7em; font-weight: normal; color: #ccc;">Site d'Exploration des Bureaux du Rezo Polytech</span></div>
 
     <div class="header-right">
         <button class="btn-admin" onclick="window.location.href='authentification.html'">ADMIN 🔒</button>
