@@ -245,8 +245,14 @@
             body { overflow-y: auto; height: auto; }
             #main-container { flex-direction: column; }
             header { height: auto; padding: 15px; flex-direction: column; gap: 15px; }
-            #map-section { padding: 0; min-height: 400px; flex: none; background: #050a0f; }
-            .map-wrapper { width: 100%; transform: scale(1.05); }
+            #map-section { 
+                padding: 40px 0; /* Plus d'espace vertical sur mobile */
+                min-height: 500px; 
+                flex: none; 
+                /* On force le dégradé bleu même sur mobile ici */
+                background: radial-gradient(circle at center, #1e2f4d 0%, #050a0f 100%); 
+            }
+            .map-wrapper { width: 90%; transform: scale(1.05); } /* Légèrement réduit pour respirer */
             #sidebar-section { min-width: 100%; border-left: none; border-top: 2px solid #222; }
         }
     </style>
