@@ -486,11 +486,20 @@
             if (type === 'bde_actuel') data = [{ nom: "Non renseigné", prez: "N/A" }];
             else return "";
         }
-
+    
         let items = Array.isArray(data) ? data : [data];
+    
+        // --- TRI PAR CLASSEMENT (1, 2, 3...) ---
+        items.sort((a, b) => {
+            // On convertit en nombre pour éviter les erreurs de texte
+            const rankA = parseInt(a.classement) || Infinity; 
+            const rankB = parseInt(b.classement) || Infinity;
+            return rankA - rankB;
+        });
+    
         const isBureau = type.includes('actuel');
         const fallback = isBureau ? `${ecoleId}.png` : 'default.png';
-
+    
         const cards = items.map(i => {
             const url = `liste.html?ecole=${ecoleId}&annee=${annee}&type=${type}&id=${encodeURIComponent(i.nom || "bureau")}`;
             return `<div class="list-card" onclick="window.location.href='${url}'" style="border-left: 4px solid ${i.couleur || cityColor}">
@@ -502,7 +511,7 @@
                 </div>
             </div>`;
         }).join('');
-
+    
         return `<div class="category-wrapper"><div class="category-title">${title}</div>${cards}</div>`;
     }
 
