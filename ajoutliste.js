@@ -100,17 +100,18 @@ async function resizeAndCrop(file, size = 1000, forceSquare = false) {
 
 async function uploadToImgBB(file, isPhoto = false, shouldRemoveBg = false) {
     try {
-        let fileToProcess = file;
-        if (shouldRemoveBg) fileToProcess = await removeBackground(fileToProcess);
-        
-        // Redimensionnement 1 ligne comme demandé : Portrait -> 300px | Groupe -> 1000px
-        // Si c'est une photo de profil/logo (isPhoto), on force le carré en 300px.
-// Si c'est une photo de groupe, on redimensionne en 1200px max de large SANS rogner.
-        const fileToUpload = isPhoto 
-            ? await resizeAndCrop(fileToProcess, 300, true) 
-            : await resizeAndCrop(fileToProcess, 1200, false);
-        
-        const formData = new FormData(); // <--- ÉTAIT MAL PLACÉ OU MANQUANT
+        let fileToUpload = file;
+
+        if (isPhoto) {
+            // Uniquement pour les portraits/logos : on traite l'image
+            let processedFile = file;
+            if (shouldRemoveBg) processedFile = await removeBackground(processedFile);
+            fileToUpload = await resizeAndCrop(processedFile, 300, true);
+        } 
+        // Si isPhoto est false (cas des photos collectives), 
+        // on ne touche à rien, fileToUpload reste le "file" d'origine.
+
+        const formData = new FormData();
         formData.append("image", fileToUpload);
 
         const response = await fetch(`https://api.imgbb.com/1/upload?key=${IMGBB_API_KEY}`, { 
@@ -127,7 +128,7 @@ async function uploadToImgBB(file, isPhoto = false, shouldRemoveBg = false) {
             return null;
         }
     } catch(e) { 
-        showStatus("❌ Erreur de connexion (Vérifie ta CSP)", true);
+        showStatus("❌ Erreur de connexion", true);
         return null; 
     }
 }
