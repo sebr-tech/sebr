@@ -55,19 +55,43 @@ async function removeBackground(file) {
     } catch (e) { return file; }
 }
 
-async function resizeAndCrop(file, size = 200) {
+async function resizeAndCrop(file, size = 1000, forceSquare = false) {
     return new Promise((resolve) => {
         const img = new Image();
         const url = URL.createObjectURL(file);
         img.onload = () => {
             const canvas = document.createElement('canvas');
-            canvas.width = size; canvas.height = size;
             const ctx = canvas.getContext('2d');
-            const min = Math.min(img.width, img.height);
-            const sx = (img.width - min) / 2;
-            const sy = (img.height - min) / 4;
-            ctx.drawImage(img, sx, sy, min, min, 0, 0, size, size);
-            canvas.toBlob(resolve, 'image/png', 0.9);
+
+            let targetWidth, targetHeight;
+
+            if (forceSquare) {
+                // Logique de rognage carré (pour les logos/portraits)
+                targetWidth = size;
+                targetHeight = size;
+                canvas.width = size;
+                canvas.height = size;
+                const min = Math.min(img.width, img.height);
+                const sx = (img.width - min) / 2;
+                const sy = (img.height - min) / 4;
+                ctx.drawImage(img, sx, sy, min, min, 0, 0, size, size);
+            } else {
+                // Logique de redimensionnement proportionnel (pour les photos de groupe)
+                const ratio = img.width / img.height;
+                if (img.width > size) {
+                    targetWidth = size;
+                    targetHeight = size / ratio;
+                } else {
+                    targetWidth = img.width;
+                    targetHeight = img.height;
+                }
+                canvas.width = targetWidth;
+                canvas.height = targetHeight;
+                ctx.drawImage(img, 0, 0, targetWidth, targetHeight);
+            }
+
+            // On augmente la qualité à 0.95 pour éviter le flou
+            canvas.toBlob(resolve, 'image/jpeg', 0.95); 
             URL.revokeObjectURL(url);
         };
         img.src = url;
@@ -80,7 +104,11 @@ async function uploadToImgBB(file, isPhoto = false, shouldRemoveBg = false) {
         if (shouldRemoveBg) fileToProcess = await removeBackground(fileToProcess);
         
         // Redimensionnement 1 ligne comme demandé : Portrait -> 300px | Groupe -> 1000px
-        const fileToUpload = isPhoto ? await resizeAndCrop(fileToProcess, 300) : await resizeAndCrop(fileToProcess, 1000);
+        // Si c'est une photo de profil/logo (isPhoto), on force le carré en 300px.
+// Si c'est une photo de groupe, on redimensionne en 1200px max de large SANS rogner.
+        const fileToUpload = isPhoto 
+            ? await resizeAndCrop(fileToProcess, 300, true) 
+            : await resizeAndCrop(fileToProcess, 1200, false);
         
         const formData = new FormData(); // <--- ÉTAIT MAL PLACÉ OU MANQUANT
         formData.append("image", fileToUpload);
