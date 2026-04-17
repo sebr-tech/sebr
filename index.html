@@ -400,10 +400,13 @@
             const snap = await fetchWithCache("ecoles", p.dataset.folder, "events", anneeSelector.value);
             if (snap.exists() && snap.data().soiree) {
                 const s = snap.data().soiree;
-                tooltip.innerHTML += `<div style="margin-top:8px; border-top:1px solid #333; padding-top:5px;">
-                    <span style="font-size:0.85em; color:#fff; display:block;">🎉 ${s.nom.toUpperCase()}</span>
-                    <span style="font-size:0.75em; color:var(--poly-cyan); font-weight:bold;">📅 ${formaterDate(s.date)}</span>
-                </div>`;
+                // NOUVEAU : On vérifie que le nom de la soirée contient bien du texte
+                if (s.nom && s.nom.trim() !== "") {
+                    tooltip.innerHTML += `<div style="margin-top:8px; border-top:1px solid #333; padding-top:5px;">
+                        <span style="font-size:0.85em; color:#fff; display:block;">🎉 ${s.nom.toUpperCase()}</span>
+                        <span style="font-size:0.75em; color:var(--poly-cyan); font-weight:bold;">📅 ${formaterDate(s.date) || 'À venir'}</span>
+                    </div>`;
+                }
             }
         });
 
@@ -445,10 +448,13 @@
             let eventHtml = "";
             if (eventSnap.exists() && eventSnap.data().soiree) {
                 const e = eventSnap.data().soiree;
-                eventHtml = `<div class="rezo-banner" style="border-bottom: 3px solid ${cityColor};">
-                    <span style="color:var(--poly-cyan); font-weight:bold; font-size:1.1em;">REZO 🎉 ${e.nom.toUpperCase()}</span><br>
-                    <span style="color:#aaa; font-size:0.9em;">📅 ${formaterDate(e.date) || 'À venir'}</span>
-                </div>`;
+                // NOUVEAU : On vérifie que le nom n'est pas vide avant de générer le HTML
+                if (e.nom && e.nom.trim() !== "") {
+                    eventHtml = `<div class="rezo-banner" style="border-bottom: 3px solid ${cityColor};">
+                        <span style="color:var(--poly-cyan); font-weight:bold; font-size:1.1em;">REZO 🎉 ${e.nom.toUpperCase()}</span><br>
+                        <span style="color:#aaa; font-size:0.9em;">📅 ${formaterDate(e.date) || 'À venir'}</span>
+                    </div>`;
+                }
             }
 
             const archSnap = await fetchWithCache("ecoles", ecoleId, "archives", annee);
