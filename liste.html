@@ -64,7 +64,11 @@
             width: 100%; border-radius: 15px; overflow: hidden;
             background: #161f2b; border: 1px solid #333;
         }
-        .photo-collective { width: 100%; display: block; object-fit: cover; max-height: 500px; }
+        .photo-collective { 
+            width: 100%; 
+            height: auto; /* La hauteur s'ajustera toute seule selon le ratio */
+            display: block;
+        }
         .no-photo { padding: 40px; text-align: center; color: #666; font-style: italic; }
 
         .linked-events-section { width: 100%; margin-top: 10px; }
