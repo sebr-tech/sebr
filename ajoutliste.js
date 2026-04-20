@@ -229,38 +229,63 @@ function renderExistingLists() {
                 saveAll();
             }
         });
-        document.getElementById('btn-save-ranks').onclick = () => {
-            document.querySelectorAll('.rank-input').forEach(input => {
-                const type = input.dataset.type;
-                const idx = parseInt(input.dataset.index);
-                currentData[type][idx].classement = input.value.trim();
-            });
-            saveAll();
+        document.getElementById('btn-save-ranks').onclick = async () => {
+            const btn = document.getElementById('btn-save-ranks');
+            
+            // 1. Verrouiller le bouton pour éviter les doubles clics
+            btn.disabled = true;
+            btn.innerText = "⌛ Mise à jour...";
+        
+            try {
+                // 2. Récupérer les valeurs des inputs de rang
+                document.querySelectorAll('.rank-input').forEach(input => {
+                    const type = input.dataset.type;
+                    const idx = parseInt(input.dataset.index);
+                    
+                    // Sécurité : on vérifie que l'index existe toujours dans currentData
+                    if (currentData[type] && currentData[type][idx]) {
+                        currentData[type][idx].classement = input.value.trim();
+                    }
+                });
+        
+                // 3. Envoyer le tout à Firestore
+                await saveAll(); 
+                
+                showStatus("🏆 Classements sauvegardés avec succès !");
+            } catch (error) {
+                console.error("Erreur rangs:", error);
+                showStatus("❌ Erreur lors de la sauvegarde des rangs", true);
+            } finally {
+                // 4. Redonner la main à l'utilisateur
+                btn.disabled = false;
+                btn.innerText = "🏆 Sauvegarder les classements";
+            }
         };
     }
 }
 
 async function loadArchive() {
     cancelEditList();
-    
-    // --- AJOUT : NETTOYAGE DES INPUTS PHYSIQUES ---
-    // On vide tous les sélecteurs de fichiers
+
+    // 1. VIDAGE PHYSIQUE DES INPUTS
     document.querySelectorAll('input[type="file"]').forEach(input => {
         input.value = ""; 
     });
-    // On décoche les options "Remove BG" par sécurité
-    document.querySelectorAll('input[type="checkbox"]').forEach(cb => {
-        cb.checked = false;
+
+    // 2. VIDAGE DES PRÉVISUALISATIONS (si tu en as dans ton HTML)
+    // Ajoute des classes 'img-preview' à tes balises <img> pour que ça marche
+    document.querySelectorAll('.img-preview').forEach(img => {
+        img.src = "default.png"; // ou ""
     });
-    // ----------------------------------------------
 
     const ecole = document.getElementById('ecole-select').value;
     const annee = document.getElementById('annee-select').value;
     const status = document.getElementById('status');
+
     try {
         const snap = await getDoc(doc(db, "ecoles", ecole, "archives", annee));
         
-        // RE-INITIALISATION PROPRE AVEC TOUTES LES CLES
+        // 3. RESET TOTAL DE L'OBJET (On ne fait plus de merge avec l'ancien)
         currentData = {
             bde_actuel: { prez: "", vp: "", rr: "", photo: "", insta: "", photo_coll: "" },
             bdp_actuel: { prez: "", photo: "", insta: "", photo_coll: "" },
@@ -270,7 +295,7 @@ async function loadArchive() {
 
         if (snap.exists()) {
             const data = snap.data();
-            // Fusion sécurisée pour ne pas perdre les nouvelles clés (vp, rr) si l'ancien doc ne les a pas
+            // On remplit uniquement avec ce qui existe en base
             currentData = {
                 ...currentData,
                 ...data,
