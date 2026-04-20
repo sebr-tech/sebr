@@ -33,11 +33,20 @@ function showStatus(message, isError = false) {
         statusEl.innerText = message;
         statusEl.style.color = isError ? "#ff4b2b" : "#28a745";
         
-        // Optionnel : remet le message en blanc/gris après 5 secondes si c'est un succès
         if (!isError) {
             setTimeout(() => { statusEl.style.color = ""; }, 5000);
         }
     }
+}
+
+// --- FIX : Réinitialise tous les inputs file de la page ---
+function clearAllFileInputs() {
+    document.querySelectorAll('input[type="file"]').forEach(input => {
+        // Clonage pour forcer le reset du nom affiché dans le navigateur
+        const newInput = input.cloneNode(true);
+        newInput.value = "";
+        input.parentNode.replaceChild(newInput, input);
+    });
 }
 
 // --- UTILS IMAGES ---
@@ -66,7 +75,6 @@ async function resizeAndCrop(file, size = 1000, forceSquare = false) {
             let targetWidth, targetHeight;
 
             if (forceSquare) {
-                // Logique de rognage carré (pour les logos/portraits)
                 targetWidth = size;
                 targetHeight = size;
                 canvas.width = size;
@@ -76,7 +84,6 @@ async function resizeAndCrop(file, size = 1000, forceSquare = false) {
                 const sy = (img.height - min) / 4;
                 ctx.drawImage(img, sx, sy, min, min, 0, 0, size, size);
             } else {
-                // Logique de redimensionnement proportionnel (pour les photos de groupe)
                 const ratio = img.width / img.height;
                 if (img.width > size) {
                     targetWidth = size;
@@ -90,7 +97,6 @@ async function resizeAndCrop(file, size = 1000, forceSquare = false) {
                 ctx.drawImage(img, 0, 0, targetWidth, targetHeight);
             }
 
-            // On augmente la qualité à 0.95 pour éviter le flou
             canvas.toBlob(resolve, 'image/jpeg', 0.95); 
             URL.revokeObjectURL(url);
         };
@@ -103,13 +109,10 @@ async function uploadToImgBB(file, isPhoto = false, shouldRemoveBg = false) {
         let fileToUpload = file;
 
         if (isPhoto) {
-            // Uniquement pour les portraits/logos : on traite l'image
             let processedFile = file;
             if (shouldRemoveBg) processedFile = await removeBackground(processedFile);
             fileToUpload = await resizeAndCrop(processedFile, 300, true);
-        } 
-        // Si isPhoto est false (cas des photos collectives), 
-        // on ne touche à rien, fileToUpload reste le "file" d'origine.
+        }
 
         const formData = new FormData();
         formData.append("image", fileToUpload);
@@ -182,7 +185,6 @@ async function saveAll() {
         showStatus("❌ Erreur Firestore : " + e.message, true);
         alert("Erreur critique : " + e.message);
     } finally {
-        // On s'assure de débloquer les boutons quoi qu'il arrive
         if (btnSave) { btnSave.disabled = false; btnSave.innerText = "💾 Sauvegarder Infos & Dates"; }
         if (btnAdd) { btnAdd.disabled = false; btnAdd.innerText = "➕ Envoyer & Ajouter"; }
     }
@@ -231,32 +233,24 @@ function renderExistingLists() {
         });
         document.getElementById('btn-save-ranks').onclick = async () => {
             const btn = document.getElementById('btn-save-ranks');
-            
-            // 1. Verrouiller le bouton pour éviter les doubles clics
             btn.disabled = true;
             btn.innerText = "⌛ Mise à jour...";
         
             try {
-                // 2. Récupérer les valeurs des inputs de rang
                 document.querySelectorAll('.rank-input').forEach(input => {
                     const type = input.dataset.type;
                     const idx = parseInt(input.dataset.index);
-                    
-                    // Sécurité : on vérifie que l'index existe toujours dans currentData
                     if (currentData[type] && currentData[type][idx]) {
                         currentData[type][idx].classement = input.value.trim();
                     }
                 });
         
-                // 3. Envoyer le tout à Firestore
                 await saveAll(); 
-                
                 showStatus("🏆 Classements sauvegardés avec succès !");
             } catch (error) {
                 console.error("Erreur rangs:", error);
                 showStatus("❌ Erreur lors de la sauvegarde des rangs", true);
             } finally {
-                // 4. Redonner la main à l'utilisateur
                 btn.disabled = false;
                 btn.innerText = "🏆 Sauvegarder les classements";
             }
@@ -265,30 +259,26 @@ function renderExistingLists() {
 }
 
 async function loadArchive() {
-    cancelEditList(); // On annule toute édition en cours
+    cancelEditList();
 
-    // 1. LE GRAND MÉNAGE (Visuel & Structurel)
     const adminCards = document.querySelectorAll('.admin-card');
     
     adminCards.forEach(card => {
-        // On traite tous les inputs de la carte
         card.querySelectorAll('input').forEach(input => {
             if (input.type === 'file') {
-                // --- ASTUCE : CLONAGE POUR FORCER LE RESET DU NOM DE FICHIER ---
                 const newInput = input.cloneNode(true);
-                newInput.value = ""; // On s'assure qu'il est vide
+                newInput.value = "";
                 input.parentNode.replaceChild(newInput, input);
             } else if (input.type === 'checkbox') {
-                input.checked = false; // Décoche "Détourer"
+                input.checked = false;
             } else if (input.type === 'color') {
-                input.value = "#009EE3"; // Reset couleur
+                input.value = "#009EE3";
             } else {
-                input.value = ""; // Vide texte et date
+                input.value = "";
             }
         });
     });
 
-    // 2. RÉCUPÉRATION DES SÉLECTEURS
     const ecole = document.getElementById('ecole-select').value;
     const annee = document.getElementById('annee-select').value;
     const status = document.getElementById('status');
@@ -296,7 +286,6 @@ async function loadArchive() {
     try {
         const snap = await getDoc(doc(db, "ecoles", ecole, "archives", annee));
         
-        // Reset de l'objet de travail (Données JS)
         currentData = {
             bde_actuel: { prez: "", vp: "", rr: "", photo: "", insta: "", photo_coll: "" },
             bdp_actuel: { prez: "", photo: "", insta: "", photo_coll: "" },
@@ -306,10 +295,8 @@ async function loadArchive() {
 
         if (snap.exists()) {
             const data = snap.data();
-            // On fusionne les données reçues dans currentData
             currentData = { ...currentData, ...data };
 
-            // 3. REMPLISSAGE DES CHAMPS (Uniquement si données existent)
             document.getElementById('bde-prez').value = currentData.bde_actuel.prez || "";
             document.getElementById('bde-vp').value = currentData.bde_actuel.vp || "";
             document.getElementById('bde-rr').value = currentData.bde_actuel.rr || "";
@@ -317,7 +304,6 @@ async function loadArchive() {
             document.getElementById('bdp-prez').value = currentData.bdp_actuel.prez || "";
             document.getElementById('bdp-insta').value = currentData.bdp_actuel.insta || "";
 
-            // Formatage des dates
             const formatDate = (val) => {
                 if (!val) return "";
                 let d = val.toDate ? val.toDate() : new Date(val.seconds * 1000 || val);
@@ -335,7 +321,6 @@ async function loadArchive() {
             status.style.color = "#aaa";
         }
 
-        // On rafraîchit l'affichage des listes (BDE, BDP, Fake)
         renderExistingLists();
 
     } catch(e) { 
@@ -381,7 +366,6 @@ export function initAjoutListe(userData) {
             }
         }
 
-        // --- CAPTURE DES VALEURS (VP ET RR INCLUS) ---
         currentData.bde_actuel.prez = document.getElementById('bde-prez').value || "";
         currentData.bde_actuel.vp = document.getElementById('bde-vp').value || "";
         currentData.bde_actuel.rr = document.getElementById('bde-rr').value || "";
@@ -399,6 +383,10 @@ export function initAjoutListe(userData) {
         currentData.passation_date = dPass ? Timestamp.fromDate(new Date(dPass + "T12:00:00")) : null;
 
         await saveAll();
+
+        // --- FIX : On vide tous les inputs file après une sauvegarde réussie ---
+        clearAllFileInputs();
+
         btn.disabled = false; btn.innerText = "💾 Sauvegarder Infos & Dates";
     };
 
@@ -450,6 +438,10 @@ export function initAjoutListe(userData) {
             }
     
             await saveAll();
+
+            // --- FIX : On vide tous les inputs file après un ajout/modif réussi ---
+            clearAllFileInputs();
+
             cancelEditList();
         } catch (err) {
             showStatus("❌ " + err.message, true);
