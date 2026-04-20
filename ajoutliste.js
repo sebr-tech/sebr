@@ -265,19 +265,24 @@ function renderExistingLists() {
 }
 
 async function loadArchive() {
-    cancelEditList();
+    cancelEditList(); // On annule toute édition en cours
 
-    // 1. VIDAGE PHYSIQUE DES INPUTS
-    document.querySelectorAll('input[type="file"]').forEach(input => {
-        input.value = ""; 
+    // 1. LE GRAND MÉNAGE VISUEL
+    // On vide tous les inputs texte, date, et fichiers
+    const allInputs = document.querySelectorAll('.admin-card input');
+    allInputs.forEach(input => {
+        if (input.type === 'file') {
+            input.value = ""; // Supprime le fichier sélectionné
+        } else if (input.type === 'checkbox') {
+            input.checked = false; // Décoche les options "Détourer"
+        } else if (input.type === 'color') {
+            input.value = "#009EE3"; // Reset la couleur par défaut
+        } else {
+            input.value = ""; // Vide les champs texte et date
+        }
     });
 
-    // 2. VIDAGE DES PRÉVISUALISATIONS (si tu en as dans ton HTML)
-    // Ajoute des classes 'img-preview' à tes balises <img> pour que ça marche
-    document.querySelectorAll('.img-preview').forEach(img => {
-        img.src = "default.png"; // ou ""
-    });
-
+    // 2. RESET DES DONNÉES JS
     const ecole = document.getElementById('ecole-select').value;
     const annee = document.getElementById('annee-select').value;
     const status = document.getElementById('status');
@@ -285,7 +290,7 @@ async function loadArchive() {
     try {
         const snap = await getDoc(doc(db, "ecoles", ecole, "archives", annee));
         
-        // 3. RESET TOTAL DE L'OBJET (On ne fait plus de merge avec l'ancien)
+        // Reset de l'objet de travail
         currentData = {
             bde_actuel: { prez: "", vp: "", rr: "", photo: "", insta: "", photo_coll: "" },
             bdp_actuel: { prez: "", photo: "", insta: "", photo_coll: "" },
@@ -295,48 +300,34 @@ async function loadArchive() {
 
         if (snap.exists()) {
             const data = snap.data();
-            // On remplit uniquement avec ce qui existe en base
-            currentData = {
-                ...currentData,
-                ...data,
-                bde_actuel: { ...currentData.bde_actuel, ...(data.bde_actuel || {}) },
-                bdp_actuel: { ...currentData.bdp_actuel, ...(data.bdp_actuel || {}) }
-            };
+            currentData = { ...currentData, ...data };
 
-            // Remplissage des champs BDE / BDP
+            // 3. REMPLISSAGE DES CHAMPS AVEC LES DONNÉES RÉELLES
             document.getElementById('bde-prez').value = currentData.bde_actuel.prez || "";
             document.getElementById('bde-vp').value = currentData.bde_actuel.vp || "";
             document.getElementById('bde-rr').value = currentData.bde_actuel.rr || "";
             document.getElementById('bde-insta').value = currentData.bde_actuel.insta || "";
-            
             document.getElementById('bdp-prez').value = currentData.bdp_actuel.prez || "";
             document.getElementById('bdp-insta').value = currentData.bdp_actuel.insta || "";
 
             const formatDate = (val) => {
                 if (!val) return "";
-                try {
-                    let d;
-                    if (val.toDate) d = val.toDate();
-                    else if (val.seconds) d = new Date(val.seconds * 1000);
-                    else d = new Date(val);
-                    return isNaN(d.getTime()) ? "" : d.toISOString().split('T')[0];
-                } catch(err) { return ""; }
+                let d = val.toDate ? val.toDate() : new Date(val.seconds * 1000 || val);
+                return isNaN(d.getTime()) ? "" : d.toISOString().split('T')[0];
             };
+            
             document.getElementById('date-debut-campagne').value = formatDate(currentData.campagne_start);
             document.getElementById('date-fin-campagne').value = formatDate(currentData.campagne_end);
             document.getElementById('date-passation').value = formatDate(currentData.passation_date);
+
             status.innerText = `✅ Données "${ecole}" chargées.`;
         } else {
-            status.innerText = "Nouvelle archive vide.";
-            ['bde-prez', 'bde-vp', 'bde-rr', 'bdp-prez', 'bde-insta', 'bdp-insta', 'date-debut-campagne', 'date-fin-campagne', 'date-passation'].forEach(id => {
-                const el = document.getElementById(id);
-                if(el) el.value = "";
-            });
+            status.innerText = "✨ Nouvelle archive vide pour cette sélection.";
         }
         renderExistingLists();
     } catch(e) { 
         console.error(e);
-        status.innerText = "Erreur de chargement."; 
+        status.innerText = "❌ Erreur de chargement."; 
     }
 }
 
