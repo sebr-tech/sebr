@@ -32,21 +32,22 @@ function showStatus(message, isError = false) {
     if (statusEl) {
         statusEl.innerText = message;
         statusEl.style.color = isError ? "#ff4b2b" : "#28a745";
-        
         if (!isError) {
             setTimeout(() => { statusEl.style.color = ""; }, 5000);
         }
     }
 }
 
-// --- FIX : Réinitialise tous les inputs file de la page ---
-function clearAllFileInputs() {
-    document.querySelectorAll('input[type="file"]').forEach(input => {
-        // Clonage pour forcer le reset du nom affiché dans le navigateur
-        const newInput = input.cloneNode(true);
-        newInput.value = "";
-        input.parentNode.replaceChild(newInput, input);
-    });
+// --- FIX : Rechargement forcé avec vidage cache après upload avec image ---
+function reloadAfterUpload() {
+    // Vide tous les caches du navigateur (Service Workers, etc.)
+    if ('caches' in window) {
+        caches.keys().then(names => {
+            names.forEach(name => caches.delete(name));
+        });
+    }
+    // true = hard reload, contourne le cache HTTP du navigateur
+    window.location.reload(true);
 }
 
 // --- UTILS IMAGES ---
@@ -97,7 +98,8 @@ async function resizeAndCrop(file, size = 1000, forceSquare = false) {
                 ctx.drawImage(img, 0, 0, targetWidth, targetHeight);
             }
 
-            canvas.toBlob(resolve, 'image/jpeg', 0.95); 
+            // On augmente la qualité à 0.95 pour éviter le flou
+            canvas.toBlob(resolve, 'image/jpeg', 0.95);
             URL.revokeObjectURL(url);
         };
         img.src = url;
@@ -113,15 +115,16 @@ async function uploadToImgBB(file, isPhoto = false, shouldRemoveBg = false) {
             if (shouldRemoveBg) processedFile = await removeBackground(processedFile);
             fileToUpload = await resizeAndCrop(processedFile, 300, true);
         }
+        // Si isPhoto est false (photos collectives), on ne touche à rien
 
         const formData = new FormData();
         formData.append("image", fileToUpload);
 
-        const response = await fetch(`https://api.imgbb.com/1/upload?key=${IMGBB_API_KEY}`, { 
-            method: "POST", 
-            body: formData 
+        const response = await fetch(`https://api.imgbb.com/1/upload?key=${IMGBB_API_KEY}`, {
+            method: "POST",
+            body: formData
         });
-        
+
         const result = await response.json();
         if (result.success) {
             showStatus("📸 Image uploadée avec succès !");
@@ -130,9 +133,9 @@ async function uploadToImgBB(file, isPhoto = false, shouldRemoveBg = false) {
             showStatus("❌ Erreur ImgBB : " + result.error.message, true);
             return null;
         }
-    } catch(e) { 
+    } catch(e) {
         showStatus("❌ Erreur de connexion", true);
-        return null; 
+        return null;
     }
 }
 
@@ -181,7 +184,7 @@ async function saveAll() {
         await setDoc(doc(db, "ecoles", ecole, "archives", annee), currentData);
         renderExistingLists();
         showStatus("✅ Données synchronisées avec succès !");
-    } catch (e) { 
+    } catch (e) {
         showStatus("❌ Erreur Firestore : " + e.message, true);
         alert("Erreur critique : " + e.message);
     } finally {
@@ -235,7 +238,7 @@ function renderExistingLists() {
             const btn = document.getElementById('btn-save-ranks');
             btn.disabled = true;
             btn.innerText = "⌛ Mise à jour...";
-        
+
             try {
                 document.querySelectorAll('.rank-input').forEach(input => {
                     const type = input.dataset.type;
@@ -244,8 +247,8 @@ function renderExistingLists() {
                         currentData[type][idx].classement = input.value.trim();
                     }
                 });
-        
-                await saveAll(); 
+
+                await saveAll();
                 showStatus("🏆 Classements sauvegardés avec succès !");
             } catch (error) {
                 console.error("Erreur rangs:", error);
@@ -261,11 +264,13 @@ function renderExistingLists() {
 async function loadArchive() {
     cancelEditList();
 
+    // 1. LE GRAND MÉNAGE (Visuel & Structurel)
     const adminCards = document.querySelectorAll('.admin-card');
-    
+
     adminCards.forEach(card => {
         card.querySelectorAll('input').forEach(input => {
             if (input.type === 'file') {
+                // --- ASTUCE : CLONAGE POUR FORCER LE RESET DU NOM DE FICHIER ---
                 const newInput = input.cloneNode(true);
                 newInput.value = "";
                 input.parentNode.replaceChild(newInput, input);
@@ -279,13 +284,15 @@ async function loadArchive() {
         });
     });
 
+    // 2. RÉCUPÉRATION DES SÉLECTEURS
     const ecole = document.getElementById('ecole-select').value;
     const annee = document.getElementById('annee-select').value;
     const status = document.getElementById('status');
 
     try {
         const snap = await getDoc(doc(db, "ecoles", ecole, "archives", annee));
-        
+
+        // Reset de l'objet de travail (Données JS)
         currentData = {
             bde_actuel: { prez: "", vp: "", rr: "", photo: "", insta: "", photo_coll: "" },
             bdp_actuel: { prez: "", photo: "", insta: "", photo_coll: "" },
@@ -295,8 +302,10 @@ async function loadArchive() {
 
         if (snap.exists()) {
             const data = snap.data();
+            // On fusionne les données reçues dans currentData
             currentData = { ...currentData, ...data };
 
+            // 3. REMPLISSAGE DES CHAMPS (Uniquement si données existent)
             document.getElementById('bde-prez').value = currentData.bde_actuel.prez || "";
             document.getElementById('bde-vp').value = currentData.bde_actuel.vp || "";
             document.getElementById('bde-rr').value = currentData.bde_actuel.rr || "";
@@ -304,12 +313,13 @@ async function loadArchive() {
             document.getElementById('bdp-prez').value = currentData.bdp_actuel.prez || "";
             document.getElementById('bdp-insta').value = currentData.bdp_actuel.insta || "";
 
+            // Formatage des dates
             const formatDate = (val) => {
                 if (!val) return "";
                 let d = val.toDate ? val.toDate() : new Date(val.seconds * 1000 || val);
                 return isNaN(d.getTime()) ? "" : d.toISOString().split('T')[0];
             };
-            
+
             document.getElementById('date-debut-campagne').value = formatDate(currentData.campagne_start);
             document.getElementById('date-fin-campagne').value = formatDate(currentData.campagne_end);
             document.getElementById('date-passation').value = formatDate(currentData.passation_date);
@@ -321,11 +331,12 @@ async function loadArchive() {
             status.style.color = "#aaa";
         }
 
+        // On rafraîchit l'affichage des listes (BDE, BDP, Fake)
         renderExistingLists();
 
-    } catch(e) { 
+    } catch(e) {
         console.error("Erreur loadArchive:", e);
-        status.innerText = "❌ Erreur lors du chargement des données."; 
+        status.innerText = "❌ Erreur lors du chargement des données.";
         status.style.color = "#ff4b2b";
     }
 }
@@ -333,7 +344,7 @@ async function loadArchive() {
 // --- INITIALISATION DU MODULE ---
 export function initAjoutListe(userData) {
     const schoolSelect = document.getElementById('ecole-select');
-    
+
     if (userData && userData.role !== 'admin') {
         const allowed = Array.isArray(userData.ecole) ? userData.ecole : [userData.ecole];
         Array.from(schoolSelect.options).forEach(opt => {
@@ -349,7 +360,7 @@ export function initAjoutListe(userData) {
     document.getElementById('btn-save-officiels').onclick = async () => {
         const btn = document.getElementById('btn-save-officiels');
         btn.disabled = true; btn.innerText = "⏳ Sauvegarde...";
-        
+
         const filesMap = [
             { id: 'bde-photo-file', key: 'photo', target: currentData.bde_actuel, sq: true, rb: 'bde-remove-bg' },
             { id: 'bdp-photo-file', key: 'photo', target: currentData.bdp_actuel, sq: true, rb: 'bdp-remove-bg' },
@@ -357,15 +368,20 @@ export function initAjoutListe(userData) {
             { id: 'bdp-photo-coll-file', key: 'photo_coll', target: currentData.bdp_actuel, sq: false, rb: null }
         ];
 
+        // Détecte si au moins un fichier image a été sélectionné
+        let hasImageUpload = false;
+
         for (const item of filesMap) {
             const file = document.getElementById(item.id)?.files[0];
             const rbChecked = item.rb ? document.getElementById(item.rb)?.checked : false;
             if (file) {
+                hasImageUpload = true;
                 const url = await uploadToImgBB(file, item.sq, rbChecked);
                 if (url) item.target[item.key] = url;
             }
         }
 
+        // --- CAPTURE DES VALEURS (VP ET RR INCLUS) ---
         currentData.bde_actuel.prez = document.getElementById('bde-prez').value || "";
         currentData.bde_actuel.vp = document.getElementById('bde-vp').value || "";
         currentData.bde_actuel.rr = document.getElementById('bde-rr').value || "";
@@ -377,17 +393,20 @@ export function initAjoutListe(userData) {
         const dStart = document.getElementById('date-debut-campagne').value;
         const dEnd = document.getElementById('date-fin-campagne').value;
         const dPass = document.getElementById('date-passation').value;
-        
+
         currentData.campagne_start = dStart ? Timestamp.fromDate(new Date(dStart + "T12:00:00")) : null;
         currentData.campagne_end = dEnd ? Timestamp.fromDate(new Date(dEnd + "T12:00:00")) : null;
         currentData.passation_date = dPass ? Timestamp.fromDate(new Date(dPass + "T12:00:00")) : null;
 
         await saveAll();
 
-        // --- FIX : On vide tous les inputs file après une sauvegarde réussie ---
-        clearAllFileInputs();
-
-        btn.disabled = false; btn.innerText = "💾 Sauvegarder Infos & Dates";
+        // --- FIX : Si une image a été uploadée, hard reload pour purger tout cache ---
+        if (hasImageUpload) {
+            showStatus("✅ Sauvegardé ! Rechargement en cours...");
+            setTimeout(() => reloadAfterUpload(), 1200);
+        } else {
+            btn.disabled = false; btn.innerText = "💾 Sauvegarder Infos & Dates";
+        }
     };
 
     // AJOUT / MODIF D'UNE LISTE
@@ -395,54 +414,63 @@ export function initAjoutListe(userData) {
         const btn = document.getElementById('btn-add-item');
         const type = document.getElementById('type-liste').value;
         const nom = document.getElementById('new-nom').value.trim();
-        
+
         if (!nom) return showStatus("❌ Nom requis !", true);
-        
-        btn.disabled = true; 
+
+        btn.disabled = true;
         btn.innerText = "⏳ Envoi en cours...";
         showStatus("⏳ Traitement des images...");
-    
+
         try {
             let finalLogo = editingType !== null ? (currentData[editingType][editingIndex].logo || "") : "";
             let finalColl = editingType !== null ? (currentData[editingType][editingIndex].photo_coll || "") : "";
             let finalRank = editingType !== null ? (currentData[editingType][editingIndex].classement || "") : "";
-    
+
             const fileLogo = document.getElementById('new-logo-file').files[0];
             const fileColl = document.getElementById('new-photo-coll-file').files[0];
             const rbLogo = document.getElementById('list-remove-bg')?.checked;
-    
+
+            // Détecte si au moins un fichier image a été sélectionné
+            let hasImageUpload = false;
+
             if (fileLogo) {
+                hasImageUpload = true;
                 const url = await uploadToImgBB(fileLogo, true, rbLogo);
                 if (url) finalLogo = url;
             }
-            
+
             if (fileColl) {
+                hasImageUpload = true;
                 const url = await uploadToImgBB(fileColl, false, false);
                 if (url) finalColl = url;
             }
-    
-            const listObj = { 
-                nom, prez: document.getElementById('new-prez').value.trim(), 
-                logo: finalLogo, 
-                couleur: document.getElementById('new-couleur').value || "#009EE3", 
-                insta: document.getElementById('new-insta').value.trim() || "", 
-                photo_coll: finalColl, 
-                classement: finalRank 
+
+            const listObj = {
+                nom, prez: document.getElementById('new-prez').value.trim(),
+                logo: finalLogo,
+                couleur: document.getElementById('new-couleur').value || "#009EE3",
+                insta: document.getElementById('new-insta').value.trim() || "",
+                photo_coll: finalColl,
+                classement: finalRank
             };
-    
+
             if (editingType !== null) {
                 currentData[editingType][editingIndex] = listObj;
             } else {
                 if (!finalLogo) throw new Error("Le logo est obligatoire pour une nouvelle liste");
                 currentData[type].push(listObj);
             }
-    
+
             await saveAll();
 
-            // --- FIX : On vide tous les inputs file après un ajout/modif réussi ---
-            clearAllFileInputs();
+            // --- FIX : Si une image a été uploadée, hard reload pour purger tout cache ---
+            if (hasImageUpload) {
+                showStatus("✅ Sauvegardé ! Rechargement en cours...");
+                setTimeout(() => reloadAfterUpload(), 1200);
+            } else {
+                cancelEditList();
+            }
 
-            cancelEditList();
         } catch (err) {
             showStatus("❌ " + err.message, true);
             btn.disabled = false;
