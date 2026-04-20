@@ -267,22 +267,28 @@ function renderExistingLists() {
 async function loadArchive() {
     cancelEditList(); // On annule toute édition en cours
 
-    // 1. LE GRAND MÉNAGE VISUEL
-    // On vide tous les inputs texte, date, et fichiers
-    const allInputs = document.querySelectorAll('.admin-card input');
-    allInputs.forEach(input => {
-        if (input.type === 'file') {
-            input.value = ""; // Supprime le fichier sélectionné
-        } else if (input.type === 'checkbox') {
-            input.checked = false; // Décoche les options "Détourer"
-        } else if (input.type === 'color') {
-            input.value = "#009EE3"; // Reset la couleur par défaut
-        } else {
-            input.value = ""; // Vide les champs texte et date
-        }
+    // 1. LE GRAND MÉNAGE (Visuel & Structurel)
+    const adminCards = document.querySelectorAll('.admin-card');
+    
+    adminCards.forEach(card => {
+        // On traite tous les inputs de la carte
+        card.querySelectorAll('input').forEach(input => {
+            if (input.type === 'file') {
+                // --- ASTUCE : CLONAGE POUR FORCER LE RESET DU NOM DE FICHIER ---
+                const newInput = input.cloneNode(true);
+                newInput.value = ""; // On s'assure qu'il est vide
+                input.parentNode.replaceChild(newInput, input);
+            } else if (input.type === 'checkbox') {
+                input.checked = false; // Décoche "Détourer"
+            } else if (input.type === 'color') {
+                input.value = "#009EE3"; // Reset couleur
+            } else {
+                input.value = ""; // Vide texte et date
+            }
+        });
     });
 
-    // 2. RESET DES DONNÉES JS
+    // 2. RÉCUPÉRATION DES SÉLECTEURS
     const ecole = document.getElementById('ecole-select').value;
     const annee = document.getElementById('annee-select').value;
     const status = document.getElementById('status');
@@ -290,7 +296,7 @@ async function loadArchive() {
     try {
         const snap = await getDoc(doc(db, "ecoles", ecole, "archives", annee));
         
-        // Reset de l'objet de travail
+        // Reset de l'objet de travail (Données JS)
         currentData = {
             bde_actuel: { prez: "", vp: "", rr: "", photo: "", insta: "", photo_coll: "" },
             bdp_actuel: { prez: "", photo: "", insta: "", photo_coll: "" },
@@ -300,9 +306,10 @@ async function loadArchive() {
 
         if (snap.exists()) {
             const data = snap.data();
+            // On fusionne les données reçues dans currentData
             currentData = { ...currentData, ...data };
 
-            // 3. REMPLISSAGE DES CHAMPS AVEC LES DONNÉES RÉELLES
+            // 3. REMPLISSAGE DES CHAMPS (Uniquement si données existent)
             document.getElementById('bde-prez').value = currentData.bde_actuel.prez || "";
             document.getElementById('bde-vp').value = currentData.bde_actuel.vp || "";
             document.getElementById('bde-rr').value = currentData.bde_actuel.rr || "";
@@ -310,6 +317,7 @@ async function loadArchive() {
             document.getElementById('bdp-prez').value = currentData.bdp_actuel.prez || "";
             document.getElementById('bdp-insta').value = currentData.bdp_actuel.insta || "";
 
+            // Formatage des dates
             const formatDate = (val) => {
                 if (!val) return "";
                 let d = val.toDate ? val.toDate() : new Date(val.seconds * 1000 || val);
@@ -321,13 +329,19 @@ async function loadArchive() {
             document.getElementById('date-passation').value = formatDate(currentData.passation_date);
 
             status.innerText = `✅ Données "${ecole}" chargées.`;
+            status.style.color = "#28a745";
         } else {
             status.innerText = "✨ Nouvelle archive vide pour cette sélection.";
+            status.style.color = "#aaa";
         }
+
+        // On rafraîchit l'affichage des listes (BDE, BDP, Fake)
         renderExistingLists();
+
     } catch(e) { 
-        console.error(e);
-        status.innerText = "❌ Erreur de chargement."; 
+        console.error("Erreur loadArchive:", e);
+        status.innerText = "❌ Erreur lors du chargement des données."; 
+        status.style.color = "#ff4b2b";
     }
 }
 
