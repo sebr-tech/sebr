@@ -242,6 +242,18 @@ function renderExistingLists() {
 
 async function loadArchive() {
     cancelEditList();
+    
+    // --- AJOUT : NETTOYAGE DES INPUTS PHYSIQUES ---
+    // On vide tous les sélecteurs de fichiers
+    document.querySelectorAll('input[type="file"]').forEach(input => {
+        input.value = ""; 
+    });
+    // On décoche les options "Remove BG" par sécurité
+    document.querySelectorAll('input[type="checkbox"]').forEach(cb => {
+        cb.checked = false;
+    });
+    // ----------------------------------------------
+
     const ecole = document.getElementById('ecole-select').value;
     const annee = document.getElementById('annee-select').value;
     const status = document.getElementById('status');
@@ -413,6 +425,7 @@ export function initAjoutListe(userData) {
             showStatus("❌ " + err.message, true);
             btn.disabled = false;
             btn.innerText = "💾 Réessayer";
+            document.querySelectorAll('input[type="file"]').forEach(el => el.value = "");
         }
     };
 
