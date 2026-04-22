@@ -1,13 +1,24 @@
-import { getFirestore, doc, getDoc, setDoc, arrayUnion, arrayRemove, Timestamp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+import {
+    getFirestore, doc, getDoc, setDoc, arrayUnion, arrayRemove, Timestamp,
+    collection, addDoc, serverTimestamp, updateDoc, increment
+} from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+import { getAuth } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
 
-const db = getFirestore(); 
+const db   = getFirestore();
+const auth = getAuth();
 
-let currentEventsArray = [];
+const MAX_PROPOSALS = 10;
+
+let currentEventsArray  = [];
 let currentArchivesData = null;
-let editingEventId = null; 
+let editingEventId      = null;
+let _userData           = null;
+
+/* ══════════ HELPERS ══════════ */
+const isUser = () => _userData?.role === 'user';
 
 function toTimestamp(dateString) {
-    if(!dateString) return null;
+    if (!dateString) return null;
     return Timestamp.fromDate(new Date(dateString + "T12:00:00"));
 }
 
@@ -27,58 +38,126 @@ function formatSimpleDate(val) {
     } catch(err) { return "Date inconnue"; }
 }
 
+/* ══════════ COMPTEUR DE PROPOSITIONS ══════════ */
+async function getRemainingProposals() {
+    const user = auth.currentUser;
+    if (!user) return 0;
+    try {
+        const snap = await getDoc(doc(db, "users", user.email));
+        if (!snap.exists()) return 0;
+        return MAX_PROPOSALS - (snap.data().proposalsCount || 0);
+    } catch { return 0; }
+}
+
+/* ══════════ SOUMISSION D'UNE PROPOSITION ══════════ */
+async function submitProposal(type, payload) {
+    const user = auth.currentUser;
+    if (!user) throw new Error("Non connecté.");
+
+    const userRef  = doc(db, "users", user.email);
+    const userSnap = await getDoc(userRef);
+    if (!userSnap.exists()) throw new Error("Utilisateur introuvable.");
+
+    const count = userSnap.data().proposalsCount || 0;
+    if (count >= MAX_PROPOSALS) throw new Error(`Limite de ${MAX_PROPOSALS} propositions atteinte.`);
+
+    const ecole = document.getElementById('event-ecole-select').value;
+    const annee = document.getElementById('event-annee-select').value;
+
+    await addDoc(collection(db, "proposals"), {
+        authorEmail:  user.email,
+        authorPrenom: userSnap.data().prenom || "",
+        ecole,
+        annee,
+        type,
+        payload,
+        status:    "pending",
+        createdAt: serverTimestamp()
+    });
+
+    await updateDoc(userRef, { proposalsCount: increment(1) });
+
+    const remaining = MAX_PROPOSALS - count - 1;
+    showEventStatus(`📤 Proposition envoyée ! Il vous reste ${remaining} proposition(s).`);
+    updateEventProposalCounter(count + 1);
+}
+
+function showEventStatus(msg, isError = false) {
+    const el = document.getElementById('event-status');
+    if (!el) return;
+    el.textContent  = msg;
+    el.style.color  = isError ? '#ed1c24' : '#28a745';
+    if (!isError) setTimeout(() => { if(el) el.textContent = ''; }, 5000);
+}
+
+function updateEventProposalCounter(count) {
+    const el = document.getElementById('event-proposal-counter');
+    if (!el) return;
+    el.textContent = `${MAX_PROPOSALS - count} proposition(s) restante(s)`;
+    el.style.color = count >= MAX_PROPOSALS ? '#ed1c24' : count >= 7 ? '#f09433' : '#28a745';
+}
+
+/* ══════════ CANCEL EDIT ══════════ */
 function cancelEdit() {
     editingEventId = null;
-    document.getElementById('title-local').innerText = "Ajouter un événement local";
-    document.getElementById('local-orga').value = 'BDE';
+    document.getElementById('title-local').innerText   = isUser() ? "Proposer un événement local" : "Ajouter un événement local";
+    document.getElementById('local-orga').value        = 'BDE';
     updateListeDropdown();
-    document.getElementById('local-nom').value = '';
-    document.getElementById('local-date').value = '';
-    document.getElementById('local-desc').value = '';
+    document.getElementById('local-nom').value         = '';
+    document.getElementById('local-date').value        = '';
+    document.getElementById('local-desc').value        = '';
     const btnMain = document.getElementById('btn-add-local');
-    btnMain.innerText = "➕ Ajouter l'événement";
-    btnMain.style.background = "#f09433";
+    btnMain.innerText        = isUser() ? "📤 Soumettre une proposition" : "➕ Ajouter l'événement";
+    btnMain.style.background = isUser() ? "var(--poly-cyan)" : "#f09433";
     document.getElementById('btn-cancel-edit').style.display = "none";
 }
 
+/* ══════════ CHARGEMENT ══════════ */
 async function loadData() {
-    cancelEdit(); 
-    const ecole = document.getElementById('event-ecole-select').value;
-    const annee = document.getElementById('event-annee-select').value;
+    cancelEdit();
+    const ecole     = document.getElementById('event-ecole-select').value;
+    const annee     = document.getElementById('event-annee-select').value;
     const container = document.getElementById('existing-events-container');
     container.innerHTML = '<p style="color:#aaa;">Chargement...</p>';
     try {
         const archiveSnap = await getDoc(doc(db, "ecoles", ecole, "archives", annee));
         currentArchivesData = archiveSnap.exists() ? archiveSnap.data() : null;
         updateListeDropdown();
+
         const eventSnap = await getDoc(doc(db, "ecoles", ecole, "events", annee));
         if (eventSnap.exists()) {
             const data = eventSnap.data();
             if (data.soiree) {
-                document.getElementById('rezo-nom').value = data.soiree.nom || '';
+                document.getElementById('rezo-nom').value  = data.soiree.nom || '';
                 document.getElementById('rezo-date').value = fromTimestampToInput(data.soiree.date);
             }
             currentEventsArray = data.locaux || [];
-        } else currentEventsArray = [];
+        } else {
+            currentEventsArray = [];
+        }
         renderExistingEvents();
     } catch(e) { container.innerHTML = '<p style="color:red;">Erreur.</p>'; }
 }
 
 function updateListeDropdown() {
-    const orga = document.getElementById('local-orga').value;
+    const orga      = document.getElementById('local-orga').value;
     const container = document.getElementById('container-liste-liee');
-    const select = document.getElementById('local-liste-liee');
+    const select    = document.getElementById('local-liste-liee');
     select.innerHTML = '<option value="">-- Sélectionner une liste --</option>';
     if (orga.includes('Liste') || orga === 'Fakeliste') {
         container.style.display = 'block';
         if (!currentArchivesData) return;
-        let listes = orga === 'Liste BDE' ? currentArchivesData.listes_bde : (orga === 'Liste BDP' ? currentArchivesData.listes_bdp : currentArchivesData.fakelistes);
+        let listes = orga === 'Liste BDE' ? currentArchivesData.listes_bde
+            : orga === 'Liste BDP' ? currentArchivesData.listes_bdp
+            : currentArchivesData.fakelistes;
         listes?.forEach(liste => {
             const opt = document.createElement('option');
             opt.value = liste.nom; opt.textContent = liste.nom;
             select.appendChild(opt);
         });
-    } else container.style.display = 'none';
+    } else {
+        container.style.display = 'none';
+    }
 }
 
 function renderExistingEvents() {
@@ -91,8 +170,16 @@ function renderExistingEvents() {
     currentEventsArray.forEach(event => {
         const div = document.createElement('div');
         div.className = 'existing-item';
-        let orgaText = event.orga + (event.listeLiee ? ` (${event.listeLiee})` : "");
-        div.innerHTML = `<div class="existing-info"><span class="existing-name">${event.nom} <span style="font-weight:normal; font-size:0.8em; color:#f09433;">[${orgaText}]</span></span><span class="existing-desc">📅 ${formatSimpleDate(event.date)} | 📍 ${event.desc || 'N/A'}</span></div><div class="action-buttons"><button class="btn-edit" data-id="${event.id}">Modifier</button><button class="btn-delete" data-id="${event.id}">Supprimer</button></div>`;
+        const orgaText = event.orga + (event.listeLiee ? ` (${event.listeLiee})` : "");
+        div.innerHTML = `
+            <div class="existing-info">
+                <span class="existing-name">${event.nom} <span style="font-weight:normal; font-size:0.8em; color:#f09433;">[${orgaText}]</span></span>
+                <span class="existing-desc">📅 ${formatSimpleDate(event.date)} | 📍 ${event.desc || 'N/A'}</span>
+            </div>
+            <div class="action-buttons">
+                ${!isUser() ? `<button class="btn-delete" data-id="${event.id}">Supprimer</button>` : ''}
+                <button class="btn-edit" data-id="${event.id}">${isUser() ? '📤 Proposer modif' : 'Modifier'}</button>
+            </div>`;
         container.appendChild(div);
     });
     document.querySelectorAll('.btn-delete').forEach(btn => btn.onclick = () => deleteEvent(btn.dataset.id));
@@ -103,15 +190,15 @@ function startEditEvent(eventId) {
     const event = currentEventsArray.find(ev => ev.id === eventId);
     if (!event) return;
     editingEventId = eventId;
-    document.getElementById('local-orga').value = event.orga || 'BDE';
+    document.getElementById('local-orga').value  = event.orga || 'BDE';
     updateListeDropdown();
     if (event.listeLiee) document.getElementById('local-liste-liee').value = event.listeLiee;
-    document.getElementById('local-nom').value = event.nom;
-    document.getElementById('local-date').value = fromTimestampToInput(event.date);
-    document.getElementById('local-desc').value = event.desc || '';
-    document.getElementById('title-local').innerText = `✏️ Modification : ${event.nom}`;
+    document.getElementById('local-nom').value   = event.nom;
+    document.getElementById('local-date').value  = fromTimestampToInput(event.date);
+    document.getElementById('local-desc').value  = event.desc || '';
+    document.getElementById('title-local').innerText = isUser() ? `📤 Proposer modif : ${event.nom}` : `✏️ Modification : ${event.nom}`;
     const btnMain = document.getElementById('btn-add-local');
-    btnMain.innerText = "💾 Enregistrer";
+    btnMain.innerText        = isUser() ? "📤 Soumettre la modification" : "💾 Enregistrer";
     btnMain.style.background = "var(--poly-cyan)";
     document.getElementById('btn-cancel-edit').style.display = "block";
     document.getElementById('card-local').scrollIntoView({ behavior: 'smooth' });
@@ -119,8 +206,8 @@ function startEditEvent(eventId) {
 
 async function deleteEvent(eventId) {
     if (!confirm("Supprimer ?")) return;
-    const ecole = document.getElementById('event-ecole-select').value;
-    const annee = document.getElementById('event-annee-select').value;
+    const ecole       = document.getElementById('event-ecole-select').value;
+    const annee       = document.getElementById('event-annee-select').value;
     const eventToDelete = currentEventsArray.find(ev => ev.id === eventId);
     if (!eventToDelete) return;
     try {
@@ -129,21 +216,74 @@ async function deleteEvent(eventId) {
     } catch (e) { console.error(e); }
 }
 
+/* ══════════ ADAPTATION UI POUR LES USERS ══════════ */
+function applyEventUserModeUI() {
+    // Masquer la section Rezo (les users ne proposent pas les events Rezo)
+    const cardRezo = document.getElementById('btn-save-rezo')?.closest('.admin-card');
+    if (cardRezo) {
+        cardRezo.style.opacity = '0.4';
+        cardRezo.style.pointerEvents = 'none';
+        const note = document.createElement('p');
+        note.style.cssText = 'color:#f09433; font-size:0.8em; text-align:center; margin-top:8px;';
+        note.textContent = 'Section réservée aux éditeurs';
+        cardRezo.appendChild(note);
+    }
+
+    // Compteur
+    const statusEl = document.getElementById('event-status');
+    if (!statusEl) {
+        const s = document.createElement('p');
+        s.id = 'event-status';
+        s.style.cssText = 'text-align:center; font-size:0.9em; min-height:1.2em; margin-top:8px;';
+        document.getElementById('card-local')?.insertAdjacentElement('afterend', s);
+    }
+
+    const counter = document.createElement('div');
+    counter.id = 'event-proposal-counter';
+    counter.style.cssText = 'text-align:center; font-size:0.85em; font-weight:bold; margin-bottom:14px; padding:8px; background:#0d1520; border-radius:6px; border:1px solid #222;';
+    counter.textContent = `${MAX_PROPOSALS} proposition(s) restante(s)`;
+    document.getElementById('card-local')?.insertAdjacentElement('beforebegin', counter);
+
+    getRemainingProposals().then(remaining => updateEventProposalCounter(MAX_PROPOSALS - remaining));
+
+    // Note d'avertissement
+    const note = document.createElement('p');
+    note.style.cssText = 'font-size:0.8em; color:#f09433; margin-bottom:12px; text-align:center;';
+    note.textContent = '⚠️ Vos propositions seront soumises à validation avant publication.';
+    document.getElementById('card-local')?.insertAdjacentElement('afterbegin', note);
+}
+
+/* ══════════ INIT ══════════ */
 export function initEvent(userData) {
+    _userData = userData;
     const schoolSelect = document.getElementById('event-ecole-select');
-    if (userData && userData.role !== 'admin') {
+
+    // Restriction école pour les éditeurs
+    if (userData && userData.role === 'editor') {
         const allowed = Array.isArray(userData.ecole) ? userData.ecole : [userData.ecole];
         Array.from(schoolSelect.options).forEach(opt => {
             if (opt.value && !allowed.includes(opt.value)) opt.remove();
         });
     }
 
+    // Restriction école + UI user mode
+    if (isUser()) {
+        Array.from(schoolSelect.options).forEach(opt => {
+            if (opt.value && opt.value !== userData.ecole) opt.remove();
+        });
+        schoolSelect.value    = userData.ecole;
+        schoolSelect.disabled = true;
+        applyEventUserModeUI();
+    }
+
+    /* ── Bouton Rezo (admin/editor uniquement) ── */
     document.getElementById('btn-save-rezo').onclick = async () => {
-        const ecole = schoolSelect.value;
-        const annee = document.getElementById('event-annee-select').value;
-        const nom = document.getElementById('rezo-nom').value.trim();
+        if (isUser()) return;
+        const ecole  = schoolSelect.value;
+        const annee  = document.getElementById('event-annee-select').value;
+        const nom    = document.getElementById('rezo-nom').value.trim();
         const rawDate = document.getElementById('rezo-date').value;
-        if(!nom || !rawDate) return alert("Remplis tout !");
+        if (!nom || !rawDate) return alert("Remplis tout !");
         try {
             await setDoc(doc(db, "ecoles", ecole, "events", annee), { soiree: { nom, date: toTimestamp(rawDate) } }, { merge: true });
             alert("✅ Rezo mis à jour !");
@@ -151,22 +291,48 @@ export function initEvent(userData) {
         } catch(e) { console.error(e); }
     };
 
+    /* ── Bouton Ajouter / Proposer un event local ── */
     document.getElementById('btn-add-local').onclick = async () => {
-        const ecole = schoolSelect.value;
-        const annee = document.getElementById('event-annee-select').value;
-        const nom = document.getElementById('local-nom').value.trim();
+        const ecole  = schoolSelect.value;
+        const annee  = document.getElementById('event-annee-select').value;
+        const nom    = document.getElementById('local-nom').value.trim();
         const rawDate = document.getElementById('local-date').value;
-        const orga = document.getElementById('local-orga').value;
-        const desc = document.getElementById('local-desc').value.trim();
-        if(!nom || !rawDate) return alert("Remplis le nom et la date !");
+        const orga   = document.getElementById('local-orga').value;
+        const desc   = document.getElementById('local-desc').value.trim();
+
+        if (!nom || !rawDate) return alert("Remplis le nom et la date !");
+
         const eventId = editingEventId ? editingEventId : Date.now().toString();
-        const newEvent = { id: eventId, orga, listeLiee: (orga.includes('Liste') || orga === 'Fakeliste') ? document.getElementById('local-liste-liee').value : "", nom, date: toTimestamp(rawDate), desc };
+        const newEvent = {
+            id:        eventId,
+            orga,
+            listeLiee: (orga.includes('Liste') || orga === 'Fakeliste') ? document.getElementById('local-liste-liee').value : "",
+            nom,
+            date:      toTimestamp(rawDate),
+            desc
+        };
+
+        if (isUser()) {
+            /* MODE USER : soumettre proposition */
+            try {
+                const type = editingEventId ? 'event_local_edit' : 'event_local_add';
+                await submitProposal(type, newEvent);
+                cancelEdit();
+            } catch(e) {
+                showEventStatus("❌ " + e.message, true);
+            }
+            return;
+        }
+
+        /* MODE ADMIN/EDITOR : direct */
         try {
             const docRef = doc(db, "ecoles", ecole, "events", annee);
             if (editingEventId) {
                 const updatedArray = currentEventsArray.map(ev => ev.id === editingEventId ? newEvent : ev);
                 await setDoc(docRef, { locaux: updatedArray }, { merge: true });
-            } else await setDoc(docRef, { locaux: arrayUnion(newEvent) }, { merge: true });
+            } else {
+                await setDoc(docRef, { locaux: arrayUnion(newEvent) }, { merge: true });
+            }
             loadData();
         } catch(e) { alert("Erreur"); }
     };
