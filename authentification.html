@@ -237,8 +237,7 @@
 
       <div id="register-user-fields" style="display:none;">
         <div class="role-notice">
-          Vous créez un compte <strong>Utilisateur</strong>. Vous pourrez proposer des modifications
-          qui seront validées par un éditeur ou admin avant publication.
+          Vous créez un compte <strong>Utilisateur</strong>.
         </div>
         <div class="form-row">
           <div class="form-group">
@@ -329,13 +328,16 @@
       feedback.textContent = message;
     }
 
-    // Fonction de redirection centralisée
+    /**
+     * REDIRECTION : Tout le monde vers admin.html 
+     * à condition d'avoir un compte dans Firestore.
+     */
     async function handleRedirection(user) {
       if (!user) return;
       
-      // Sécurité : si l'email n'est pas vérifié, on ne redirige pas vers l'admin
+      // On bloque si l'email n'est pas vérifié
       if (!user.emailVerified) {
-        setFeedback('error', "Veuillez valider votre email avant de continuer.");
+        setFeedback('error', "Veuillez valider votre email avant de vous connecter.");
         await signOut(auth);
         return;
       }
@@ -343,31 +345,27 @@
       try {
         const snap = await getDoc(doc(db, "users", user.email));
         if (snap.exists()) {
-          const role = snap.data().role;
-          console.log("Rôle détecté :", role);
-          if (role === 'admin' || role === 'editor') {
-            window.location.href = 'admin.html';
-          } else {
-            window.location.href = 'index.html';
-          }
+          // TOUT LE MONDE (admin, editor, user) va sur admin.html
+          window.location.href = 'admin.html';
         } else {
+          // Si pas de doc Firestore (ex: compte créé mais doc supprimé)
           window.location.href = 'index.html';
         }
       } catch (e) {
-        console.error("Erreur de redirection :", e);
-        // Si erreur de permission ici, c'est que l'email n'est pas encore considéré comme vérifié par Firestore
-        setFeedback('error', "Accès en cours de validation... réessayez dans quelques instants.");
+        console.error("Erreur Firestore :", e);
+        // Si les règles bloquent car email non encore reconnu comme vérifié
+        setFeedback('error', "Accès en attente de validation...");
       }
     }
 
-    // Gestion automatique au chargement
+    // Check auto au chargement
     onAuthStateChanged(auth, (user) => {
       if (user && !blockRedirect) {
         handleRedirection(user);
       }
     });
 
-    // Toggle Mode
+    // Toggle Onglets
     window.setMode = function(newMode) {
       mode = newMode;
       document.getElementById('tab-login').classList.toggle('active', mode === 'login');
@@ -379,7 +377,7 @@
     document.getElementById('tab-login').onclick = () => setMode('login');
     document.getElementById('tab-register').onclick = () => setMode('register');
 
-    // Submit
+    // Action du bouton principal
     btnSubmit.onclick = async () => {
       const email = emailInput.value.trim().toLowerCase();
       const password = mode === 'login' ? passwordInput.value : passwordRegInput.value;
@@ -387,34 +385,33 @@
       if (!email || !password) { setFeedback('error', "Champs manquants."); return; }
       
       btnSubmit.disabled = true;
-      setFeedback('', "Chargement...");
+      setFeedback('', "Traitement...");
 
       try {
         if (mode === 'login') {
           blockRedirect = false;
           await setPersistence(auth, browserSessionPersistence);
           const cred = await signInWithEmailAndPassword(auth, email, password);
-          // On force la vérification immédiate
           await handleRedirection(cred.user);
         } else {
           /* INSCRIPTION */
           const prenom = document.getElementById('input-prenom').value.trim();
           const ecole = document.getElementById('input-ecole').value;
-          
+          if (!prenom) throw new Error("Prénom requis.");
+
           blockRedirect = true;
           const cred = await createUserWithEmailAndPassword(auth, email, password);
           await sendEmailVerification(cred.user);
           
-          // Création du doc
           await setDoc(doc(db, "users", email), {
-            role: 'user', // Par défaut
+            role: 'user', 
             ecole: ecole,
             prenom: prenom,
             proposalsCount: 0,
             createdAt: serverTimestamp()
           });
 
-          setFeedback('success', "Compte créé ! Vérifiez vos emails pour valider.");
+          setFeedback('success', "✅ Compte créé ! Validez votre email (vérifiez vos spams).");
           await signOut(auth);
           setTimeout(() => setMode('login'), 5000);
         }
