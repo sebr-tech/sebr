@@ -1,6 +1,19 @@
-<div style="display:flex; flex-direction:column; gap:16px;">
-  <h3 style="color: var(--poly-cyan);">Demandes en attente</h3>
-  <div id="approbations-list">
+<div>
+  <h3 style="color: var(--poly-cyan); margin-bottom: 10px;">Propositions en attente</h3>
+  <p id="approbation-status" style="font-size:0.85em; color:#aaa; margin-bottom:10px;">
     Chargement des propositions...
-  </div>
+  </p>
+
+  <table id="approbation-table" style="width:100%; border-collapse:collapse; display:none; font-size:0.9em;">
+    <thead>
+      <tr>
+        <th style="text-align:left; padding:8px;">Liste / Événement</th>
+        <th style="text-align:left; padding:8px;">École</th>
+        <th style="text-align:left; padding:8px;">Année</th>
+        <th style="text-align:left; padding:8px;">Type</th>
+        <th style="text-align:right; padding:8px;">Actions</th>
+      </tr>
+    </thead>
+    <tbody id="approbation-table-body"></tbody>
+  </table>
 </div>
