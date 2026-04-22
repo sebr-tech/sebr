@@ -231,13 +231,11 @@
 
       <h2 id="form-title" style="color: var(--poly-cyan); margin-bottom: 20px; text-align: center;">🔒 Accès</h2>
 
-      <!-- EMAIL (commun) -->
       <div class="form-group">
         <label for="input-email">Adresse email</label>
         <input type="email" id="input-email" placeholder="nom@exemple.fr" autocomplete="email">
       </div>
 
-      <!-- Champs inscription UTILISATEUR uniquement -->
       <div id="register-user-fields" style="display:none;">
         <div class="role-notice">
           Vous créez un compte <strong>Utilisateur</strong>. Vous pourrez proposer des modifications
@@ -276,7 +274,6 @@
         </div>
       </div>
 
-      <!-- Champs connexion / inscription éditeur -->
       <div id="pass-container" class="form-group">
         <label for="input-password">Mot de passe</label>
         <input type="password" id="input-password" placeholder="••••••••" autocomplete="current-password">
@@ -298,6 +295,7 @@
       signInWithEmailAndPassword,
       createUserWithEmailAndPassword,
       sendPasswordResetEmail,
+      sendEmailVerification, // <-- AJOUT DE L'IMPORT ICI
       onAuthStateChanged,
       setPersistence,
       browserSessionPersistence,
@@ -459,7 +457,10 @@
             blockRedirect = true;
             const credential = await createUserWithEmailAndPassword(auth, email, password);
 
-            // Crée le document utilisateur
+            // 1️⃣ NOUVEAU : Envoi du mail de vérification
+            await sendEmailVerification(credential.user);
+
+            // 2️⃣ Crée le document utilisateur
             await setDoc(userRef, {
               role: 'user',
               ecole: ecole,
@@ -468,9 +469,14 @@
               createdAt: serverTimestamp()
             });
 
-            // Connecte directement et redirige vers l'accueil
-            blockRedirect = false;
-            window.location.href = 'index.html';
+            // 3️⃣ NOUVEAU : Déconnexion, affichage message et retour à la connexion
+            setFeedback('success', "✅ Compte créé ! Un lien de validation a été envoyé sur votre adresse e-mail. Veuillez le vérifier avant de vous connecter.");
+            await signOut(auth);
+            setTimeout(() => {
+              setMode('login');
+              // On peut éventuellement effacer le password pour la sécu
+              passwordInput.value = '';
+            }, 6000); // Retour au login après 6 secondes pour laisser le temps de lire
           }
         }
 
