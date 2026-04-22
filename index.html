@@ -27,7 +27,10 @@
             --poly-yellow: #e3cc00;
             --bg-dark: #050a0f;
             --card-bg: #161f2b;
-            --poly-cyan: #009ee3
+            --poly-cyan: #009ee3;
+            --danger: #ff5c5c;
+            --danger-hover: #ff8080;
+            --header-height: 70px;
         }
 
         * { box-sizing: border-box; }
@@ -43,7 +46,6 @@
             overflow: hidden;
         }
 
-        /* --- NOUVELLES ANIMATIONS --- */
         @keyframes popIn {
             0% { transform: scale(0); opacity: 0; }
             80% { transform: scale(1.1); opacity: 1; }
@@ -69,23 +71,69 @@
             from { transform: translateY(-100%); }
             to { transform: translateY(0); }
         }
-        /* --------------------------- */
 
         header {
-            display: flex;
-            justify-content: space-between;
+            display: grid;
+            grid-template-columns: minmax(220px, 1fr) minmax(220px, 1.15fr) minmax(280px, 1.2fr) minmax(220px, 1fr);
             align-items: center;
+            gap: 14px;
             padding: 0 20px;
             background: var(--poly-blue);
-            height: 70px;
+            min-height: var(--header-height);
             border-bottom: 3px solid var(--poly-cyan);
             z-index: 100;
             flex-shrink: 0;
             animation: slideInHeader 1s ease-out forwards;
         }
 
-        .header-left, .header-right { display: flex; gap: 10px; align-items: center; flex: 1; }
-        .header-right { justify-content: flex-end; }
+        .header-left, .header-right {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+            min-width: 0;
+        }
+
+        .header-right {
+            justify-content: flex-end;
+        }
+
+        .user-greeting {
+            color: #fff;
+            font-weight: 700;
+            font-size: 0.96rem;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            opacity: 0;
+            transform: translateY(-4px);
+            transition: opacity 0.25s ease, transform 0.25s ease;
+        }
+
+        .user-greeting.visible {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        .search-container {
+            position: relative;
+            width: 100%;
+            min-width: 0;
+        }
+
+        #barreRecherche {
+            width: 100%;
+            padding: 10px;
+            border-radius: 6px;
+            border: 1px solid var(--poly-cyan);
+            background: #0b1118;
+            color: white;
+            transition: all 0.3s ease;
+        }
+
+        #barreRecherche:focus {
+            box-shadow: 0 0 10px rgba(0, 158, 227, 0.4);
+            outline: none;
+        }
 
         .logo-title {
             font-weight: 800;
@@ -94,52 +142,77 @@
             font-size: 1.1em;
             text-align: center;
             line-height: 1.2;
-            flex: 2;
-        }
-
-        .search-container { position: relative; width: 100%; max-width: 400px; margin: 0 15px; }
-        #barreRecherche { 
-            width: 100%; padding: 10px; border-radius: 6px; 
-            border: 1px solid var(--poly-cyan); background: #0b1118; color: white; 
-            transition: all 0.3s ease;
-        }
-        #barreRecherche:focus {
-            box-shadow: 0 0 10px rgba(0, 158, 227, 0.4);
-            outline: none;
         }
 
         .search-results-dropdown {
-            position: absolute; top: 100%; left: 0; right: 0;
-            background: #161f2b; border: 1px solid var(--poly-cyan);
-            border-top: none; z-index: 1000; max-height: 300px;
-            overflow-y: auto; display: none; border-radius: 0 0 8px 8px;
+            position: absolute;
+            top: 100%;
+            left: 0;
+            right: 0;
+            background: #161f2b;
+            border: 1px solid var(--poly-cyan);
+            border-top: none;
+            z-index: 1000;
+            max-height: 300px;
+            overflow-y: auto;
+            display: none;
+            border-radius: 0 0 8px 8px;
             animation: fadeInDropdown 0.2s ease-out forwards;
         }
 
         .result-item {
-            padding: 10px 15px; border-bottom: 1px solid #2a3544;
-            cursor: pointer; transition: background 0.2s;
+            padding: 10px 15px;
+            border-bottom: 1px solid #2a3544;
+            cursor: pointer;
+            transition: background 0.2s;
         }
-        .result-item:hover { background: var(--poly-cyan); color: #000; }
+
+        .result-item:hover {
+            background: var(--poly-cyan);
+            color: #000;
+        }
+
         .result-item .type-badge {
-            font-size: 0.7em; background: rgba(255,255,255,0.1);
-            padding: 2px 5px; border-radius: 4px; margin-left: 10px;
+            font-size: 0.7em;
+            background: rgba(255,255,255,0.1);
+            padding: 2px 5px;
+            border-radius: 4px;
+            margin-left: 10px;
         }
 
-        .btn-nav {
-            background: rgba(255,255,255,0.05); border: 1px solid var(--poly-cyan);
-            color: white; padding: 8px 15px; border-radius: 5px;
-            cursor: pointer; font-weight: bold; font-size: 0.85em;
-            text-decoration: none; transition: 0.2s; white-space: nowrap;
+        .btn-nav,
+        .btn-auth {
+            background: rgba(255,255,255,0.05);
+            border: 1px solid var(--poly-cyan);
+            color: white;
+            padding: 8px 15px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-weight: bold;
+            font-size: 0.85em;
+            text-decoration: none;
+            transition: 0.2s;
+            white-space: nowrap;
         }
-        .btn-nav:hover { background: var(--poly-cyan); color: #000; transform: translateY(-2px); }
 
-        .btn-admin {
-            background: transparent; border: 1px solid #444;
-            color: #888; padding: 8px 12px; border-radius: 5px;
-            cursor: pointer; font-size: 0.8em; transition: 0.2s;
+        .btn-nav:hover,
+        .btn-auth:hover {
+            background: var(--poly-cyan);
+            color: #000;
+            transform: translateY(-2px);
         }
-        .btn-admin:hover { color: white; border-color: white; }
+
+        .btn-auth.logout {
+            color: var(--danger);
+            border-color: rgba(255, 92, 92, 0.65);
+            background: rgba(255, 92, 92, 0.08);
+        }
+
+        .btn-auth.logout:hover {
+            background: var(--danger);
+            border-color: var(--danger);
+            color: #fff;
+        }
 
         #main-container { display: flex; flex: 1; overflow: hidden; }
 
@@ -155,12 +228,12 @@
 
         .map-wrapper {
             position: relative;
-            width: 50vw; 
+            width: 50vw;
             max-width: 550px;
-            margin: 2rem auto; 
+            margin: 2rem auto;
             aspect-ratio: 1 / 1;
         }
-        
+
         .france-svg {
             width: 100%;
             height: auto;
@@ -168,7 +241,7 @@
             filter: drop-shadow(0 0 15px rgba(0, 158, 227, 0.12));
             animation: fadeInDropdown 1s ease-out forwards;
         }
-        
+
         @keyframes pulse {
             0% { box-shadow: 0 0 0 0 var(--pulse-color, rgba(227, 204, 0, 0.7)); }
             70% { box-shadow: 0 0 0 15px rgba(227, 204, 0, 0); }
@@ -176,11 +249,17 @@
         }
 
         .ecole-point {
-            position: absolute; width: 7.5%; aspect-ratio: 1/1;
-            border-radius: 50%; cursor: pointer; display: flex;
-            justify-content: center; align-items: center;
+            position: absolute;
+            width: 7.5%;
+            aspect-ratio: 1/1;
+            border-radius: 50%;
+            cursor: pointer;
+            display: flex;
+            justify-content: center;
+            align-items: center;
             transition: all 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-            z-index: 10; filter: drop-shadow(0 2px 4px rgba(0,0,0,0.5));
+            z-index: 10;
+            filter: drop-shadow(0 2px 4px rgba(0,0,0,0.5));
             animation: popIn 1.2s cubic-bezier(0.175, 0.885, 0.32, 1.275) backwards;
         }
 
@@ -189,79 +268,155 @@
             z-index: 100;
             box-shadow: 0 0 0 3px white, 0 0 20px 5px var(--halo-color);
         }
-        
+
         .ecole-point.active {
             animation: pulse 2s infinite;
             --pulse-color: var(--halo-color);
             z-index: 20;
-            transform: scale(1.2); 
+            transform: scale(1.2);
         }
-        
-        .ecole-point img { width: 100%; height: 100%; object-fit: contain; border-radius: 50%; }
+
+        .ecole-point img {
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+            border-radius: 50%;
+        }
 
         #sidebar-section {
-            flex: 1; min-width: 380px; background: #0b1118;
-            border-left: 1px solid #222; overflow-y: auto; padding: 25px;
+            flex: 1;
+            min-width: 380px;
+            background: #0b1118;
+            border-left: 1px solid #222;
+            overflow-y: auto;
+            padding: 25px;
         }
 
         .side-header-flex {
-            display: flex; align-items: center; justify-content: space-between;
-            gap: 10px; margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 10px;
+            margin-bottom: 15px;
         }
-        #side-title { color: var(--poly-cyan); margin: 0; font-size: 1.4em; flex: 1; transition: color 0.3s ease; }
+
+        #side-title {
+            color: var(--poly-cyan);
+            margin: 0;
+            font-size: 1.4em;
+            flex: 1;
+            transition: color 0.3s ease;
+        }
 
         #annee-selector {
-            background: #161f2b; color: white; border: 1px solid #444;
-            padding: 5px 10px; border-radius: 5px; cursor: pointer; transition: 0.2s;
+            background: #161f2b;
+            color: white;
+            border: 1px solid #444;
+            padding: 5px 10px;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: 0.2s;
         }
+
         #annee-selector:hover { border-color: var(--poly-cyan); }
 
         .btn-back {
-            display: block; color: #888; text-decoration: none;
-            font-weight: bold; margin-bottom: 20px; font-size: 0.9em; cursor: pointer;
+            display: block;
+            color: #888;
+            text-decoration: none;
+            font-weight: bold;
+            margin-bottom: 20px;
+            font-size: 0.9em;
+            cursor: pointer;
             transition: color 0.2s;
         }
+
         .btn-back:hover { color: white; }
 
         .category-wrapper {
-            margin-top: 20px; background: rgba(22, 31, 43, 0.5);
-            padding: 15px; border-radius: 8px; border: 1px solid #222;
+            margin-top: 20px;
+            background: rgba(22, 31, 43, 0.5);
+            padding: 15px;
+            border-radius: 8px;
+            border: 1px solid #222;
             animation: slideUpFade 0.4s ease-out backwards;
         }
-        .category-title { margin: 0 0 15px 0; font-size: 0.9em; text-transform: uppercase; color: #888; font-weight: bold; }
+
+        .category-title {
+            margin: 0 0 15px 0;
+            font-size: 0.9em;
+            text-transform: uppercase;
+            color: #888;
+            font-weight: bold;
+        }
 
         .list-card {
-            background: var(--card-bg); padding: 12px; border-radius: 8px;
-            display: flex; align-items: center; gap: 12px; margin-bottom: 10px;
-            cursor: pointer; transition: 0.2s; position: relative; border: 1px solid transparent;
+            background: var(--card-bg);
+            padding: 12px;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 10px;
+            cursor: pointer;
+            transition: 0.2s;
+            position: relative;
+            border: 1px solid transparent;
             animation: slideUpFade 0.4s ease-out backwards;
         }
-        .list-card:hover { transform: translateX(5px); border-color: #444; box-shadow: -4px 0 10px rgba(0,0,0,0.3); }
-        .list-logo { width: 50px; height: 50px; border-radius: 50%; object-fit: cover; }
+
+        .list-card:hover {
+            transform: translateX(5px);
+            border-color: #444;
+            box-shadow: -4px 0 10px rgba(0,0,0,0.3);
+        }
+
+        .list-logo {
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            object-fit: cover;
+        }
+
         .list-name { font-weight: bold; flex: 1; font-size: 1.05em; }
         .list-prez { font-size: 0.85em; color: #aaa; }
 
         .rank-badge {
-            position: absolute; top: -5px; right: -5px;
-            background: #ffd700; color: black; font-weight: bold;
-            font-size: 0.7em; padding: 2px 8px; border-radius: 10px; z-index: 5;
+            position: absolute;
+            top: -5px;
+            right: -5px;
+            background: #ffd700;
+            color: black;
+            font-weight: bold;
+            font-size: 0.7em;
+            padding: 2px 8px;
+            border-radius: 10px;
+            z-index: 5;
         }
 
         .rezo-banner {
-            background: rgba(255, 255, 255, 0.03); border: 1px dashed #444;
-            padding: 12px; border-radius: 8px; margin-bottom: 15px; font-size: 0.9em;
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px dashed #444;
+            padding: 12px;
+            border-radius: 8px;
+            margin-bottom: 15px;
+            font-size: 0.9em;
             animation: slideUpFade 0.4s ease-out backwards;
         }
 
-        .loading-text {
-            animation: pulseText 1.5s infinite ease-in-out;
-        }
+        .loading-text { animation: pulseText 1.5s infinite ease-in-out; }
 
         #tooltip {
-            position: fixed; background: rgba(5, 10, 15, 0.95);
-            padding: 12px; border: 1px solid var(--poly-cyan);
-            border-radius: 8px; pointer-events: none; z-index: 1000;
-            font-size: 0.9em; box-shadow: 0 8px 25px rgba(0,0,0,0.6); backdrop-filter: blur(5px);
+            position: fixed;
+            background: rgba(5, 10, 15, 0.95);
+            padding: 12px;
+            border: 1px solid var(--poly-cyan);
+            border-radius: 8px;
+            pointer-events: none;
+            z-index: 1000;
+            font-size: 0.9em;
+            box-shadow: 0 8px 25px rgba(0,0,0,0.6);
+            backdrop-filter: blur(5px);
             transition: opacity 0.2s;
         }
 
@@ -277,18 +432,61 @@
             flex-shrink: 0;
         }
 
+        .site-footer a {
+            color: var(--poly-cyan);
+            text-decoration: none;
+        }
+
+        @media (max-width: 1100px) {
+            header {
+                grid-template-columns: 1fr 1fr;
+                padding: 15px;
+            }
+
+            .logo-title {
+                grid-column: 1 / -1;
+                order: -1;
+            }
+        }
+
         @media (max-width: 850px) {
             body { overflow-y: auto; height: auto; }
             #main-container { flex-direction: column; }
-            header { height: auto; padding: 15px; flex-direction: column; gap: 15px; }
-            #map-section { 
-                padding: 40px 0; 
-                min-height: 500px; 
-                flex: none; 
-                background: radial-gradient(circle at center, #87CEEB 0%, #050a0f 100%);            
+
+            header {
+                display: flex;
+                flex-direction: column;
+                gap: 12px;
+                align-items: stretch;
             }
-            .map-wrapper { width: 90%; transform: scale(1.05); } 
-            #sidebar-section { min-width: 100%; border-left: none; border-top: 2px solid #222; }
+
+            .header-left,
+            .header-right {
+                justify-content: center;
+                flex-wrap: wrap;
+            }
+
+            .user-greeting {
+                text-align: center;
+            }
+
+            #map-section {
+                padding: 40px 0;
+                min-height: 500px;
+                flex: none;
+                background: radial-gradient(circle at center, #87CEEB 0%, #050a0f 100%);
+            }
+
+            .map-wrapper {
+                width: 90%;
+                transform: scale(1.05);
+            }
+
+            #sidebar-section {
+                min-width: 100%;
+                border-left: none;
+                border-top: 2px solid #222;
+            }
         }
     </style>
 </head>
@@ -300,30 +498,27 @@
         <a href="calendrier.html" class="btn-nav">CALENDRIER</a>
     </div>
 
-    <div id="external-view" class="hidden" style="flex: 1; width: 100%; height: 100%;">
-        <iframe id="content-iframe" src="" style="width: 100%; height: 100%; border: none;"></iframe>
-    </div>
-    
+    <div id="user-greeting" class="user-greeting" aria-live="polite"></div>
+
     <div class="search-container">
         <input type="text" id="barreRecherche" placeholder="Rechercher une liste, un prez...">
         <div id="resultatsRecherche" class="search-results-dropdown"></div>
     </div>
-    
-    <div class="logo-title">✊SEBR.tech<br><span style="font-size: 0.7em; font-weight: normal; color: #ccc;">Site d'Exploration des Bureaux du Rezo Polytech </span></div>
+
+    <div class="logo-title">✊SEBR.tech<br><span style="font-size: 0.7em; font-weight: normal; color: #ccc;">Site d'Exploration des Bureaux du Rezo Polytech</span></div>
 
     <div class="header-right">
-        <button class="btn-admin" onclick="window.location.href='authentification.html'">Connexion 🔒</button>
+        <button class="btn-auth" id="auth-button" type="button">Connexion 🔒</button>
     </div>
 </header>
 
 <div id="main-container">
-
     <div id="map-section">
         <div id="tooltip" class="hidden"></div>
-        
+
         <div class="map-wrapper">
             <img src="france.svg" class="france-svg" alt="Carte de France">
-            
+
             <div class="ecole-point" style="top: 8%; left: 58%; --halo-color: #ed1c24; animation-delay: 0.2s;" data-name="Lille" data-folder="lille"><img src="lille.png" alt="Lille"></div>
             <div class="ecole-point" style="top: 21%; left: 53%; --halo-color: #b2b2b2; animation-delay: 0.4s;" data-name="Paris-Sorbonne" data-folder="sorbonne"><img src="sorbonne.png" alt="Sorbonne"></div>
             <div class="ecole-point" style="top: 26%; left: 52%; --halo-color: #8e95b3; animation-delay: 0.6s;" data-name="Paris-Saclay" data-folder="saclay"><img src="saclay.png" alt="Saclay"></div>
@@ -340,7 +535,10 @@
             <div class="ecole-point" style="top: 78%; left: 59%; --halo-color: #1674b9; animation-delay: 2.8s;" data-name="Montpellier" data-folder="montpellier"><img src="montpellier.png" alt="Montpellier"></div>
             <div class="ecole-point" style="top: 78%; left: 71%; --halo-color: #00a5b5; animation-delay: 3.0s;" data-name="Marseille" data-folder="marseille"><img src="marseille.png" alt="Marseille"></div>
             <div class="ecole-point" style="top: 80%; left: 83%; --halo-color: #b3d334; animation-delay: 3.2s;" data-name="Nice Sophia" data-folder="nice"><img src="nice.png" alt="Nice"></div>
-        </div> </div> <div id="sidebar-section">
+        </div>
+    </div>
+
+    <div id="sidebar-section">
         <div class="side-header-flex">
             <h2 id="side-title">Le Rezo Polytech</h2>
             <select id="annee-selector">
@@ -355,11 +553,13 @@
                 Cliquez sur une école pour voir ses bureaux et ses listes.
             </div>
         </div>
-    </div> </div>
+    </div>
+</div>
 
 <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
     import { getFirestore, doc, getDoc, collectionGroup, getDocs } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+    import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
 
     const firebaseConfig = {
         apiKey: "AIzaSyB1_SgV4E80Qxs2vQ-_jIGexv6YYqaiARs",
@@ -372,28 +572,50 @@
 
     const app = initializeApp(firebaseConfig);
     const db = getFirestore(app);
+    const auth = getAuth(app);
 
-    // ==========================================
-    // GESTION DU CACHE ET DATES
-    // ==========================================
+    const defaultTheme = {
+        blue: '#003057',
+        cyan: '#009ee3'
+    };
+
+    const schoolThemes = {
+        lille:       { blue: '#c62828', cyan: '#ef5350' },
+        sorbonne:    { blue: '#6a1b1f', cyan: '#d97a83' },
+        saclay:      { blue: '#4a2a7a', cyan: '#9b8cff' },
+        nancy:       { blue: '#7b2f16', cyan: '#f08a5d' },
+        dijon:       { blue: '#5a5a9a', cyan: '#d3d3ff' },
+        orleans:     { blue: '#a64b12', cyan: '#f37021' },
+        angers:      { blue: '#9a412c', cyan: '#ff8368' },
+        tours:       { blue: '#5d2e74', cyan: '#8c4799' },
+        nantes:      { blue: '#8f6a00', cyan: '#ffc20e' },
+        clermont:    { blue: '#547c27', cyan: '#8dc63f' },
+        lyon:        { blue: '#5b1111', cyan: '#a93a3a' },
+        annecy:      { blue: '#951b60', cyan: '#ea1d8e' },
+        grenoble:    { blue: '#7d6748', cyan: '#b49a71' },
+        montpellier: { blue: '#0f4e7f', cyan: '#1674b9' },
+        marseille:   { blue: '#006b78', cyan: '#00a5b5' },
+        nice:        { blue: '#6f8f1d', cyan: '#b3d334' }
+    };
+
+    function applyTheme(theme) {
+        document.documentElement.style.setProperty('--poly-blue', theme.blue);
+        document.documentElement.style.setProperty('--poly-cyan', theme.cyan);
+    }
+
+    function resetTheme() {
+        applyTheme(defaultTheme);
+    }
+
     const memoryCache = {};
 
     async function fetchWithCache(collection, ecoleId, subCollection, annee) {
         const cacheKey = `sebr_cache_${collection}_${ecoleId}_${subCollection}_${annee}`;
         if (memoryCache[cacheKey]) return memoryCache[cacheKey];
 
-        const sessionData = sessionStorage.getItem(cacheKey);
-        if (sessionData) {
-            const parsed = JSON.parse(sessionData);
-            const mockSnap = { exists: () => !parsed._empty, data: () => parsed._empty ? null : parsed };
-            memoryCache[cacheKey] = mockSnap;
-            return mockSnap;
-        }
-
         const docRef = doc(db, collection, ecoleId, subCollection, annee);
         const snap = await getDoc(docRef);
-        const dataToStore = snap.exists() ? snap.data() : { _empty: true };
-        sessionStorage.setItem(cacheKey, JSON.stringify(dataToStore));
+        memoryCache[cacheKey] = snap;
         return snap;
     }
 
@@ -403,21 +625,68 @@
         if (val.toDate) d = val.toDate();
         else if (val.seconds) d = new Date(val.seconds * 1000);
         else d = new Date(val);
-        
+
         if (isNaN(d.getTime())) return "";
         return d.toLocaleDateString('fr-FR', { day: 'numeric', month: 'long', year: 'numeric' }).toUpperCase();
     }
 
-    // ==========================================
-    // UI & CARTE
-    // ==========================================
     const points = document.querySelectorAll('.ecole-point');
     const sideContent = document.getElementById('side-content');
     const sideTitle = document.getElementById('side-title');
     const tooltip = document.getElementById('tooltip');
     const anneeSelector = document.getElementById('annee-selector');
+    const authButton = document.getElementById('auth-button');
+    const userGreeting = document.getElementById('user-greeting');
 
     let currentEcole = null;
+    let connectedUserProfile = null;
+
+    function updateAuthUI(user, profile = null) {
+        if (user) {
+            const prenom = profile?.prenom || user.displayName || user.email?.split('@')[0] || 'toi';
+            userGreeting.textContent = `Bonjour ${prenom}`;
+            userGreeting.classList.add('visible');
+
+            authButton.textContent = 'Déconnexion';
+            authButton.classList.add('logout');
+
+            const theme = schoolThemes[profile?.ecole] || defaultTheme;
+            applyTheme(theme);
+        } else {
+            connectedUserProfile = null;
+            userGreeting.textContent = '';
+            userGreeting.classList.remove('visible');
+
+            authButton.textContent = 'Connexion 🔒';
+            authButton.classList.remove('logout');
+            resetTheme();
+        }
+    }
+
+    authButton.addEventListener('click', async () => {
+        if (auth.currentUser) {
+            await signOut(auth);
+            window.location.href = 'index.html';
+        } else {
+            window.location.href = 'authentification.html';
+        }
+    });
+
+    onAuthStateChanged(auth, async (user) => {
+        if (!user) {
+            updateAuthUI(null);
+            return;
+        }
+
+        try {
+            const userSnap = await getDoc(doc(db, 'users', user.email));
+            connectedUserProfile = userSnap.exists() ? userSnap.data() : null;
+            updateAuthUI(user, connectedUserProfile);
+        } catch (error) {
+            console.error('Erreur profil utilisateur :', error);
+            updateAuthUI(user, null);
+        }
+    });
 
     anneeSelector.addEventListener('change', () => {
         if (currentEcole) ouvrirEcole(currentEcole.id, currentEcole.name, currentEcole.color);
@@ -425,16 +694,16 @@
 
     points.forEach(p => {
         const color = p.style.getPropertyValue('--halo-color');
-        
+
         p.addEventListener('mouseenter', async () => {
             tooltip.classList.remove('hidden');
             tooltip.style.borderColor = color;
             tooltip.innerHTML = `<strong style="color: ${color};">Polytech ${p.dataset.name}</strong>`;
-            
-            const snap = await fetchWithCache("ecoles", p.dataset.folder, "events", anneeSelector.value);
+
+            const snap = await fetchWithCache('ecoles', p.dataset.folder, 'events', anneeSelector.value);
             if (snap.exists() && snap.data().soiree) {
                 const s = snap.data().soiree;
-                if (s.nom && s.nom.trim() !== "") {
+                if (s.nom && s.nom.trim() !== '') {
                     tooltip.innerHTML += `<div style="margin-top:8px; border-top:1px solid #333; padding-top:5px;">
                         <span style="font-size:0.85em; color:#fff; display:block;">🎉 ${s.nom.toUpperCase()}</span>
                         <span style="font-size:0.75em; color:var(--poly-cyan); font-weight:bold;">📅 ${formaterDate(s.date) || 'À venir'}</span>
@@ -456,33 +725,30 @@
     });
 
     async function ouvrirEcole(ecoleId, name, cityColor) {
-        // 1. On retire la classe active de TOUS les points
         document.querySelectorAll('.ecole-point').forEach(p => p.classList.remove('active'));
-    
-        // 2. On ajoute la classe active au point sélectionné
+
         const pointActif = document.querySelector(`.ecole-point[data-folder="${ecoleId}"]`);
         if (pointActif) pointActif.classList.add('active');
-        
+
         currentEcole = { id: ecoleId, name: name, color: cityColor };
         const annee = anneeSelector.value;
 
         sideTitle.innerHTML = `Polytech ${name} <img src="${ecoleId}.png" style="height:50px; vertical-align:middle; margin-left:10px;" onerror="this.style.display='none'">`;
         sideTitle.style.color = cityColor;
 
-        // Mise en place de l'animation de chargement
         sideContent.innerHTML = `
             <div class="btn-back" onclick="location.hash=''; location.reload()">← Retour à la carte</div>
             <div id="dynamic-area"><div class="loading-text" style="text-align:center; padding:20px; font-weight: bold; color: ${cityColor};">Chargement des données ${annee}...</div></div>
         `;
 
         const dynamicArea = document.getElementById('dynamic-area');
-        
+
         try {
-            const eventSnap = await fetchWithCache("ecoles", ecoleId, "events", annee);
-            let eventHtml = "";
+            const eventSnap = await fetchWithCache('ecoles', ecoleId, 'events', annee);
+            let eventHtml = '';
             if (eventSnap.exists() && eventSnap.data().soiree) {
                 const e = eventSnap.data().soiree;
-                if (e.nom && e.nom.trim() !== "") {
+                if (e.nom && e.nom.trim() !== '') {
                     eventHtml = `<div class="rezo-banner" style="border-bottom: 3px solid ${cityColor};">
                         <span style="color:var(--poly-cyan); font-weight:bold; font-size:1.1em;">REZO 🎉 ${e.nom.toUpperCase()}</span><br>
                         <span style="color:#aaa; font-size:0.9em;">📅 ${formaterDate(e.date) || 'À venir'}</span>
@@ -490,12 +756,11 @@
                 }
             }
 
-            const archSnap = await fetchWithCache("ecoles", ecoleId, "archives", annee);
+            const archSnap = await fetchWithCache('ecoles', ecoleId, 'archives', annee);
             if (archSnap.exists()) {
                 const d = archSnap.data();
-                let sections = "";
-                
-                // Calendrier local
+                let sections = '';
+
                 if (d.campagne_start || d.passation_date) {
                     sections += `<div class="category-wrapper">
                         <div class="category-title" style="color:${cityColor}">Calendrier local</div>
@@ -504,47 +769,45 @@
                     </div>`;
                 }
 
-               // --- BDE actuel ---
-                sections += renderSection("BDE", d.bde_actuel, cityColor, ecoleId, annee, "bde_actuel");
-                
-                // --- BDP actuel ---
+                sections += renderSection('BDE', d.bde_actuel, cityColor, ecoleId, annee, 'bde_actuel');
+
                 if (d.bdp_actuel && (d.bdp_actuel.nom || d.bdp_actuel.prez)) {
-                    sections += renderSection("BDP", d.bdp_actuel, cityColor, ecoleId, annee, "bdp_actuel");
+                    sections += renderSection('BDP', d.bdp_actuel, cityColor, ecoleId, annee, 'bdp_actuel');
                 }
-                
-                // --- Listes ---
-                sections += renderSection("Listes BDE", d.listes_bde, cityColor, ecoleId, annee, "listes_bde");
-                sections += renderSection("Listes BDP", d.listes_bdp, cityColor, ecoleId, annee, "listes_bdp");
-                sections += renderSection("Fakelistes", d.fakelistes, cityColor, ecoleId, annee, "fakelistes");
-                
+
+                sections += renderSection('Listes BDE', d.listes_bde, cityColor, ecoleId, annee, 'listes_bde');
+                sections += renderSection('Listes BDP', d.listes_bdp, cityColor, ecoleId, annee, 'listes_bdp');
+                sections += renderSection('Fakelistes', d.fakelistes, cityColor, ecoleId, annee, 'fakelistes');
+
                 dynamicArea.innerHTML = eventHtml + sections;
             } else {
                 dynamicArea.innerHTML = eventHtml + `<p style='color:#666; text-align:center; animation: slideUpFade 0.4s ease-out;'>Aucune donnée pour cette année.</p>`;
             }
-        } catch(e) { console.error(e); }
+        } catch (e) {
+            console.error(e);
+            dynamicArea.innerHTML = `<p style='color:#ff8080; text-align:center;'>Erreur lors du chargement des données.</p>`;
+        }
     }
 
     function renderSection(title, data, cityColor, ecoleId, annee, type) {
         if (!data || (Array.isArray(data) && data.length === 0)) {
-            if (type === 'bde_actuel') data = [{ nom: "Non renseigné", prez: "N/A" }];
-            else return "";
+            if (type === 'bde_actuel') data = [{ nom: 'Non renseigné', prez: 'N/A' }];
+            else return '';
         }
-    
+
         let items = Array.isArray(data) ? data : [data];
-    
-        // --- TRI PAR CLASSEMENT ---
+
         items.sort((a, b) => {
-            const rankA = parseInt(a.classement) || Infinity; 
+            const rankA = parseInt(a.classement) || Infinity;
             const rankB = parseInt(b.classement) || Infinity;
             return rankA - rankB;
         });
-    
+
         const isBureau = type.includes('actuel');
         const fallback = isBureau ? `${ecoleId}.png` : 'default.png';
-    
+
         const cards = items.map((i, index) => {
-            const url = `liste.html?ecole=${ecoleId}&annee=${annee}&type=${type}&id=${encodeURIComponent(i.nom || "bureau")}`;
-            // Ajout d'un animation-delay dynamique basé sur l'index de la boucle
+            const url = `liste.html?ecole=${ecoleId}&annee=${annee}&type=${type}&id=${encodeURIComponent(i.nom || 'bureau')}`;
             return `<div class="list-card" onclick="window.location.href='${url}'" style="border-left: 4px solid ${i.couleur || cityColor}; animation-delay: ${index * 0.1}s">
                 ${i.classement ? `<div class="rank-badge">${i.classement}</div>` : ''}
                 <img src="${i.logo || i.photo || fallback}" class="list-logo" onerror="this.src='default.png'">
@@ -554,105 +817,103 @@
                 </div>
             </div>`;
         }).join('');
-    
+
         return `<div class="category-wrapper"><div class="category-title">${title}</div>${cards}</div>`;
     }
 
-    // ==========================================
-    // RECHERCHE GLOBALE
-    // ==========================================
     let indexRecherche = [];
-        const barre = document.getElementById('barreRecherche');
-        const listeResultats = document.getElementById('resultatsRecherche');
-        
-        async function preparerIndex() {
-            indexRecherche = []; 
-            
-            const archiveSnapshot = await getDocs(collectionGroup(db, "archives"));
-            archiveSnapshot.forEach((doc) => {
-                const data = doc.data();
-                const annee = doc.id;
-                const ecoleId = doc.ref.parent.parent.id;
-        
-                ['listes_bde', 'listes_bdp', 'fakelistes', 'bde_actuel', 'bdp_actuel'].forEach(type => {
-                    if (data[type]) {
-                        const items = Array.isArray(data[type]) ? data[type] : [data[type]];
-                        
-                        items.forEach(item => {
-                            if (item.nom || item.prez) {
-                                const nom = item.nom || (type.includes('bde') ? 'BDE' : 'BDP');
-                                const prez = item.prez || '';
-                                const vp = item.vp || '';
-                                const rr = item.rr || '';
-        
-                                indexRecherche.push({
-                                    nom: nom,
-                                    prez: prez,
-                                    vp: vp,
-                                    rr: rr,
-                                    ecole: ecoleId,
-                                    annee: annee,
-                                    type: type,
-                                    searchKey: `${nom} ${prez} ${vp} ${rr} ${ecoleId} ${annee}`.toLowerCase()
-                                });
-                            }
-                        });
-                    }
-                });
-            });
-        
-            const eventSnapshot = await getDocs(collectionGroup(db, "events"));
-            eventSnapshot.forEach((doc) => {
-                const data = doc.data();
-                const annee = doc.id;
-                const ecoleId = doc.ref.parent.parent.id;
-        
-                if (data.locaux && Array.isArray(data.locaux)) {
-                    data.locaux.forEach(ev => {
-                        indexRecherche.push({
-                            nom: ev.nom,
-                            typeInfo: "Événement Local",
-                            ecole: ecoleId,
-                            annee: annee,
-                            type: "event",
-                            searchKey: `${ev.nom} event ${ecoleId} ${annee}`.toLowerCase()
-                        });
+    const barre = document.getElementById('barreRecherche');
+    const listeResultats = document.getElementById('resultatsRecherche');
+
+    async function preparerIndex() {
+        indexRecherche = [];
+
+        const archiveSnapshot = await getDocs(collectionGroup(db, 'archives'));
+        archiveSnapshot.forEach((docItem) => {
+            const data = docItem.data();
+            const annee = docItem.id;
+            const ecoleId = docItem.ref.parent.parent.id;
+
+            ['listes_bde', 'listes_bdp', 'fakelistes', 'bde_actuel', 'bdp_actuel'].forEach(type => {
+                if (data[type]) {
+                    const items = Array.isArray(data[type]) ? data[type] : [data[type]];
+
+                    items.forEach(item => {
+                        if (item.nom || item.prez) {
+                            const nom = item.nom || (type.includes('bde') ? 'BDE' : 'BDP');
+                            const prez = item.prez || '';
+                            const vp = item.vp || '';
+                            const rr = item.rr || '';
+
+                            indexRecherche.push({
+                                nom,
+                                prez,
+                                vp,
+                                rr,
+                                ecole: ecoleId,
+                                annee,
+                                type,
+                                searchKey: `${nom} ${prez} ${vp} ${rr} ${ecoleId} ${annee}`.toLowerCase()
+                            });
+                        }
                     });
                 }
-                
-                if (data.soiree && data.soiree.nom) {
-                     indexRecherche.push({
-                        nom: data.soiree.nom,
-                        typeInfo: "Soirée Rezo",
+            });
+        });
+
+        const eventSnapshot = await getDocs(collectionGroup(db, 'events'));
+        eventSnapshot.forEach((docItem) => {
+            const data = docItem.data();
+            const annee = docItem.id;
+            const ecoleId = docItem.ref.parent.parent.id;
+
+            if (data.locaux && Array.isArray(data.locaux)) {
+                data.locaux.forEach(ev => {
+                    indexRecherche.push({
+                        nom: ev.nom,
+                        typeInfo: 'Événement Local',
                         ecole: ecoleId,
-                        annee: annee,
-                        type: "rezo",
-                        searchKey: `${data.soiree.nom} rezo ${ecoleId} ${annee}`.toLowerCase()
+                        annee,
+                        type: 'event',
+                        searchKey: `${ev.nom} event ${ecoleId} ${annee}`.toLowerCase()
                     });
-                }
-            });
-        }
+                });
+            }
+
+            if (data.soiree && data.soiree.nom) {
+                indexRecherche.push({
+                    nom: data.soiree.nom,
+                    typeInfo: 'Soirée Rezo',
+                    ecole: ecoleId,
+                    annee,
+                    type: 'rezo',
+                    searchKey: `${data.soiree.nom} rezo ${ecoleId} ${annee}`.toLowerCase()
+                });
+            }
+        });
+    }
 
     barre.addEventListener('input', (e) => {
         const val = e.target.value.toLowerCase();
-        if (val.length < 2) { listeResultats.style.display = 'none'; return; }
+        if (val.length < 2) {
+            listeResultats.style.display = 'none';
+            return;
+        }
 
         const filtres = indexRecherche.filter(i => i.searchKey.includes(val)).slice(0, 8);
-        
+
         if (filtres.length > 0) {
             listeResultats.innerHTML = filtres.map(f => {
-                const sousTitre = f.typeInfo 
-                    ? `${f.typeInfo}` 
-                    : `Prez: ${f.prez || 'N/A'}`;
-            
+                const sousTitre = f.typeInfo ? `${f.typeInfo}` : `Prez: ${f.prez || 'N/A'}`;
+
                 let targetType = f.type;
                 let targetId = f.nom;
-            
+
                 if (f.type === 'event' || f.type === 'rezo') {
                     targetType = 'bde_actuel';
-                    targetId = 'BDE'; 
+                    targetId = 'BDE';
                 }
-            
+
                 return `
                     <div class="result-item" onclick="window.location.href='liste.html?ecole=${f.ecole}&annee=${f.annee}&type=${targetType}&id=${encodeURIComponent(targetId)}'">
                         <strong>${f.nom}</strong> <span class="type-badge">${f.ecole.toUpperCase()}</span>
@@ -660,7 +921,7 @@
                     </div>
                 `;
             }).join('');
-            
+
             listeResultats.style.display = 'block';
         } else {
             listeResultats.style.display = 'none';
@@ -668,19 +929,19 @@
     });
 
     document.addEventListener('click', (e) => {
-        if (!barre.contains(e.target)) listeResultats.style.display = 'none';
-    });
-
-    // Init au chargement
-    window.addEventListener('load', () => {
-        preparerIndex();
-        const h = window.location.hash.replace('#','');
-        if(h) {
-            const p = document.querySelector(`.ecole-point[data-folder="${h}"]`);
-            if(p) ouvrirEcole(h, p.dataset.name, p.style.getPropertyValue('--halo-color'));
+        if (!barre.contains(e.target) && !listeResultats.contains(e.target)) {
+            listeResultats.style.display = 'none';
         }
     });
-        
+
+    window.addEventListener('load', async () => {
+        await preparerIndex();
+        const h = window.location.hash.replace('#', '');
+        if (h) {
+            const p = document.querySelector(`.ecole-point[data-folder="${h}"]`);
+            if (p) ouvrirEcole(h, p.dataset.name, p.style.getPropertyValue('--halo-color'));
+        }
+    });
 </script>
 
 <footer class="site-footer">
