@@ -693,7 +693,7 @@
     function updateAuthUI(user, profile = null) {
         if (user) {
             const prenom = profile?.prenom || user.displayName || user.email?.split('@')[0] || 'toi';
-            userGreeting.textContent = `Bonjour ${prenom}`;
+            userGreeting.textContent = `Bonjour ${prenom} !`;
             userGreeting.classList.add('visible');
 
             authButton.textContent = 'Déconnexion';
