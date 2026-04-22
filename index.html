@@ -42,6 +42,34 @@
             overflow: hidden;
         }
 
+        /* --- NOUVELLES ANIMATIONS --- */
+        @keyframes popIn {
+            0% { transform: scale(0); opacity: 0; }
+            80% { transform: scale(1.1); opacity: 1; }
+            100% { transform: scale(1); opacity: 1; }
+        }
+
+        @keyframes slideUpFade {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        @keyframes fadeInDropdown {
+            from { opacity: 0; transform: translateY(-10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        @keyframes pulseText {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.4; }
+        }
+
+        @keyframes slideInHeader {
+            from { transform: translateY(-100%); }
+            to { transform: translateY(0); }
+        }
+        /* --------------------------- */
+
         header {
             display: flex;
             justify-content: space-between;
@@ -52,6 +80,7 @@
             border-bottom: 3px solid var(--poly-cyan);
             z-index: 100;
             flex-shrink: 0;
+            animation: slideInHeader 0.5s ease-out forwards;
         }
 
         .header-left, .header-right { display: flex; gap: 10px; align-items: center; flex: 1; }
@@ -71,6 +100,11 @@
         #barreRecherche { 
             width: 100%; padding: 10px; border-radius: 6px; 
             border: 1px solid var(--poly-cyan); background: #0b1118; color: white; 
+            transition: all 0.3s ease;
+        }
+        #barreRecherche:focus {
+            box-shadow: 0 0 10px rgba(0, 158, 227, 0.4);
+            outline: none;
         }
 
         .search-results-dropdown {
@@ -78,6 +112,7 @@
             background: #161f2b; border: 1px solid var(--poly-cyan);
             border-top: none; z-index: 1000; max-height: 300px;
             overflow-y: auto; display: none; border-radius: 0 0 8px 8px;
+            animation: fadeInDropdown 0.2s ease-out forwards;
         }
 
         .result-item {
@@ -96,13 +131,14 @@
             cursor: pointer; font-weight: bold; font-size: 0.85em;
             text-decoration: none; transition: 0.2s; white-space: nowrap;
         }
-        .btn-nav:hover { background: var(--poly-cyan); color: #000; }
+        .btn-nav:hover { background: var(--poly-cyan); color: #000; transform: translateY(-2px); }
 
         .btn-admin {
             background: transparent; border: 1px solid #444;
             color: #888; padding: 8px 12px; border-radius: 5px;
-            cursor: pointer; font-size: 0.8em;
+            cursor: pointer; font-size: 0.8em; transition: 0.2s;
         }
+        .btn-admin:hover { color: white; border-color: white; }
 
         #main-container { display: flex; flex: 1; overflow: hidden; }
 
@@ -112,17 +148,14 @@
             display: flex;
             justify-content: center;
             align-items: center;
-            /* On utilise le bleu plus "pêchu" ici aussi */
             background: radial-gradient(circle at center, #87CEEB 0%, #050a0f 85%);
             padding: 20px;
         }
 
         .map-wrapper {
             position: relative;
-            /* La carte fera 50% de la largeur de l'écran, sans jamais dépasser 700px */
             width: 50vw; 
             max-width: 550px;
-            /* On laisse de la marge autour pour l'effet visuel */
             margin: 2rem auto; 
             aspect-ratio: 1 / 1;
         }
@@ -132,18 +165,13 @@
             height: auto;
             display: block;
             filter: drop-shadow(0 0 15px rgba(0, 158, 227, 0.12));
+            animation: fadeInDropdown 1s ease-out forwards;
         }
         
         @keyframes pulse {
-            0% {
-                box-shadow: 0 0 0 0 var(--pulse-color, rgba(227, 204, 0, 0.7));
-            }
-            70% {
-                box-shadow: 0 0 0 15px rgba(227, 204, 0, 0);
-            }
-            100% {
-                box-shadow: 0 0 0 0 rgba(227, 204, 0, 0);
-            }
+            0% { box-shadow: 0 0 0 0 var(--pulse-color, rgba(227, 204, 0, 0.7)); }
+            70% { box-shadow: 0 0 0 15px rgba(227, 204, 0, 0); }
+            100% { box-shadow: 0 0 0 0 rgba(227, 204, 0, 0); }
         }
 
         .ecole-point {
@@ -152,6 +180,7 @@
             justify-content: center; align-items: center;
             transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
             z-index: 10; filter: drop-shadow(0 2px 4px rgba(0,0,0,0.5));
+            animation: popIn 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275) backwards;
         }
 
         .ecole-point:not(.active):hover {
@@ -164,14 +193,10 @@
             animation: pulse 2s infinite;
             --pulse-color: var(--halo-color);
             z-index: 20;
-            transform: scale(1.2); /* Un peu plus grosse pour qu'on la voie bien */
+            transform: scale(1.2); 
         }
         
         .ecole-point img { width: 100%; height: 100%; object-fit: contain; border-radius: 50%; }
-        .ecole-point:hover {
-            transform: scale(1.4); z-index: 100;
-            box-shadow: 0 0 0 3px white, 0 0 20px 5px var(--halo-color);
-        }
 
         #sidebar-section {
             flex: 1; min-width: 380px; background: #0b1118;
@@ -182,21 +207,25 @@
             display: flex; align-items: center; justify-content: space-between;
             gap: 10px; margin-bottom: 15px;
         }
-        #side-title { color: var(--poly-cyan); margin: 0; font-size: 1.4em; flex: 1; }
+        #side-title { color: var(--poly-cyan); margin: 0; font-size: 1.4em; flex: 1; transition: color 0.3s ease; }
 
         #annee-selector {
             background: #161f2b; color: white; border: 1px solid #444;
-            padding: 5px 10px; border-radius: 5px; cursor: pointer;
+            padding: 5px 10px; border-radius: 5px; cursor: pointer; transition: 0.2s;
         }
+        #annee-selector:hover { border-color: var(--poly-cyan); }
 
         .btn-back {
             display: block; color: #888; text-decoration: none;
             font-weight: bold; margin-bottom: 20px; font-size: 0.9em; cursor: pointer;
+            transition: color 0.2s;
         }
+        .btn-back:hover { color: white; }
 
         .category-wrapper {
             margin-top: 20px; background: rgba(22, 31, 43, 0.5);
             padding: 15px; border-radius: 8px; border: 1px solid #222;
+            animation: slideUpFade 0.4s ease-out backwards;
         }
         .category-title { margin: 0 0 15px 0; font-size: 0.9em; text-transform: uppercase; color: #888; font-weight: bold; }
 
@@ -204,8 +233,9 @@
             background: var(--card-bg); padding: 12px; border-radius: 8px;
             display: flex; align-items: center; gap: 12px; margin-bottom: 10px;
             cursor: pointer; transition: 0.2s; position: relative; border: 1px solid transparent;
+            animation: slideUpFade 0.4s ease-out backwards;
         }
-        .list-card:hover { transform: translateX(5px); border-color: #444; }
+        .list-card:hover { transform: translateX(5px); border-color: #444; box-shadow: -4px 0 10px rgba(0,0,0,0.3); }
         .list-logo { width: 50px; height: 50px; border-radius: 50%; object-fit: cover; }
         .list-name { font-weight: bold; flex: 1; font-size: 1.05em; }
         .list-prez { font-size: 0.85em; color: #aaa; }
@@ -219,6 +249,11 @@
         .rezo-banner {
             background: rgba(255, 255, 255, 0.03); border: 1px dashed #444;
             padding: 12px; border-radius: 8px; margin-bottom: 15px; font-size: 0.9em;
+            animation: slideUpFade 0.4s ease-out backwards;
+        }
+
+        .loading-text {
+            animation: pulseText 1.5s infinite ease-in-out;
         }
 
         #tooltip {
@@ -226,9 +261,10 @@
             padding: 12px; border: 1px solid var(--poly-cyan);
             border-radius: 8px; pointer-events: none; z-index: 1000;
             font-size: 0.9em; box-shadow: 0 8px 25px rgba(0,0,0,0.6); backdrop-filter: blur(5px);
+            transition: opacity 0.2s;
         }
 
-        .hidden { display: none !important; }
+        .hidden { display: none !important; opacity: 0; }
 
         .site-footer {
             text-align: center;
@@ -245,12 +281,12 @@
             #main-container { flex-direction: column; }
             header { height: auto; padding: 15px; flex-direction: column; gap: 15px; }
             #map-section { 
-                padding: 40px 0; /* Plus d'espace vertical sur mobile */
+                padding: 40px 0; 
                 min-height: 500px; 
                 flex: none; 
-                /* On force le dégradé bleu même sur mobile ici */
-                background: radial-gradient(circle at center, #87CEEB 0%, #050a0f 100%);            }
-            .map-wrapper { width: 90%; transform: scale(1.05); } /* Légèrement réduit pour respirer */
+                background: radial-gradient(circle at center, #87CEEB 0%, #050a0f 100%);            
+            }
+            .map-wrapper { width: 90%; transform: scale(1.05); } 
             #sidebar-section { min-width: 100%; border-left: none; border-top: 2px solid #222; }
         }
     </style>
@@ -266,7 +302,6 @@
     <div id="external-view" class="hidden" style="flex: 1; width: 100%; height: 100%;">
         <iframe id="content-iframe" src="" style="width: 100%; height: 100%; border: none;"></iframe>
     </div>
-</div>
     
     <div class="search-container">
         <input type="text" id="barreRecherche" placeholder="Rechercher une liste, un prez...">
@@ -285,22 +320,22 @@
         <div id="tooltip" class="hidden"></div>
         <div class="map-wrapper">
             <img src="france.svg" class="france-svg" alt="Carte de France">
-            <div class="ecole-point" style="top: 8%; left: 58%; --halo-color: #ed1c24;" data-name="Lille" data-folder="lille"><img src="lille.png" alt="Lille"></div>
-            <div class="ecole-point" style="top: 21%; left: 53%; --halo-color: #b2b2b2;" data-name="Paris-Sorbonne" data-folder="sorbonne"><img src="sorbonne.png" alt="Sorbonne"></div>
-            <div class="ecole-point" style="top: 26%; left: 52%; --halo-color: #8e95b3;" data-name="Paris-Saclay" data-folder="saclay"><img src="saclay.png" alt="Saclay"></div>
-            <div class="ecole-point" style="top: 24%; left: 76%; --halo-color: #f04e23;" data-name="Nancy" data-folder="nancy"><img src="nancy.png" alt="Nancy"></div>
-            <div class="ecole-point" style="top: 42%; left: 24%; --halo-color: #ffc20e;" data-name="Nantes" data-folder="nantes"><img src="nantes.png" alt="Nantes"></div>
-            <div class="ecole-point" style="top: 40%; left: 32%; --halo-color: #ff8368;" data-name="Angers" data-folder="angers"><img src="angers.png" alt="Angers"></div>
-            <div class="ecole-point" style="top: 36%; left: 49%; --halo-color: #f37021;" data-name="Orléans" data-folder="orleans"><img src="orleans.png" alt="Orléans"></div>
-            <div class="ecole-point" style="top: 41%; left: 40%; --halo-color: #8c4799;" data-name="Tours" data-folder="tours"><img src="tours.png" alt="Tours"></div>
-            <div class="ecole-point" style="top: 58%; left: 55%; --halo-color: #8dc63f;" data-name="Clermont-Ferrand" data-folder="clermont"><img src="clermont.png" alt="Clermont"></div>
-            <div class="ecole-point" style="top: 57%; left: 70%; --halo-color: #781716;" data-name="Lyon" data-folder="lyon"><img src="lyon.png" alt="Lyon"></div>
-            <div class="ecole-point" style="top: 53%; left: 78%; --halo-color: #ea1d8e;" data-name="Annecy-Chambéry" data-folder="annecy"><img src="annecy.png" alt="Annecy"></div>
-            <div class="ecole-point" style="top: 63%; left: 76%; --halo-color: #b49a71;" data-name="Grenoble" data-folder="grenoble"><img src="grenoble.png" alt="Grenoble"></div>
-            <div class="ecole-point" style="top: 78%; left: 59%; --halo-color: #1674b9;" data-name="Montpellier" data-folder="montpellier"><img src="montpellier.png" alt="Montpellier"></div>
-            <div class="ecole-point" style="top: 78%; left: 71%; --halo-color: #00a5b5;" data-name="Marseille" data-folder="marseille"><img src="marseille.png" alt="Marseille"></div>
-            <div class="ecole-point" style="top: 80%; left: 83%; --halo-color: #b3d334;" data-name="Nice Sophia" data-folder="nice"><img src="nice.png" alt="Nice"></div>
-            <div class="ecole-point" style="top: 42%; left: 70%; --halo-color: #d3d3ff;" data-name="Dijon" data-folder="dijon"><img src="dijon.png" alt="Dijon"></div>
+            <div class="ecole-point" style="top: 8%; left: 58%; --halo-color: #ed1c24; animation-delay: 0.1s;" data-name="Lille" data-folder="lille"><img src="lille.png" alt="Lille"></div>
+            <div class="ecole-point" style="top: 21%; left: 53%; --halo-color: #b2b2b2; animation-delay: 0.15s;" data-name="Paris-Sorbonne" data-folder="sorbonne"><img src="sorbonne.png" alt="Sorbonne"></div>
+            <div class="ecole-point" style="top: 26%; left: 52%; --halo-color: #8e95b3; animation-delay: 0.2s;" data-name="Paris-Saclay" data-folder="saclay"><img src="saclay.png" alt="Saclay"></div>
+            <div class="ecole-point" style="top: 24%; left: 76%; --halo-color: #f04e23; animation-delay: 0.25s;" data-name="Nancy" data-folder="nancy"><img src="nancy.png" alt="Nancy"></div>
+            <div class="ecole-point" style="top: 42%; left: 24%; --halo-color: #ffc20e; animation-delay: 0.3s;" data-name="Nantes" data-folder="nantes"><img src="nantes.png" alt="Nantes"></div>
+            <div class="ecole-point" style="top: 40%; left: 32%; --halo-color: #ff8368; animation-delay: 0.35s;" data-name="Angers" data-folder="angers"><img src="angers.png" alt="Angers"></div>
+            <div class="ecole-point" style="top: 36%; left: 49%; --halo-color: #f37021; animation-delay: 0.4s;" data-name="Orléans" data-folder="orleans"><img src="orleans.png" alt="Orléans"></div>
+            <div class="ecole-point" style="top: 41%; left: 40%; --halo-color: #8c4799; animation-delay: 0.45s;" data-name="Tours" data-folder="tours"><img src="tours.png" alt="Tours"></div>
+            <div class="ecole-point" style="top: 58%; left: 55%; --halo-color: #8dc63f; animation-delay: 0.5s;" data-name="Clermont-Ferrand" data-folder="clermont"><img src="clermont.png" alt="Clermont"></div>
+            <div class="ecole-point" style="top: 57%; left: 70%; --halo-color: #781716; animation-delay: 0.55s;" data-name="Lyon" data-folder="lyon"><img src="lyon.png" alt="Lyon"></div>
+            <div class="ecole-point" style="top: 53%; left: 78%; --halo-color: #ea1d8e; animation-delay: 0.6s;" data-name="Annecy-Chambéry" data-folder="annecy"><img src="annecy.png" alt="Annecy"></div>
+            <div class="ecole-point" style="top: 63%; left: 76%; --halo-color: #b49a71; animation-delay: 0.65s;" data-name="Grenoble" data-folder="grenoble"><img src="grenoble.png" alt="Grenoble"></div>
+            <div class="ecole-point" style="top: 78%; left: 59%; --halo-color: #1674b9; animation-delay: 0.7s;" data-name="Montpellier" data-folder="montpellier"><img src="montpellier.png" alt="Montpellier"></div>
+            <div class="ecole-point" style="top: 78%; left: 71%; --halo-color: #00a5b5; animation-delay: 0.75s;" data-name="Marseille" data-folder="marseille"><img src="marseille.png" alt="Marseille"></div>
+            <div class="ecole-point" style="top: 80%; left: 83%; --halo-color: #b3d334; animation-delay: 0.8s;" data-name="Nice Sophia" data-folder="nice"><img src="nice.png" alt="Nice"></div>
+            <div class="ecole-point" style="top: 42%; left: 70%; --halo-color: #d3d3ff; animation-delay: 0.85s;" data-name="Dijon" data-folder="dijon"><img src="dijon.png" alt="Dijon"></div>
         </div>
     </div>
 
@@ -315,7 +350,7 @@
             </select>
         </div>
         <div id="side-content">
-            <div style="background: #161f2b; padding: 20px; border-radius: 10px; border-left: 4px solid var(--poly-cyan);">
+            <div style="background: #161f2b; padding: 20px; border-radius: 10px; border-left: 4px solid var(--poly-cyan); animation: slideUpFade 0.4s ease-out;">
                 Cliquez sur une école pour voir ses bureaux et ses listes.
             </div>
         </div>
@@ -399,7 +434,6 @@
             const snap = await fetchWithCache("ecoles", p.dataset.folder, "events", anneeSelector.value);
             if (snap.exists() && snap.data().soiree) {
                 const s = snap.data().soiree;
-                // NOUVEAU : On vérifie que le nom de la soirée contient bien du texte
                 if (s.nom && s.nom.trim() !== "") {
                     tooltip.innerHTML += `<div style="margin-top:8px; border-top:1px solid #333; padding-top:5px;">
                         <span style="font-size:0.85em; color:#fff; display:block;">🎉 ${s.nom.toUpperCase()}</span>
@@ -435,9 +469,10 @@
         sideTitle.innerHTML = `Polytech ${name} <img src="${ecoleId}.png" style="height:50px; vertical-align:middle; margin-left:10px;" onerror="this.style.display='none'">`;
         sideTitle.style.color = cityColor;
 
+        // Mise en place de l'animation de chargement
         sideContent.innerHTML = `
             <div class="btn-back" onclick="location.hash=''; location.reload()">← Retour à la carte</div>
-            <div id="dynamic-area"><div style="text-align:center; padding:20px;">Chargement ${annee}...</div></div>
+            <div id="dynamic-area"><div class="loading-text" style="text-align:center; padding:20px; font-weight: bold; color: ${cityColor};">Chargement des données ${annee}...</div></div>
         `;
 
         const dynamicArea = document.getElementById('dynamic-area');
@@ -447,7 +482,6 @@
             let eventHtml = "";
             if (eventSnap.exists() && eventSnap.data().soiree) {
                 const e = eventSnap.data().soiree;
-                // NOUVEAU : On vérifie que le nom n'est pas vide avant de générer le HTML
                 if (e.nom && e.nom.trim() !== "") {
                     eventHtml = `<div class="rezo-banner" style="border-bottom: 3px solid ${cityColor};">
                         <span style="color:var(--poly-cyan); font-weight:bold; font-size:1.1em;">REZO 🎉 ${e.nom.toUpperCase()}</span><br>
@@ -465,28 +499,27 @@
                 if (d.campagne_start || d.passation_date) {
                     sections += `<div class="category-wrapper">
                         <div class="category-title" style="color:${cityColor}">Calendrier local</div>
-                        ${d.campagne_start ? `<div class="rezo-banner">🗳️ Campagne : ${formaterDate(d.campagne_start)} au ${formaterDate(d.campagne_end) || '...'}</div>` : ''}
-                        ${d.passation_date ? `<div class="rezo-banner">🤝 Passation : ${formaterDate(d.passation_date)}</div>` : ''}
+                        ${d.campagne_start ? `<div class="rezo-banner" style="animation-delay: 0.1s;">🗳️ Campagne : ${formaterDate(d.campagne_start)} au ${formaterDate(d.campagne_end) || '...'}</div>` : ''}
+                        ${d.passation_date ? `<div class="rezo-banner" style="animation-delay: 0.2s;">🤝 Passation : ${formaterDate(d.passation_date)}</div>` : ''}
                     </div>`;
                 }
 
-               // --- BDE actuel (on l'affiche toujours) ---
+               // --- BDE actuel ---
                 sections += renderSection("BDE", d.bde_actuel, cityColor, ecoleId, annee, "bde_actuel");
                 
-                // --- BDP actuel (Conditionnel) ---
-                // Note : j'ai corrigé le "f" en "if" et "sectionsHtml" en "sections"
+                // --- BDP actuel ---
                 if (d.bdp_actuel && (d.bdp_actuel.nom || d.bdp_actuel.prez)) {
                     sections += renderSection("BDP", d.bdp_actuel, cityColor, ecoleId, annee, "bdp_actuel");
                 }
                 
-                // --- Listes et autres (on les affiche s'ils existent via renderSection) ---
+                // --- Listes ---
                 sections += renderSection("Listes BDE", d.listes_bde, cityColor, ecoleId, annee, "listes_bde");
                 sections += renderSection("Listes BDP", d.listes_bdp, cityColor, ecoleId, annee, "listes_bdp");
                 sections += renderSection("Fakelistes", d.fakelistes, cityColor, ecoleId, annee, "fakelistes");
                 
                 dynamicArea.innerHTML = eventHtml + sections;
             } else {
-                dynamicArea.innerHTML = eventHtml + `<p style='color:#666; text-align:center;'>Aucune donnée pour cette année.</p>`;
+                dynamicArea.innerHTML = eventHtml + `<p style='color:#666; text-align:center; animation: slideUpFade 0.4s ease-out;'>Aucune donnée pour cette année.</p>`;
             }
         } catch(e) { console.error(e); }
     }
@@ -499,9 +532,8 @@
     
         let items = Array.isArray(data) ? data : [data];
     
-        // --- TRI PAR CLASSEMENT (1, 2, 3...) ---
+        // --- TRI PAR CLASSEMENT ---
         items.sort((a, b) => {
-            // On convertit en nombre pour éviter les erreurs de texte
             const rankA = parseInt(a.classement) || Infinity; 
             const rankB = parseInt(b.classement) || Infinity;
             return rankA - rankB;
@@ -510,9 +542,10 @@
         const isBureau = type.includes('actuel');
         const fallback = isBureau ? `${ecoleId}.png` : 'default.png';
     
-        const cards = items.map(i => {
+        const cards = items.map((i, index) => {
             const url = `liste.html?ecole=${ecoleId}&annee=${annee}&type=${type}&id=${encodeURIComponent(i.nom || "bureau")}`;
-            return `<div class="list-card" onclick="window.location.href='${url}'" style="border-left: 4px solid ${i.couleur || cityColor}">
+            // Ajout d'un animation-delay dynamique basé sur l'index de la boucle
+            return `<div class="list-card" onclick="window.location.href='${url}'" style="border-left: 4px solid ${i.couleur || cityColor}; animation-delay: ${index * 0.1}s">
                 ${i.classement ? `<div class="rank-badge">${i.classement}</div>` : ''}
                 <img src="${i.logo || i.photo || fallback}" class="list-logo" onerror="this.src='default.png'">
                 <div style="flex:1;">
@@ -533,9 +566,8 @@
         const listeResultats = document.getElementById('resultatsRecherche');
         
         async function preparerIndex() {
-            indexRecherche = []; // On vide au cas où
+            indexRecherche = []; 
             
-            // 1. On récupère les ARCHIVES (BDE, BDP, Listes)
             const archiveSnapshot = await getDocs(collectionGroup(db, "archives"));
             archiveSnapshot.forEach((doc) => {
                 const data = doc.data();
@@ -547,7 +579,6 @@
                         const items = Array.isArray(data[type]) ? data[type] : [data[type]];
                         
                         items.forEach(item => {
-                            // Condition : il faut au moins un nom ou un prez pour indexer
                             if (item.nom || item.prez) {
                                 const nom = item.nom || (type.includes('bde') ? 'BDE' : 'BDP');
                                 const prez = item.prez || '';
@@ -562,7 +593,6 @@
                                     ecole: ecoleId,
                                     annee: annee,
                                     type: type,
-                                    // On ajoute "annee" dans la clé pour pouvoir chercher par année aussi
                                     searchKey: `${nom} ${prez} ${vp} ${rr} ${ecoleId} ${annee}`.toLowerCase()
                                 });
                             }
@@ -571,7 +601,6 @@
                 });
             });
         
-            // 2. On récupère les ÉVÉNEMENTS
             const eventSnapshot = await getDocs(collectionGroup(db, "events"));
             eventSnapshot.forEach((doc) => {
                 const data = doc.data();
@@ -612,8 +641,6 @@
         
         if (filtres.length > 0) {
             listeResultats.innerHTML = filtres.map(f => {
-                // On définit ce qu'on affiche en deuxième ligne
-                // Si typeInfo existe (pour les events), on l'affiche. Sinon, on affiche le Prez.
                 const sousTitre = f.typeInfo 
                     ? `${f.typeInfo}` 
                     : `Prez: ${f.prez || 'N/A'}`;
@@ -623,7 +650,7 @@
             
                 if (f.type === 'event' || f.type === 'rezo') {
                     targetType = 'bde_actuel';
-                    targetId = 'BDE'; // Ou laisser vide/bureau selon ta structure Firestore
+                    targetId = 'BDE'; 
                 }
             
                 return `
@@ -653,7 +680,7 @@
             if(p) ouvrirEcole(h, p.dataset.name, p.style.getPropertyValue('--halo-color'));
         }
     });
-       
+        
 </script>
 
 <footer class="site-footer">
