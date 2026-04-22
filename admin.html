@@ -4,58 +4,70 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="icon" type="image/png" href="image.png">
-    <title>SEBR.tech — Admin</title>
+    <title>SEBR.tech — Console</title>
     <style>
         :root { --poly-blue: #003057; --poly-cyan: #009EE3; --bg-dark: #050a0f; }
         * { box-sizing: border-box; margin: 0; padding: 0; }
         body { font-family: 'Segoe UI', sans-serif; background: var(--bg-dark); color: white; display: flex; flex-direction: column; min-height: 100vh; }
+        
         header { display: flex; justify-content: space-between; align-items: center; padding: 0 25px; background: var(--poly-blue); height: 65px; border-bottom: 3px solid var(--poly-cyan); }
-        main { flex: 1; padding: 30px; max-width: 900px; margin: 0 auto; width: 100%; }
+        
+        /* Masqué par défaut pendant la vérification du rôle */
+        main { display: none; flex: 1; padding: 30px; max-width: 900px; margin: 0 auto; width: 100%; }
+        
+        #loading-overlay {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: var(--bg-dark); display: flex; justify-content: center;
+            align-items: center; z-index: 9999; font-weight: bold; color: var(--poly-cyan);
+        }
+
         @media (max-width: 600px) {
             main { padding: 15px; }
             header { padding: 0 15px; }
-            .logo-title { font-size: 0.9em; }
+            .logo-title { font-size: 0.8em; letter-spacing: 1px !important; }
         }
+
         .tabs { display: flex; gap: 10px; margin-bottom: 20px; flex-wrap: wrap; }
-        .tab-button { background: #0b1118; border: 1px solid #222; color: white; padding: 10px 15px; border-radius: 5px 5px 0 0; cursor: pointer; font-size: 0.9em; transition: 0.2s; position: relative; }
+        .tab-button { background: #0b1118; border: 1px solid #222; color: white; padding: 10px 15px; border-radius: 5px 5px 0 0; cursor: pointer; font-size: 0.9em; transition: 0.2s; }
         .tab-button.active { background: var(--poly-cyan); border-color: var(--poly-cyan); font-weight: bold; }
+        
+        /* Boutons avec display none par défaut (affichés par JS selon rôle) */
+        #tab-btn-approbations, #tab-btn-users { display: none; }
+
         .btn-logout { border-color: #ff4444 !important; color: #ff4444; margin-left: auto; border-radius: 5px !important; }
         .btn-logout:hover { background: #ff4444 !important; color: white; }
+        
         .tab-content { display: none; background: #0b1118; border: 1px solid #222; padding: 20px; border-radius: 0 5px 5px 5px; }
         .tab-content.active { display: block; }
 
-        /* Badge compteur sur l'onglet Approbations */
         .tab-badge {
-            display: inline-block;
-            background: #f09433;
-            color: black;
-            font-size: 0.7em;
-            font-weight: bold;
-            border-radius: 10px;
-            padding: 1px 6px;
-            margin-left: 6px;
-            vertical-align: middle;
-            line-height: 1.4;
+            display: inline-block; background: #f09433; color: black; font-size: 0.7em;
+            font-weight: bold; border-radius: 10px; padding: 1px 6px; margin-left: 6px;
+            vertical-align: middle; line-height: 1.4;
         }
         .tab-badge.hidden { display: none; }
     </style>
 </head>
 <body>
 
+<div id="loading-overlay">Vérification de l'accès...</div>
+
 <header>
-    <button onclick="location.href='index.html'" style="background: transparent; border: 1px solid var(--poly-cyan); color: white; padding: 8px 15px; border-radius: 5px; cursor: pointer;">← Retour Accueil</button>
-    <div class="logo-title" style="font-weight: 800; color: var(--poly-cyan); letter-spacing: 2px;">SEBR.tech : CONSOLE ADMIN</div>
-    <div></div>
+    <button onclick="location.href='index.html'" style="background: transparent; border: 1px solid var(--poly-cyan); color: white; padding: 8px 15px; border-radius: 5px; cursor: pointer;">← Accueil</button>
+    <div class="logo-title" style="font-weight: 800; color: var(--poly-cyan); letter-spacing: 2px; text-align: center;">SEBR.tech : CONSOLE</div>
+    <div style="width:80px"></div>
 </header>
 
-<main>
+<main id="main-content">
     <div class="tabs">
         <button class="tab-button active" data-tab="tab-ajout-liste">BDE & Listes</button>
         <button class="tab-button" data-tab="tab-events">Événements</button>
+        
         <button class="tab-button" data-tab="tab-approbations" id="tab-btn-approbations" style="border-color: #f09433;">
             Approbations <span class="tab-badge hidden" id="badge-approbations">0</span>
         </button>
-        <button class="tab-button" data-tab="tab-gestion-users" id="tab-btn-users" style="display: none; border-color: #ed1c24;">Users</button>
+        <button class="tab-button" data-tab="tab-gestion-users" id="tab-btn-users" style="border-color: #ed1c24;">Utilisateurs</button>
+        
         <button class="tab-button btn-logout" id="btn-logout">Déconnexion</button>
     </div>
 
@@ -101,55 +113,48 @@
                     currentUserData = { ...userDocSnap.data(), email: user.email };
                     const role = currentUserData.role;
 
-                    if (role !== 'admin' && role !== 'editor') {
-                        // Les utilisateurs simples n'ont pas accès à admin.html
-                        alert("Accès réservé aux éditeurs et administrateurs.");
-                        window.location.href = 'index.html';
-                        return;
+                    // --- LOGIQUE D'AFFICHAGE SELON ROLE ---
+                    
+                    // Tout le monde voit le contenu principal
+                    document.getElementById('loading-overlay').style.display = 'none';
+                    document.getElementById('main-content').style.display = 'block';
+
+                    // Si Admin ou Editor : on montre l'onglet Approbations
+                    if (role === 'admin' || role === 'editor') {
+                        document.getElementById('tab-btn-approbations').style.display = 'block';
+                        watchPendingProposals(role, currentUserData.ecole);
                     }
 
-                    // Onglet Users → seulement admin
+                    // Si Admin uniquement : on montre l'onglet Users
                     if (role === 'admin') {
                         document.getElementById('tab-btn-users').style.display = 'block';
                     }
 
-                    // Onglet Approbations → admin ET editor
-                    document.getElementById('tab-btn-approbations').style.display = 'block';
-
-                    // Compteur en temps réel des propositions en attente
-                    watchPendingProposals(role, currentUserData.ecole);
-
+                    // Charger le premier module par défaut
                     loadAjoutListe();
+
                 } else {
-                    alert("Accès non autorisé.");
+                    // Document Firestore inexistant
                     window.location.href = 'index.html';
                 }
             } catch (error) {
-                console.error("Erreur rôle:", error);
+                console.error("Erreur d'initialisation:", error);
             }
         } else {
+            // Pas connecté -> Redirection login
             window.location.href = 'authentification.html';
         }
     });
 
-    /* Compteur live des propositions en attente */
     function watchPendingProposals(role, ecole) {
-        let q;
-        if (role === 'admin') {
-            q = query(collection(db, "proposals"), where("status", "==", "pending"));
-        } else {
-            // Editor ne voit que les propositions de son école
-            q = query(
-                collection(db, "proposals"),
-                where("status", "==", "pending"),
-                where("ecole", "==", ecole)
-            );
-        }
+        let q = (role === 'admin') 
+            ? query(collection(db, "proposals"), where("status", "==", "pending"))
+            : query(collection(db, "proposals"), where("status", "==", "pending"), where("ecole", "==", ecole));
+
         onSnapshot(q, (snap) => {
-            const count = snap.size;
             const badge = document.getElementById('badge-approbations');
-            if (count > 0) {
-                badge.textContent = count;
+            if (snap.size > 0) {
+                badge.textContent = snap.size;
                 badge.classList.remove('hidden');
             } else {
                 badge.classList.add('hidden');
@@ -159,15 +164,12 @@
 
     document.getElementById('btn-logout').addEventListener('click', async () => {
         if (confirm("Voulez-vous vous déconnecter ?")) {
-            try {
-                await signOut(auth);
-                window.location.href = 'authentification.html';
-            } catch (error) {
-                console.error("Erreur déconnexion:", error);
-            }
+            await signOut(auth);
+            window.location.href = 'authentification.html';
         }
     });
 
+    // --- Gestionnaires de chargement des modules ---
     async function loadAjoutListe() {
         const container = document.getElementById('ajoutliste-container');
         if (container.innerHTML !== "Chargement module listes...") return;
@@ -176,7 +178,7 @@
             container.innerHTML = await resp.text();
             const { initAjoutListe } = await import('./ajoutliste.js');
             initAjoutListe(currentUserData);
-        } catch (e) { container.innerText = "Erreur de chargement Listes."; }
+        } catch (e) { container.innerText = "Erreur de chargement."; }
     }
 
     async function loadEventTab() {
@@ -187,7 +189,7 @@
             container.innerHTML = await resp.text();
             const module = await import('./event.js?v=' + Date.now());
             if (module.initEvent) module.initEvent(currentUserData);
-        } catch (e) { container.innerText = "Erreur de chargement Événements."; }
+        } catch (e) { container.innerText = "Erreur de chargement."; }
     }
 
     async function loadApprobationsTab() {
@@ -198,7 +200,7 @@
             container.innerHTML = await resp.text();
             const module = await import('./approbation.js?v=' + Date.now());
             if (module.initApprobation) module.initApprobation(currentUserData);
-        } catch (e) { container.innerText = "Erreur de chargement Approbations."; }
+        } catch (e) { container.innerText = "Erreur de chargement."; }
     }
 
     async function loadAddUserTab() {
@@ -209,9 +211,10 @@
             container.innerHTML = await resp.text();
             const { initAddUser } = await import('./adduser.js');
             initAddUser();
-        } catch (e) { container.innerText = "Erreur de chargement Accès."; }
+        } catch (e) { container.innerText = "Erreur de chargement."; }
     }
 
+    // --- Système d'onglets ---
     const tabButtons  = document.querySelectorAll('.tab-button:not(.btn-logout)');
     const tabContents = document.querySelectorAll('.tab-content');
 
@@ -222,7 +225,8 @@
             btn.classList.add('active');
             const targetId = btn.getAttribute('data-tab');
             document.getElementById(targetId).classList.add('active');
-            if (targetId === 'tab-ajout-liste')   loadAjoutListe();
+            
+            if (targetId === 'tab-ajout-liste')    loadAjoutListe();
             if (targetId === 'tab-events')         loadEventTab();
             if (targetId === 'tab-approbations')   loadApprobationsTab();
             if (targetId === 'tab-gestion-users')  loadAddUserTab();
