@@ -5,6 +5,7 @@ import {
 } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 import { getAuth } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
 
+/* ══════════ CONFIGURATION ══════════ */
 const firebaseConfig = {
     apiKey: "AIzaSyB1_SgV4E80Qxs2vQ-_jIGexv6YYqaiARs",
     authDomain: "sebr-dea8d.firebaseapp.com",
@@ -22,6 +23,7 @@ const IMGBB_API_KEY    = "9d62b3a6a9d75ffdc8621c7eb58f1181";
 const REMOVE_BG_API_KEY = "GzD4aRxmuijz2vhL7xAkrmy3";
 const MAX_PROPOSALS    = 10;
 
+/* ══════════ ETAT GLOBAL ══════════ */
 let currentData = {
     bde_actuel: { prez: "", vp: "", rr: "", photo: "", insta: "", photo_coll: "" },
     bdp_actuel: { prez: "", photo: "", insta: "", photo_coll: "" },
@@ -33,7 +35,7 @@ let editingType  = null;
 let editingIndex = null;
 let _userData    = null; 
 
-/* ══════════ HELPERS ══════════ */
+/* ══════════ HELPERS UI ══════════ */
 const isUser = () => _userData?.role === 'user';
 
 function showStatus(message, isError = false) {
@@ -50,7 +52,7 @@ function reloadAfterUpload() {
     window.location.reload(true);
 }
 
-/* ══════════ PROPOSITION ══════════ */
+/* ══════════ SYSTÈME DE PROPOSITION ══════════ */
 async function submitProposal(type, payload) {
     const user = auth.currentUser;
     if (!user) throw new Error("Non connecté.");
@@ -95,7 +97,7 @@ function updateProposalCounter(count) {
     }
 }
 
-/* ══════════ UTILS IMAGES ══════════ */
+/* ══════════ UTILS IMAGES (RESIZING & API) ══════════ */
 async function removeBackground(file) {
     const formData = new FormData();
     formData.append("image_file", file);
@@ -188,7 +190,7 @@ function startEditList(type, index) {
     document.getElementById('card-listes').scrollIntoView({ behavior: 'smooth' });
 }
 
-/* ══════════ SYNC FIRESTORE (admin/editor uniquement) ══════════ */
+/* ══════════ SYNC FIRESTORE ══════════ */
 async function saveAll() {
     const ecole  = document.getElementById('ecole-select').value;
     const annee  = document.getElementById('annee-select').value;
@@ -200,14 +202,13 @@ async function saveAll() {
         showStatus("✅ Données synchronisées avec succès !");
     } catch (e) {
         showStatus("❌ Erreur Firestore : " + e.message, true);
-        alert("Erreur critique : " + e.message);
     } finally {
         if (btnSave) { btnSave.disabled = false; btnSave.innerText = "💾 Sauvegarder Infos & Dates"; }
         if (btnAdd)  { btnAdd.disabled  = false; btnAdd.innerText  = "➕ Envoyer & Ajouter"; }
     }
 }
 
-/* ══════════ RENDU LISTES EXISTANTES ══════════ */
+/* ══════════ RENDU DES LISTES ══════════ */
 function renderExistingLists() {
     const container = document.getElementById('existing-lists-container');
     if (!container) return;
@@ -234,7 +235,7 @@ function renderExistingLists() {
                         <div class="action-group">
                             ${!isUser() ? `
                                 <input type="text" class="rank-input" placeholder="Rang" value="${item.classement || ''}" 
-                                       data-type="${cat.key}" data-index="${index}" style="width:50px; text-align:center; padding:5px; height:30px;">
+                                       data-type="${cat.key}" data-index="${index}" style="width:50px; text-align:center; padding:5px;">
                                 <button class="btn-action btn-delete-list" data-type="${cat.key}" data-index="${index}">🗑️</button>
                             ` : ''}
                             <button class="btn-action btn-edit-list" data-type="${cat.key}" data-index="${index}">
@@ -262,42 +263,22 @@ function renderExistingLists() {
             });
             document.getElementById('btn-save-ranks')?.addEventListener('click', async () => {
                 const btn = document.getElementById('btn-save-ranks');
-                btn.disabled = true; btn.innerText = "⌛ Mise à jour...";
-                try {
-                    document.querySelectorAll('.rank-input').forEach(input => {
-                        const type = input.dataset.type;
-                        const idx  = parseInt(input.dataset.index);
-                        if (currentData[type]?.[idx]) currentData[type][idx].classement = input.value.trim();
-                    });
-                    await saveAll();
-                    showStatus("🏆 Classements sauvegardés !");
-                } catch(err) { showStatus("❌ Erreur", true); }
-                finally { btn.disabled = false; btn.innerText = "🏆 Sauvegarder les classements"; }
+                btn.disabled = true;
+                document.querySelectorAll('.rank-input').forEach(input => {
+                    const type = input.dataset.type;
+                    const idx  = parseInt(input.dataset.index);
+                    if (currentData[type]?.[idx]) currentData[type][idx].classement = input.value.trim();
+                });
+                await saveAll();
+                btn.disabled = false;
             });
         }
     }
 }
 
-/* ══════════ CHARGEMENT ARCHIVE ══════════ */
+/* ══════════ CHARGEMENT DES ARCHIVES ══════════ */
 async function loadArchive() {
     cancelEditList();
-    const adminCards = document.querySelectorAll('.admin-card');
-    adminCards.forEach(card => {
-        card.querySelectorAll('input').forEach(input => {
-            if (input.type === 'file') {
-                const newInput = input.cloneNode(true);
-                newInput.value = "";
-                input.parentNode.replaceChild(newInput, input);
-            } else if (input.type === 'checkbox') {
-                input.checked = false;
-            } else if (input.type === 'color') {
-                input.value = "#009EE3";
-            } else {
-                input.value = "";
-            }
-        });
-    });
-
     const ecole  = document.getElementById('ecole-select').value;
     const annee  = document.getElementById('annee-select').value;
     const status = document.getElementById('status');
@@ -330,43 +311,26 @@ async function loadArchive() {
             document.getElementById('date-debut-campagne').value = formatDate(currentData.campagne_start);
             document.getElementById('date-fin-campagne').value   = formatDate(currentData.campagne_end);
             document.getElementById('date-passation').value      = formatDate(currentData.passation_date);
-
-            if (status) { status.innerText = `✅ Données "${ecole}" chargées.`; status.style.color = "#28a745"; }
-        } else {
-            if (status) { status.innerText = "✨ Nouvelle archive vide pour cette sélection."; status.style.color = "#aaa"; }
+            if (status) status.innerText = `✅ Données chargées.`;
         }
-
         renderExistingLists();
-
     } catch(e) {
-        console.error("Erreur loadArchive:", e);
-        if (status) { status.innerText = "❌ Erreur lors du chargement des données."; status.style.color = "#ff4b2b"; }
+        if (status) status.innerText = "❌ Erreur chargement.";
     }
 }
 
-/* ══════════ ADAPTATION UI POUR LES USERS ══════════ */
+/* ══════════ ADAPTATION UI ══════════ */
 function applyUserModeUI() {
     const btnSave = document.getElementById('btn-save-officiels');
     const btnAdd  = document.getElementById('btn-add-item');
 
-    if (btnSave) {
-        btnSave.innerText    = "📤 Proposer ces modifications";
-        btnSave.style.background = "var(--poly-cyan)";
-    }
-    if (btnAdd) {
-        btnAdd.innerText     = "📤 Soumettre une proposition";
-        btnAdd.style.background = "var(--poly-cyan)";
-        btnAdd.style.border  = "none";
-    }
+    if (btnSave) btnSave.innerText = "📤 Proposer ces modifications";
+    if (btnAdd) btnAdd.innerText = "📤 Soumettre une proposition";
 
-    const titleListes = document.getElementById('title-listes');
-    if (titleListes) titleListes.innerText = "Proposer l'ajout d'une Liste";
-
-    // Ajout du compteur de propositions s'il n'existe pas déjà
     if (!document.getElementById('proposal-counter')) {
         const counter = document.createElement('div');
         counter.id = 'proposal-counter';
-        counter.style.cssText = 'text-align:center; font-size:0.85em; font-weight:bold; margin-top:10px; padding:8px; background:#0d1520; border-radius:6px; border:1px solid #222;';
+        counter.style.cssText = 'text-align:center; font-size:0.85em; font-weight:bold; margin-top:10px; padding:8px; background:#0d1520; border-radius:6px;';
         counter.textContent = `${MAX_PROPOSALS} proposition(s) restante(s)`;
         document.getElementById('status')?.insertAdjacentElement('beforebegin', counter);
     }
@@ -377,17 +341,9 @@ function applyUserModeUI() {
             if (snap.exists()) updateProposalCounter(snap.data().proposalsCount || 0);
         });
     }
-
-    if (!document.getElementById('user-warning-note')) {
-        const infoNote = document.createElement('p');
-        infoNote.id = 'user-warning-note';
-        infoNote.style.cssText = 'font-size:0.8em; color:#f09433; margin-top:-10px; margin-bottom:10px; text-align:center;';
-        infoNote.textContent = '⚠️ En tant qu\'utilisateur, vos modifications (textes et images) seront soumises à validation avant publication.';
-        document.querySelector('.admin-card')?.insertAdjacentElement('afterbegin', infoNote);
-    }
 }
 
-/* ══════════ INIT ══════════ */
+/* ══════════ INITIALISATION PRINCIPALE ══════════ */
 export function initAjoutListe(userData) {
     _userData = userData;
     const schoolSelect = document.getElementById('ecole-select');
@@ -403,7 +359,7 @@ export function initAjoutListe(userData) {
         Array.from(schoolSelect.options).forEach(opt => {
             if (opt.value && opt.value !== userData.ecole) opt.remove();
         });
-        schoolSelect.value    = userData.ecole;
+        schoolSelect.value = userData.ecole;
         schoolSelect.disabled = true;
         applyUserModeUI();
     }
@@ -412,30 +368,29 @@ export function initAjoutListe(userData) {
     document.getElementById('annee-select').onchange = loadArchive;
     loadArchive();
 
-    /* ── SAUVEGARDE OFFICIELS (admin/editor) OU PROPOSITION (user) ── */
+    // CLIC SAUVEGARDE (BUREAUX ET DATES)
     document.getElementById('btn-save-officiels').onclick = async () => {
         const btn = document.getElementById('btn-save-officiels');
         btn.disabled = true;
-        btn.innerText = isUser() ? "⏳ Envoi des fichiers..." : "⏳ Sauvegarde...";
+        btn.innerText = "⏳ Traitement...";
 
-        // Traitement commun des images pour Admin, Éditeurs ET Utilisateurs
         const filesMap = [
-            { id: 'bde-photo-file',      key: 'photo',      target: 'bde', sq: true,  rb: 'bde-remove-bg' },
-            { id: 'bdp-photo-file',      key: 'photo',      target: 'bdp', sq: true,  rb: 'bdp-remove-bg' },
-            { id: 'bde-photo-coll-file', key: 'photo_coll', target: 'bde', sq: false, rb: null },
-            { id: 'bdp-photo-coll-file', key: 'photo_coll', target: 'bdp', sq: false, rb: null }
+            { id: 'bde-photo-file', key: 'photo', target: 'bde', sq: true, rb: 'bde-remove-bg' },
+            { id: 'bdp-photo-file', key: 'photo', target: 'bdp', sq: true, rb: 'bdp-remove-bg' },
+            { id: 'bde-photo-coll-file', key: 'photo_coll', target: 'bde', sq: false },
+            { id: 'bdp-photo-coll-file', key: 'photo_coll', target: 'bdp', sq: false }
         ];
 
         let uploadedFiles = { bde: {}, bdp: {} };
-        let hasImageUpload = false;
+        let hasImage = false;
 
         try {
             for (const item of filesMap) {
-                const file      = document.getElementById(item.id)?.files[0];
-                const rbChecked = item.rb ? document.getElementById(item.rb)?.checked : false;
+                const file = document.getElementById(item.id)?.files[0];
+                const rb = item.rb ? document.getElementById(item.rb)?.checked : false;
                 if (file) {
-                    hasImageUpload = true;
-                    const url = await uploadToImgBB(file, item.sq, rbChecked);
+                    hasImage = true;
+                    const url = await uploadToImgBB(file, item.sq, rb);
                     if (url) uploadedFiles[item.target][item.key] = url;
                 }
             }
@@ -445,148 +400,79 @@ export function initAjoutListe(userData) {
             const dPass  = document.getElementById('date-passation').value;
 
             if (isUser()) {
-                /* MODE USER : On prépare les payloads pour la proposition */
-                const bdePayload = {
-                    prez: document.getElementById('bde-prez').value  || "",
-                    vp:   document.getElementById('bde-vp').value    || "",
-                    rr:   document.getElementById('bde-rr').value    || "",
-                    insta: document.getElementById('bde-insta').value || "",
-                    ...uploadedFiles.bde
-                };
-                const bdpPayload = {
-                    prez:  document.getElementById('bdp-prez').value  || "",
-                    insta: document.getElementById('bdp-insta').value || "",
-                    ...uploadedFiles.bdp
-                };
-
-                const hasBdeChanges = Object.values(bdePayload).some(v => v);
-                const hasBdpChanges = Object.values(bdpPayload).some(v => v);
-                const hasDates      = dStart || dEnd || dPass;
-
-                if (hasBdeChanges) await submitProposal('bde_info', bdePayload);
-                if (hasBdpChanges) await submitProposal('bdp_info', bdpPayload);
-                if (hasDates) await submitProposal('dates', {
-                    campagne_start: dStart ? Timestamp.fromDate(new Date(dStart + "T12:00:00")) : null,
-                    campagne_end:   dEnd   ? Timestamp.fromDate(new Date(dEnd   + "T12:00:00")) : null,
-                    passation_date: dPass  ? Timestamp.fromDate(new Date(dPass  + "T12:00:00")) : null,
-                });
-
-                if (!hasBdeChanges && !hasBdpChanges && !hasDates) {
-                    showStatus("⚠️ Aucune modification détectée.", true);
-                } else if (hasImageUpload) {
-                    setTimeout(() => reloadAfterUpload(), 1200);
+                const bdePayload = { ...uploadedFiles.bde, prez: document.getElementById('bde-prez').value, vp: document.getElementById('bde-vp').value, rr: document.getElementById('bde-rr').value, insta: document.getElementById('bde-insta').value };
+                const bdpPayload = { ...uploadedFiles.bdp, prez: document.getElementById('bdp-prez').value, insta: document.getElementById('bdp-insta').value };
+                
+                if (Object.values(bdePayload).some(v => v)) await submitProposal('bde_info', bdePayload);
+                if (Object.values(bdpPayload).some(v => v)) await submitProposal('bdp_info', bdpPayload);
+                if (dStart || dEnd || dPass) {
+                    await submitProposal('dates', {
+                        campagne_start: dStart ? Timestamp.fromDate(new Date(dStart + "T12:00:00")) : null,
+                        campagne_end: dEnd ? Timestamp.fromDate(new Date(dEnd + "T12:00:00")) : null,
+                        passation_date: dPass ? Timestamp.fromDate(new Date(dPass + "T12:00:00")) : null
+                    });
                 }
-
             } else {
-                /* MODE ADMIN/EDITOR : Sauvegarde directe dans Firestore */
                 Object.assign(currentData.bde_actuel, uploadedFiles.bde);
                 Object.assign(currentData.bdp_actuel, uploadedFiles.bdp);
-
-                currentData.bde_actuel.prez  = document.getElementById('bde-prez').value || "";
-                currentData.bde_actuel.vp    = document.getElementById('bde-vp').value   || "";
-                currentData.bde_actuel.rr    = document.getElementById('bde-rr').value   || "";
-                currentData.bde_actuel.insta = document.getElementById('bde-insta').value || "";
-                currentData.bdp_actuel.prez  = document.getElementById('bdp-prez').value  || "";
-                currentData.bdp_actuel.insta = document.getElementById('bdp-insta').value || "";
-
-                currentData.campagne_start  = dStart ? Timestamp.fromDate(new Date(dStart + "T12:00:00")) : null;
-                currentData.campagne_end    = dEnd   ? Timestamp.fromDate(new Date(dEnd   + "T12:00:00")) : null;
-                currentData.passation_date  = dPass  ? Timestamp.fromDate(new Date(dPass  + "T12:00:00")) : null;
-
+                currentData.bde_actuel.prez = document.getElementById('bde-prez').value;
+                currentData.bde_actuel.vp = document.getElementById('bde-vp').value;
+                currentData.bde_actuel.rr = document.getElementById('bde-rr').value;
+                currentData.bde_actuel.insta = document.getElementById('bde-insta').value;
+                currentData.bdp_actuel.prez = document.getElementById('bdp-prez').value;
+                currentData.bdp_actuel.insta = document.getElementById('bdp-insta').value;
+                currentData.campagne_start = dStart ? Timestamp.fromDate(new Date(dStart + "T12:00:00")) : null;
+                currentData.campagne_end = dEnd ? Timestamp.fromDate(new Date(dEnd + "T12:00:00")) : null;
+                currentData.passation_date = dPass ? Timestamp.fromDate(new Date(dPass + "T12:00:00")) : null;
                 await saveAll();
-                if (hasImageUpload) {
-                    showStatus("✅ Sauvegardé ! Rechargement...");
-                    setTimeout(() => reloadAfterUpload(), 1200);
-                }
             }
-        } catch (e) {
-            showStatus("❌ " + e.message, true);
-        } finally {
-            btn.disabled = false;
-            btn.innerText = isUser() ? "📤 Proposer ces modifications" : "💾 Sauvegarder Infos & Dates";
-        }
+            if (hasImage) setTimeout(() => reloadAfterUpload(), 1500);
+        } catch (e) { showStatus("❌ " + e.message, true); }
+        finally { btn.disabled = false; btn.innerText = isUser() ? "📤 Proposer" : "💾 Sauvegarder"; }
     };
 
-    /* ── AJOUT / MODIF LISTE ── */
+    // CLIC AJOUT/MODIF LISTE
     document.getElementById('btn-add-item').onclick = async () => {
-        const btn  = document.getElementById('btn-add-item');
+        const btn = document.getElementById('btn-add-item');
         const type = document.getElementById('type-liste').value;
-        const nom  = document.getElementById('new-nom').value.trim();
-
+        const nom = document.getElementById('new-nom').value.trim();
         if (!nom) return showStatus("❌ Nom requis !", true);
-        btn.disabled = true;
-        btn.innerText = "⏳ Envoi en cours...";
-        showStatus("⏳ Traitement des images...");
 
+        btn.disabled = true;
         try {
             const fileLogo = document.getElementById('new-logo-file').files[0];
             const fileColl = document.getElementById('new-photo-coll-file').files[0];
-            const rbLogo   = document.getElementById('list-remove-bg')?.checked;
+            const rbLogo = document.getElementById('list-remove-bg')?.checked;
 
-            let finalLogo = editingType !== null ? (currentData[editingType][editingIndex]?.logo || "") : "";
-            let finalColl = editingType !== null ? (currentData[editingType][editingIndex]?.photo_coll || "") : "";
-            let finalRank = editingType !== null ? (currentData[editingType][editingIndex]?.classement || "") : "";
-            let hasImageUpload = false;
+            let finalLogo = editingType !== null ? currentData[editingType][editingIndex].logo : "";
+            let finalColl = editingType !== null ? currentData[editingType][editingIndex].photo_coll : "";
 
-            if (fileLogo) {
-                hasImageUpload = true;
-                const url = await uploadToImgBB(fileLogo, true, rbLogo);
-                if (url) finalLogo = url;
-            }
-            if (fileColl) {
-                hasImageUpload = true;
-                const url = await uploadToImgBB(fileColl, false, false);
-                if (url) finalColl = url;
-            }
+            if (fileLogo) finalLogo = await uploadToImgBB(fileLogo, true, rbLogo);
+            if (fileColl) finalColl = await uploadToImgBB(fileColl, false, false);
 
             const listObj = {
                 nom,
-                prez:     document.getElementById('new-prez').value.trim(),
-                logo:     finalLogo,
-                couleur:  document.getElementById('new-couleur').value || "#009EE3",
-                insta:    document.getElementById('new-insta').value.trim() || "",
+                prez: document.getElementById('new-prez').value.trim(),
+                logo: finalLogo,
+                couleur: document.getElementById('new-couleur').value,
+                insta: document.getElementById('new-insta').value.trim(),
                 photo_coll: finalColl,
-                classement: finalRank
+                classement: editingType !== null ? currentData[editingType][editingIndex].classement : ""
             };
 
             if (isUser()) {
-                /* MODE USER : soumettre proposition */
-                let proposalType;
-                if (editingType !== null) {
-                    proposalType = editingType === 'fakelistes' ? 'fakeliste_edit'
-                        : editingType === 'listes_bde' ? 'liste_bde_edit' : 'liste_bdp_edit';
-                } else {
-                    if (!finalLogo) throw new Error("Le logo est obligatoire pour une nouvelle proposition de liste.");
-                    proposalType = type === 'fakelistes' ? 'fakeliste_add'
-                        : type === 'listes_bde' ? 'liste_bde_add' : 'liste_bdp_add';
-                }
-                await submitProposal(proposalType, listObj);
+                let pType = editingType !== null ? (editingType === 'fakelistes' ? 'fakeliste_edit' : editingType === 'listes_bde' ? 'liste_bde_edit' : 'liste_bdp_edit') 
+                                                : (type === 'fakelistes' ? 'fakeliste_add' : type === 'listes_bde' ? 'liste_bde_add' : 'liste_bdp_add');
+                await submitProposal(pType, listObj);
                 cancelEditList();
-
             } else {
-                /* MODE ADMIN/EDITOR : direct */
-                if (editingType !== null) {
-                    currentData[editingType][editingIndex] = listObj;
-                } else {
-                    if (!finalLogo) throw new Error("Le logo est obligatoire pour une nouvelle liste");
-                    currentData[type].push(listObj);
-                }
+                if (editingType !== null) currentData[editingType][editingIndex] = listObj;
+                else currentData[type].push(listObj);
                 await saveAll();
-
-                if (hasImageUpload) {
-                    showStatus("✅ Sauvegardé ! Rechargement...");
-                    setTimeout(() => reloadAfterUpload(), 1200);
-                } else {
-                    cancelEditList();
-                }
+                cancelEditList();
             }
-
-        } catch (err) {
-            showStatus("❌ " + err.message, true);
-            btn.disabled = false;
-            btn.innerText = isUser() ? "📤 Soumettre une proposition" : "💾 Réessayer";
-            document.querySelectorAll('input[type="file"]').forEach(el => el.value = "");
-        }
+        } catch (e) { showStatus("❌ " + e.message, true); }
+        finally { btn.disabled = false; }
     };
 
     document.getElementById('btn-cancel-edit-list').onclick = cancelEditList;
