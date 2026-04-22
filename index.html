@@ -27,6 +27,7 @@
             --poly-yellow: #e3cc00;
             --bg-dark: #050a0f;
             --card-bg: #161f2b;
+            --poly-cyan: #009ee3
         }
 
         * { box-sizing: border-box; }
@@ -316,10 +317,13 @@
 </header>
 
 <div id="main-container">
+
     <div id="map-section">
         <div id="tooltip" class="hidden"></div>
+        
         <div class="map-wrapper">
             <img src="france.svg" class="france-svg" alt="Carte de France">
+            
             <div class="ecole-point" style="top: 8%; left: 58%; --halo-color: #ed1c24; animation-delay: 0.2s;" data-name="Lille" data-folder="lille"><img src="lille.png" alt="Lille"></div>
             <div class="ecole-point" style="top: 21%; left: 53%; --halo-color: #b2b2b2; animation-delay: 0.4s;" data-name="Paris-Sorbonne" data-folder="sorbonne"><img src="sorbonne.png" alt="Sorbonne"></div>
             <div class="ecole-point" style="top: 26%; left: 52%; --halo-color: #8e95b3; animation-delay: 0.6s;" data-name="Paris-Saclay" data-folder="saclay"><img src="saclay.png" alt="Saclay"></div>
@@ -336,8 +340,7 @@
             <div class="ecole-point" style="top: 78%; left: 59%; --halo-color: #1674b9; animation-delay: 2.8s;" data-name="Montpellier" data-folder="montpellier"><img src="montpellier.png" alt="Montpellier"></div>
             <div class="ecole-point" style="top: 78%; left: 71%; --halo-color: #00a5b5; animation-delay: 3.0s;" data-name="Marseille" data-folder="marseille"><img src="marseille.png" alt="Marseille"></div>
             <div class="ecole-point" style="top: 80%; left: 83%; --halo-color: #b3d334; animation-delay: 3.2s;" data-name="Nice Sophia" data-folder="nice"><img src="nice.png" alt="Nice"></div>
-                </div>
-    <div id="sidebar-section">
+        </div> </div> <div id="sidebar-section">
         <div class="side-header-flex">
             <h2 id="side-title">Le Rezo Polytech</h2>
             <select id="annee-selector">
@@ -352,8 +355,7 @@
                 Cliquez sur une école pour voir ses bureaux et ses listes.
             </div>
         </div>
-    </div>
-</div>
+    </div> </div>
 
 <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
