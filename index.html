@@ -556,6 +556,7 @@
         <div class="header-nav">
             <a href="index.html" class="btn-nav">ACCUEIL</a>
             <a href="calendrier.html" class="btn-nav">CALENDRIER</a>
+            <a href="admin.html" class="btn-nav hidden" id="admin-button">Admin</a>
             <button class="btn-auth" id="auth-button" type="button">Connexion 🔒</button>
         </div>
     </div>
@@ -622,6 +623,7 @@
     const app = initializeApp(firebaseConfig);
     const db = getFirestore(app);
     const auth = getAuth(app);
+    const adminButton = document.getElementById('admin-button');
 
     const defaultTheme = {
         blue: '#003057',
@@ -693,19 +695,23 @@
     function updateAuthUI(user, profile = null) {
         if (user) {
             const prenom = profile?.prenom || user.displayName || user.email?.split('@')[0] || 'toi';
-            userGreeting.textContent = `Bonjour ${prenom} !`;
+            userGreeting.textContent = `Bonjour ${prenom}`;
             userGreeting.classList.add('visible');
-
+    
+            adminButton.classList.remove('hidden');
+    
             authButton.textContent = 'Déconnexion';
             authButton.classList.add('logout');
-
+    
             const theme = schoolThemes[profile?.ecole] || defaultTheme;
             applyTheme(theme);
         } else {
             connectedUserProfile = null;
             userGreeting.textContent = '';
             userGreeting.classList.remove('visible');
-
+    
+            adminButton.classList.add('hidden');
+    
             authButton.textContent = 'Connexion 🔒';
             authButton.classList.remove('logout');
             resetTheme();
