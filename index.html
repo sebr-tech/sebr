@@ -72,11 +72,13 @@
             to { transform: translateY(0); }
         }
 
+        /* ===== HEADER ===== */
+
         header {
-            display: grid;
-            grid-template-columns: minmax(220px, 1fr) minmax(220px, 1.15fr) minmax(280px, 1.2fr) minmax(220px, 1fr);
+            display: flex;
+            justify-content: space-between;
             align-items: center;
-            gap: 14px;
+            gap: 20px;
             padding: 0 20px;
             background: var(--poly-blue);
             min-height: var(--header-height);
@@ -86,15 +88,46 @@
             animation: slideInHeader 1s ease-out forwards;
         }
 
-        .header-left, .header-right {
+        .header-left {
             display: flex;
-            gap: 10px;
             align-items: center;
+            gap: 18px;
+            flex: 1 1 auto;
             min-width: 0;
         }
 
         .header-right {
+            display: flex;
+            align-items: center;
             justify-content: flex-end;
+            gap: 14px;
+            flex: 0 1 auto;
+            min-width: 0;
+        }
+
+        .header-nav {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            flex-wrap: nowrap;
+        }
+
+        .logo-title {
+            font-weight: 800;
+            color: var(--poly-cyan);
+            letter-spacing: 1px;
+            font-size: 1.1em;
+            text-align: left;
+            line-height: 1.15;
+            white-space: nowrap;
+        }
+
+        .logo-title .subtitle {
+            display: block;
+            font-size: 0.7em;
+            font-weight: 400;
+            color: #ccc;
+            letter-spacing: 0;
         }
 
         .user-greeting {
@@ -104,6 +137,7 @@
             white-space: nowrap;
             overflow: hidden;
             text-overflow: ellipsis;
+            max-width: 220px;
             opacity: 0;
             transform: translateY(-4px);
             transition: opacity 0.25s ease, transform 0.25s ease;
@@ -116,8 +150,9 @@
 
         .search-container {
             position: relative;
-            width: 100%;
-            min-width: 0;
+            width: min(420px, 40vw);
+            min-width: 240px;
+            max-width: 420px;
         }
 
         #barreRecherche {
@@ -133,15 +168,6 @@
         #barreRecherche:focus {
             box-shadow: 0 0 10px rgba(0, 158, 227, 0.4);
             outline: none;
-        }
-
-        .logo-title {
-            font-weight: 800;
-            color: var(--poly-cyan);
-            letter-spacing: 1px;
-            font-size: 1.1em;
-            text-align: center;
-            line-height: 1.2;
         }
 
         .search-results-dropdown {
@@ -213,6 +239,8 @@
             border-color: var(--danger);
             color: #fff;
         }
+
+        /* ===== LAYOUT PRINCIPAL ===== */
 
         #main-container { display: flex; flex: 1; overflow: hidden; }
 
@@ -437,15 +465,25 @@
             text-decoration: none;
         }
 
+        /* ===== RESPONSIVE ===== */
+
         @media (max-width: 1100px) {
             header {
-                grid-template-columns: 1fr 1fr;
-                padding: 15px;
+                flex-wrap: wrap;
+                padding: 14px 16px;
             }
 
-            .logo-title {
-                grid-column: 1 / -1;
-                order: -1;
+            .header-left,
+            .header-right {
+                width: 100%;
+            }
+
+            .header-right {
+                justify-content: space-between;
+            }
+
+            .search-container {
+                width: min(100%, 420px);
             }
         }
 
@@ -461,13 +499,22 @@
             }
 
             .header-left,
-            .header-right {
+            .header-right,
+            .header-nav {
                 justify-content: center;
                 flex-wrap: wrap;
             }
 
+            .search-container {
+                width: 100%;
+                min-width: 0;
+                max-width: none;
+            }
+
+            .logo-title,
             .user-greeting {
                 text-align: center;
+                max-width: none;
             }
 
             #map-section {
@@ -494,21 +541,23 @@
 
 <header>
     <div class="header-left">
-        <a href="index.html" class="btn-nav">ACCUEIL</a>
-        <a href="calendrier.html" class="btn-nav">CALENDRIER</a>
+        <div class="logo-title">
+            ✊SEBR.tech
+            <span class="subtitle">Site d'Exploration des Bureaux du Rezo Polytech</span>
+        </div>
+        <div id="user-greeting" class="user-greeting" aria-live="polite"></div>
     </div>
-
-    <div id="user-greeting" class="user-greeting" aria-live="polite"></div>
-
-    <div class="search-container">
-        <input type="text" id="barreRecherche" placeholder="Rechercher une liste, un prez...">
-        <div id="resultatsRecherche" class="search-results-dropdown"></div>
-    </div>
-
-    <div class="logo-title">✊SEBR.tech<br><span style="font-size: 0.7em; font-weight: normal; color: #ccc;">Site d'Exploration des Bureaux du Rezo Polytech</span></div>
 
     <div class="header-right">
-        <button class="btn-auth" id="auth-button" type="button">Connexion 🔒</button>
+        <div class="search-container">
+            <input type="text" id="barreRecherche" placeholder="Rechercher une liste, un prez...">
+            <div id="resultatsRecherche" class="search-results-dropdown"></div>
+        </div>
+        <div class="header-nav">
+            <a href="index.html" class="btn-nav">ACCUEIL</a>
+            <a href="calendrier.html" class="btn-nav">CALENDRIER</a>
+            <button class="btn-auth" id="auth-button" type="button">Connexion 🔒</button>
+        </div>
     </div>
 </header>
 
