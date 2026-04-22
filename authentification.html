@@ -187,7 +187,6 @@
       background: rgba(68, 255, 68, 0.1);
     }
 
-    /* Bandeau info rôle */
     .role-notice {
       background: rgba(0, 158, 227, 0.08);
       border: 1px solid rgba(0, 158, 227, 0.25);
@@ -295,7 +294,7 @@
       signInWithEmailAndPassword,
       createUserWithEmailAndPassword,
       sendPasswordResetEmail,
-      sendEmailVerification, // <-- AJOUT DE L'IMPORT ICI
+      sendEmailVerification,
       onAuthStateChanged,
       setPersistence,
       browserSessionPersistence,
@@ -313,185 +312,119 @@
     };
 
     const app = initializeApp(firebaseConfig);
-
-    initializeAppCheck(app, {
-      provider: new ReCaptchaV3Provider("6LeAoJosAAAAADtz2OXhUt4t8Un4pdDjvXI98_rH"),
-      isTokenAutoRefreshEnabled: true
-    });
-
     const auth = getAuth(app);
     const db = getFirestore(app);
 
-    // MODE : 'login' | 'register-user' | 'register-editor'
     let mode = 'login';
     let blockRedirect = false;
 
-    const tabLogin    = document.getElementById('tab-login');
-    const tabRegister = document.getElementById('tab-register');
-    const passContainer       = document.getElementById('pass-container');
-    const registerUserFields  = document.getElementById('register-user-fields');
-    const btnSubmit   = document.getElementById('btn-submit');
-    const formTitle   = document.getElementById('form-title');
-    const feedback    = document.getElementById('msg-feedback');
-    const btnForgot   = document.getElementById('btn-forgot');
-    const emailInput  = document.getElementById('input-email');
-    const passwordInput       = document.getElementById('input-password');
-    const passwordRegInput    = document.getElementById('input-password-register');
+    const feedback = document.getElementById('msg-feedback');
+    const btnSubmit = document.getElementById('btn-submit');
+    const emailInput = document.getElementById('input-email');
+    const passwordInput = document.getElementById('input-password');
+    const passwordRegInput = document.getElementById('input-password-register');
 
     function setFeedback(type, message) {
       feedback.className = type;
       feedback.textContent = message;
     }
 
-    /* ── Bascule des onglets ── */
-    function setMode(newMode) {
-      mode = newMode;
-      feedback.textContent = '';
-      feedback.className = '';
-
-      if (newMode === 'login') {
-        tabLogin.classList.add('active');
-        tabRegister.classList.remove('active');
-        passContainer.style.display = 'block';
-        registerUserFields.style.display = 'none';
-        btnSubmit.textContent = 'Se connecter';
-        formTitle.textContent = '🔒 Accès';
-        passwordInput.value = '';
-      } else {
-        // register — on détecte plus tard si pré-approuvé ou non
-        tabLogin.classList.remove('active');
-        tabRegister.classList.add('active');
-        passContainer.style.display = 'none';
-        registerUserFields.style.display = 'block';
-        btnSubmit.textContent = "Créer mon compte";
-        formTitle.textContent = '📝 Inscription';
-        passwordInput.value = '';
+    // Fonction de redirection centralisée
+    async function handleRedirection(user) {
+      if (!user) return;
+      
+      // Sécurité : si l'email n'est pas vérifié, on ne redirige pas vers l'admin
+      if (!user.emailVerified) {
+        setFeedback('error', "Veuillez valider votre email avant de continuer.");
+        await signOut(auth);
+        return;
       }
-    }
 
-    tabLogin.addEventListener('click', () => setMode('login'));
-    tabRegister.addEventListener('click', () => setMode('register'));
-
-    /* ── Redirection si déjà connecté ── */
-    onAuthStateChanged(auth, async (user) => {
-      if (user && !blockRedirect) {
-        // Vérifie le rôle pour rediriger vers admin ou index
-        try {
-          const snap = await getDoc(doc(db, "users", user.email));
-          if (snap.exists()) {
-            const role = snap.data().role;
-            if (role === 'admin' || role === 'editor') {
-              window.location.href = 'admin.html';
-            } else {
-              window.location.href = 'index.html';
-            }
+      try {
+        const snap = await getDoc(doc(db, "users", user.email));
+        if (snap.exists()) {
+          const role = snap.data().role;
+          console.log("Rôle détecté :", role);
+          if (role === 'admin' || role === 'editor') {
+            window.location.href = 'admin.html';
           } else {
             window.location.href = 'index.html';
           }
-        } catch {
+        } else {
           window.location.href = 'index.html';
         }
-      }
-    });
-
-    /* ── Mot de passe oublié ── */
-    btnForgot.addEventListener('click', async () => {
-      const email = emailInput.value.trim().toLowerCase();
-      if (!email) { setFeedback('error', "Saisissez votre e-mail d'abord."); return; }
-      try {
-        await sendPasswordResetEmail(auth, email);
-        setFeedback('success', "Lien de réinitialisation envoyé !");
       } catch (e) {
-        setFeedback('error', "Erreur : " + (e?.message || "action impossible"));
+        console.error("Erreur de redirection :", e);
+        // Si erreur de permission ici, c'est que l'email n'est pas encore considéré comme vérifié par Firestore
+        setFeedback('error', "Accès en cours de validation... réessayez dans quelques instants.");
+      }
+    }
+
+    // Gestion automatique au chargement
+    onAuthStateChanged(auth, (user) => {
+      if (user && !blockRedirect) {
+        handleRedirection(user);
       }
     });
 
-    /* ── Soumission principale ── */
-    btnSubmit.addEventListener('click', async () => {
-      const email    = emailInput.value.trim().toLowerCase();
+    // Toggle Mode
+    window.setMode = function(newMode) {
+      mode = newMode;
+      document.getElementById('tab-login').classList.toggle('active', mode === 'login');
+      document.getElementById('tab-register').classList.toggle('active', mode !== 'login');
+      document.getElementById('register-user-fields').style.display = mode === 'login' ? 'none' : 'block';
+      document.getElementById('pass-container').style.display = mode === 'login' ? 'block' : 'none';
+      btnSubmit.textContent = mode === 'login' ? 'Se connecter' : 'Créer mon compte';
+    };
+    document.getElementById('tab-login').onclick = () => setMode('login');
+    document.getElementById('tab-register').onclick = () => setMode('register');
+
+    // Submit
+    btnSubmit.onclick = async () => {
+      const email = emailInput.value.trim().toLowerCase();
       const password = mode === 'login' ? passwordInput.value : passwordRegInput.value;
 
-      if (!email) { setFeedback('error', "Veuillez saisir votre email."); return; }
-
+      if (!email || !password) { setFeedback('error', "Champs manquants."); return; }
+      
       btnSubmit.disabled = true;
-      setFeedback('', "Traitement...");
+      setFeedback('', "Chargement...");
 
       try {
-        /* ════ CONNEXION ════ */
         if (mode === 'login') {
-          if (!password) throw new Error("Veuillez saisir votre mot de passe.");
           blockRedirect = false;
           await setPersistence(auth, browserSessionPersistence);
-          await signInWithEmailAndPassword(auth, email, password);
-          // La redirection est gérée par onAuthStateChanged
-
-        /* ════ INSCRIPTION ════ */
+          const cred = await signInWithEmailAndPassword(auth, email, password);
+          // On force la vérification immédiate
+          await handleRedirection(cred.user);
         } else {
-          if (password.length < 8) throw new Error("Le mot de passe doit contenir au moins 8 caractères.");
+          /* INSCRIPTION */
+          const prenom = document.getElementById('input-prenom').value.trim();
+          const ecole = document.getElementById('input-ecole').value;
+          
+          blockRedirect = true;
+          const cred = await createUserWithEmailAndPassword(auth, email, password);
+          await sendEmailVerification(cred.user);
+          
+          // Création du doc
+          await setDoc(doc(db, "users", email), {
+            role: 'user', // Par défaut
+            ecole: ecole,
+            prenom: prenom,
+            proposalsCount: 0,
+            createdAt: serverTimestamp()
+          });
 
-          const prenom  = document.getElementById('input-prenom').value.trim();
-          const ecole   = document.getElementById('input-ecole').value;
-
-          // Vérifie si l'email est pré-approuvé (editor / admin)
-          const userRef  = doc(db, "users", email);
-          const userSnap = await getDoc(userRef);
-
-          if (userSnap.exists() && (userSnap.data().role === 'editor' || userSnap.data().role === 'admin')) {
-            /* ── Inscription éditeur pré-approuvé : mot de passe défini directement ── */
-            blockRedirect = true;
-            await createUserWithEmailAndPassword(auth, email, password);
-            // Mise à jour du doc existant avec le prénom si fourni
-            await setDoc(userRef, {
-              prenom: prenom || userSnap.data().prenom || "",
-              createdAt: serverTimestamp()
-            }, { merge: true });
-            await signOut(auth);
-            setFeedback('success', "✅ Compte éditeur créé ! Vous pouvez maintenant vous connecter.");
-            setTimeout(() => setMode('login'), 3000);
-
-          } else {
-            /* ── Inscription utilisateur standard ── */
-            if (!prenom) throw new Error("Veuillez saisir votre prénom.");
-            if (!ecole)  throw new Error("Veuillez sélectionner votre école.");
-
-            blockRedirect = true;
-            const credential = await createUserWithEmailAndPassword(auth, email, password);
-
-            // 1️⃣ NOUVEAU : Envoi du mail de vérification
-            await sendEmailVerification(credential.user);
-
-            // 2️⃣ Crée le document utilisateur
-            await setDoc(userRef, {
-              role: 'user',
-              ecole: ecole,
-              prenom: prenom,
-              proposalsCount: 0,
-              createdAt: serverTimestamp()
-            });
-
-            // 3️⃣ NOUVEAU : Déconnexion, affichage message et retour à la connexion
-            setFeedback('success', "✅ Compte créé ! Un lien de validation a été envoyé sur votre adresse e-mail. Veuillez le vérifier avant de vous connecter.");
-            await signOut(auth);
-            setTimeout(() => {
-              setMode('login');
-              // On peut éventuellement effacer le password pour la sécu
-              passwordInput.value = '';
-            }, 6000); // Retour au login après 6 secondes pour laisser le temps de lire
-          }
+          setFeedback('success', "Compte créé ! Vérifiez vos emails pour valider.");
+          await signOut(auth);
+          setTimeout(() => setMode('login'), 5000);
         }
-
       } catch (e) {
         blockRedirect = false;
-        let errMsg = e?.message || "Une erreur est survenue.";
-        if (e?.code === 'auth/email-already-in-use') errMsg = "Ce compte existe déjà. Connectez-vous.";
-        if (e?.code === 'auth/weak-password')        errMsg = "Mot de passe trop faible (8 caractères min).";
-        if (e?.code === 'auth/invalid-email')        errMsg = "Adresse email invalide.";
-        if (e?.code === 'auth/user-not-found' || e?.code === 'auth/wrong-password' || e?.code === 'auth/invalid-credential')
-          errMsg = "Email ou mot de passe incorrect.";
-        setFeedback('error', errMsg);
-      } finally {<!DOCTYPE html>
-<html lang="fr">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>SEBR.tech — Admin</title>
+        setFeedback('error', e.message);
+      } finally {
+        btnSubmit.disabled = false;
+      }
+    };
+  </script>
+</body>
+</html>
