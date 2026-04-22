@@ -17,12 +17,27 @@
             .logo-title { font-size: 0.9em; }
         }
         .tabs { display: flex; gap: 10px; margin-bottom: 20px; flex-wrap: wrap; }
-        .tab-button { background: #0b1118; border: 1px solid #222; color: white; padding: 10px 15px; border-radius: 5px 5px 0 0; cursor: pointer; font-size: 0.9em; transition: 0.2s; }
+        .tab-button { background: #0b1118; border: 1px solid #222; color: white; padding: 10px 15px; border-radius: 5px 5px 0 0; cursor: pointer; font-size: 0.9em; transition: 0.2s; position: relative; }
         .tab-button.active { background: var(--poly-cyan); border-color: var(--poly-cyan); font-weight: bold; }
         .btn-logout { border-color: #ff4444 !important; color: #ff4444; margin-left: auto; border-radius: 5px !important; }
         .btn-logout:hover { background: #ff4444 !important; color: white; }
         .tab-content { display: none; background: #0b1118; border: 1px solid #222; padding: 20px; border-radius: 0 5px 5px 5px; }
         .tab-content.active { display: block; }
+
+        /* Badge compteur sur l'onglet Approbations */
+        .tab-badge {
+            display: inline-block;
+            background: #f09433;
+            color: black;
+            font-size: 0.7em;
+            font-weight: bold;
+            border-radius: 10px;
+            padding: 1px 6px;
+            margin-left: 6px;
+            vertical-align: middle;
+            line-height: 1.4;
+        }
+        .tab-badge.hidden { display: none; }
     </style>
 </head>
 <body>
@@ -37,6 +52,9 @@
     <div class="tabs">
         <button class="tab-button active" data-tab="tab-ajout-liste">BDE & Listes</button>
         <button class="tab-button" data-tab="tab-events">Événements</button>
+        <button class="tab-button" data-tab="tab-approbations" id="tab-btn-approbations" style="border-color: #f09433;">
+            Approbations <span class="tab-badge hidden" id="badge-approbations">0</span>
+        </button>
         <button class="tab-button" data-tab="tab-gestion-users" id="tab-btn-users" style="display: none; border-color: #ed1c24;">Users</button>
         <button class="tab-button btn-logout" id="btn-logout">Déconnexion</button>
     </div>
@@ -47,6 +65,9 @@
     <div id="tab-events" class="tab-content">
         <div id="event-container">Chargement module événements...</div>
     </div>
+    <div id="tab-approbations" class="tab-content">
+        <div id="approbation-container">Chargement module approbations...</div>
+    </div>
     <div id="tab-gestion-users" class="tab-content">
         <div id="adduser-container">Chargement module accès...</div>
     </div>
@@ -55,7 +76,7 @@
 <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
     import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
-    import { getFirestore, doc, getDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+    import { getFirestore, doc, getDoc, collection, query, where, onSnapshot } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
     const firebaseConfig = {
         apiKey: "AIzaSyB1_SgV4E80Qxs2vQ-_jIGexv6YYqaiARs",
@@ -77,13 +98,30 @@
             try {
                 const userDocSnap = await getDoc(doc(db, "users", user.email));
                 if (userDocSnap.exists()) {
-                    currentUserData = userDocSnap.data();
-                    if (currentUserData.role === 'admin') {
+                    currentUserData = { ...userDocSnap.data(), email: user.email };
+                    const role = currentUserData.role;
+
+                    if (role !== 'admin' && role !== 'editor') {
+                        // Les utilisateurs simples n'ont pas accès à admin.html
+                        alert("Accès réservé aux éditeurs et administrateurs.");
+                        window.location.href = 'index.html';
+                        return;
+                    }
+
+                    // Onglet Users → seulement admin
+                    if (role === 'admin') {
                         document.getElementById('tab-btn-users').style.display = 'block';
                     }
+
+                    // Onglet Approbations → admin ET editor
+                    document.getElementById('tab-btn-approbations').style.display = 'block';
+
+                    // Compteur en temps réel des propositions en attente
+                    watchPendingProposals(role, currentUserData.ecole);
+
                     loadAjoutListe();
                 } else {
-                    alert("Accès non autorisé dans la base de données.");
+                    alert("Accès non autorisé.");
                     window.location.href = 'index.html';
                 }
             } catch (error) {
@@ -94,8 +132,33 @@
         }
     });
 
+    /* Compteur live des propositions en attente */
+    function watchPendingProposals(role, ecole) {
+        let q;
+        if (role === 'admin') {
+            q = query(collection(db, "proposals"), where("status", "==", "pending"));
+        } else {
+            // Editor ne voit que les propositions de son école
+            q = query(
+                collection(db, "proposals"),
+                where("status", "==", "pending"),
+                where("ecole", "==", ecole)
+            );
+        }
+        onSnapshot(q, (snap) => {
+            const count = snap.size;
+            const badge = document.getElementById('badge-approbations');
+            if (count > 0) {
+                badge.textContent = count;
+                badge.classList.remove('hidden');
+            } else {
+                badge.classList.add('hidden');
+            }
+        });
+    }
+
     document.getElementById('btn-logout').addEventListener('click', async () => {
-        if(confirm("Voulez-vous vous déconnecter ?")) {
+        if (confirm("Voulez-vous vous déconnecter ?")) {
             try {
                 await signOut(auth);
                 window.location.href = 'authentification.html';
@@ -123,8 +186,19 @@
             const resp = await fetch('event.html');
             container.innerHTML = await resp.text();
             const module = await import('./event.js?v=' + Date.now());
-            if(module.initEvent) module.initEvent(currentUserData);
+            if (module.initEvent) module.initEvent(currentUserData);
         } catch (e) { container.innerText = "Erreur de chargement Événements."; }
+    }
+
+    async function loadApprobationsTab() {
+        const container = document.getElementById('approbation-container');
+        if (container.innerHTML !== "Chargement module approbations...") return;
+        try {
+            const resp = await fetch('approbation.html');
+            container.innerHTML = await resp.text();
+            const module = await import('./approbation.js?v=' + Date.now());
+            if (module.initApprobation) module.initApprobation(currentUserData);
+        } catch (e) { container.innerText = "Erreur de chargement Approbations."; }
     }
 
     async function loadAddUserTab() {
@@ -138,7 +212,7 @@
         } catch (e) { container.innerText = "Erreur de chargement Accès."; }
     }
 
-    const tabButtons = document.querySelectorAll('.tab-button:not(.btn-logout)');
+    const tabButtons  = document.querySelectorAll('.tab-button:not(.btn-logout)');
     const tabContents = document.querySelectorAll('.tab-content');
 
     tabButtons.forEach(btn => {
@@ -148,9 +222,10 @@
             btn.classList.add('active');
             const targetId = btn.getAttribute('data-tab');
             document.getElementById(targetId).classList.add('active');
-            if (targetId === 'tab-ajout-liste') loadAjoutListe();
-            if (targetId === 'tab-events') loadEventTab();
-            if (targetId === 'tab-gestion-users') loadAddUserTab();
+            if (targetId === 'tab-ajout-liste')   loadAjoutListe();
+            if (targetId === 'tab-events')         loadEventTab();
+            if (targetId === 'tab-approbations')   loadApprobationsTab();
+            if (targetId === 'tab-gestion-users')  loadAddUserTab();
         });
     });
 </script>
