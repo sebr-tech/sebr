@@ -1,23 +1,32 @@
 <style>
     .selector-bar { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 15px; background: #0b1118; padding: 15px; border-radius: 8px; border: 1px solid #222; margin-bottom: 20px; }
     
-    #container-ecole-selector { display: none; } /* Caché par défaut, affiché si 'editor' */
+    #container-ecole-selector { display: none; }
 
     .user-table { width: 100%; border-collapse: collapse; margin-top: 20px; font-size: 0.9em; }
-    .user-table th, .user-table td { text-align: left; padding: 12px; border-bottom: 1px solid #222; }
-    .user-table th { color: var(--poly-cyan); text-transform: uppercase; letter-spacing: 1px; font-size: 0.8em; }
+    .user-table th, .user-table td { text-align: left; padding: 10px 12px; border-bottom: 1px solid #222; }
+    .user-table th { color: var(--poly-cyan); text-transform: uppercase; letter-spacing: 1px; font-size: 0.75em; }
     .user-table tr:hover { background: rgba(255,255,255,0.02); }
     
     .badge { padding: 4px 8px; border-radius: 4px; font-size: 0.8em; font-weight: bold; text-transform: uppercase; }
-    .badge-admin { background: #ed1c24; color: white; }
+    .badge-admin  { background: #ed1c24; color: white; }
     .badge-editor { background: #f09433; color: black; }
+    .badge-user   { background: #2c3e50; color: #aaa; border: 1px solid #444; }
 
     .btn-delete-user { background: none; border: none; color: #555; cursor: pointer; font-size: 1.2em; transition: 0.2s; }
     .btn-delete-user:hover { color: #ed1c24; transform: scale(1.1); }
+
+    /* Filtres */
+    .filter-bar { display: flex; gap: 8px; margin-bottom: 15px; flex-wrap: wrap; }
+    .filter-btn { background: #161f2b; border: 1px solid #333; color: #aaa; padding: 5px 14px; border-radius: 20px; cursor: pointer; font-size: 0.8em; transition: 0.2s; }
+    .filter-btn.active { background: var(--poly-cyan); border-color: var(--poly-cyan); color: white; font-weight: bold; }
 </style>
 
 <div class="admin-card" style="border-top: 3px solid #ed1c24;">
-    <h3 style="color: #ed1c24;">Ajouter un nouvel accès</h3>
+    <h3 style="color: #ed1c24;">Pré-approuver un accès Éditeur</h3>
+    <p style="color:#aaa; font-size:0.85em; margin-bottom:15px;">
+        Ajouter ici l'email d'un futur éditeur. Il pourra ensuite créer son compte depuis la page de connexion.
+    </p>
     <div class="selector-bar">
         <div>
             <label>Adresse Email</label>
@@ -32,27 +41,50 @@
         </div>
         <div id="container-ecole-selector">
             <label>École attribuée</label>
-            <select id="new-user-ecole">
-                </select>
+            <select id="new-user-ecole"></select>
         </div>
     </div>
-    <button class="btn-push" id="btn-add-user" style="background: #ed1c24; max-width: 200px; margin: 0 auto; display: block;">➕ Autoriser l'accès</button>
-    <p id="adduser-status" style="text-align:center; font-size:0.8em; margin-top:10px; min-height:1em;"></p>
+    <button class="btn-push" id="btn-add-user" style="background: #ed1c24; max-width: 220px; margin: 0 auto; display: block;">➕ Pré-approuver l'accès</button>
+    <p id="adduser-status" style="text-align:center; font-size:0.8em; margin-top:10px; min-height:1em; color:#28a745;"></p>
 </div>
 
 <div class="admin-card">
-    <h3>Liste des accès autorisés</h3>
+    <h3>Liste de tous les comptes</h3>
+    
+    <div class="filter-bar" id="filter-bar">
+        <button class="filter-btn active" data-role="all">Tous</button>
+        <button class="filter-btn" data-role="admin">Admins</button>
+        <button class="filter-btn" data-role="editor">Éditeurs</button>
+        <button class="filter-btn" data-role="user">Utilisateurs</button>
+    </div>
+
     <div id="loading-users" style="color:#aaa; text-align:center; padding:20px; font-style:italic;">Chargement des utilisateurs...</div>
     <table class="user-table" id="user-table" style="display:none;">
         <thead>
             <tr>
-                <th>Email</th>
+                <th>Email / Prénom</th>
                 <th>Rôle</th>
                 <th>École</th>
+                <th style="text-align:center;">Propositions</th>
                 <th style="text-align:right;">Action</th>
             </tr>
         </thead>
-        <tbody id="user-table-body">
-            </tbody>
+        <tbody id="user-table-body"></tbody>
     </table>
 </div>
+
+<script>
+    // Filtre côté client sur les lignes du tableau
+    document.getElementById('filter-bar').addEventListener('click', (e) => {
+        const btn = e.target.closest('.filter-btn');
+        if (!btn) return;
+        document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        const role = btn.dataset.role;
+        document.querySelectorAll('#user-table-body tr').forEach(tr => {
+            const badge = tr.querySelector('.badge');
+            if (!badge) return;
+            tr.style.display = (role === 'all' || badge.classList.contains('badge-' + role)) ? '' : 'none';
+        });
+    });
+</script>
