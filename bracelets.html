@@ -2,1217 +2,943 @@
 <html lang="fr">
 <head>
     <meta charset="UTF-8">
+    <title>SEBR.tech — Bracelet Studio</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link rel="icon" type="image/png" href="image.png">
-    <title>SEBR.tech — Bracelets</title>
+    
+    <!-- Icônes -->
+    <link rel="stylesheet"
+          href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+
+    <!-- Three.js + OrbitControls -->
+    <script src="https://unpkg.com/three@0.128.0/build/three.min.js"></script>
+    <script src="https://unpkg.com/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
 
     <style>
         :root {
-            --poly-blue: #003057;
-            --poly-yellow: #e3cc00;
-            --bg-dark: #050a0f;
-            --card-bg: #161f2b;
-            --poly-cyan: #009ee3;
-            --danger: #ff5c5c;
-            --header-height: 70px;
-            --sidebar-width: 400px;
+            --bg-color: #050a10;
+            --sidebar-color: #020617;
+            --primary-color: #0ea5e9;
+            --primary-soft: rgba(14,165,233,0.12);
+            --accent: #eab308;
+            --card-bg: #020617;
+            --card-elev: #020617;
+            --border-color: #0f172a;
+            --text-muted: #64748b;
+            --danger: #f97373;
         }
 
         * { box-sizing: border-box; margin: 0; padding: 0; }
 
         body {
-            font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
-            background-color: var(--bg-dark);
-            color: white;
-            height: 100vh;
+            font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI",
+                         Roboto, sans-serif;
+            margin: 0;
             display: flex;
-            flex-direction: column;
+            height: 100vh;
+            background: radial-gradient(circle at 0 0, #0f172a 0, #020617 40%, #000 100%);
+            color: #e5e7eb;
             overflow: hidden;
         }
 
-        /* ===== HEADER (identique à index.html) ===== */
-        header {
+        /* ================= SIDEBAR ================= */
+
+        .sidebar {
+            width: 260px;
+            background: linear-gradient(180deg, #020617 0%, #020617 40%, #020617 100%);
+            border-right: 1px solid #0f172a;
+            padding: 22px 18px;
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        .sidebar-header {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+        }
+
+        .sidebar-title {
+            font-weight: 800;
+            font-size: 1.15rem;
+            letter-spacing: 0.08em;
+            text-transform: uppercase;
+            color: var(--accent);
+        }
+
+        .sidebar-subtitle {
+            font-size: 0.75rem;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 0.18em;
+        }
+
+        .nav-section-title {
+            font-size: 0.7rem;
+            text-transform: uppercase;
+            color: #475569;
+            letter-spacing: 0.13em;
+            margin-top: 12px;
+            margin-bottom: 4px;
+        }
+
+        .nav-item {
+            padding: 10px 10px;
+            cursor: pointer;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-size: 0.9rem;
+            color: #cbd5f5;
+            transition: 0.18s;
+        }
+
+        .nav-item i { width: 18px; text-align: center; }
+
+        .nav-item:hover {
+            background: rgba(15,23,42,0.9);
+        }
+
+        .nav-item.active {
+            background: var(--primary-soft);
+            color: var(--primary-color);
+            box-shadow: 0 0 0 1px rgba(56,189,248,0.35);
+        }
+
+        .sidebar-footer {
+            margin-top: auto;
+            font-size: 0.75rem;
+            color: #475569;
+        }
+
+        .sidebar-footer a {
+            color: var(--primary-color);
+            text-decoration: none;
+        }
+
+        /* ================= MAIN ================= */
+
+        .main-content {
+            flex: 1;
+            padding: 24px 26px;
+            overflow-y: auto;
+        }
+
+        .main-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: baseline;
+            margin-bottom: 18px;
+        }
+
+        .main-header h1 {
+            font-size: 1.5rem;
+            letter-spacing: 0.06em;
+            text-transform: uppercase;
+        }
+
+        .main-header span {
+            font-size: 0.8rem;
+            color: var(--text-muted);
+        }
+
+        .tag-pill {
+            padding: 5px 10px;
+            border-radius: 999px;
+            border: 1px solid rgba(148,163,184,0.35);
+            font-size: 0.7rem;
+            text-transform: uppercase;
+            letter-spacing: 0.12em;
+            color: var(--text-muted);
+        }
+
+        .tab-content { display: none; }
+        .tab-content.active { display: block; }
+
+        /* ================= CREATION LAYOUT ================= */
+
+        .generator-grid {
+            display: grid;
+            grid-template-columns: minmax(260px, 360px) minmax(360px, 1.25fr);
+            gap: 20px;
+        }
+
+        .card {
+            background: radial-gradient(circle at top left,#020617 0,#020617 50%,#020617 100%);
+            border-radius: 16px;
+            border: 1px solid var(--border-color);
+            padding: 20px 20px 18px 20px;
+            box-shadow:
+                0 18px 40px rgba(0,0,0,0.55),
+                0 0 0 1px rgba(15,23,42,0.9);
+        }
+
+        .card-title {
+            font-size: 0.9rem;
+            text-transform: uppercase;
+            letter-spacing: 0.14em;
+            color: #9ca3af;
+            margin-bottom: 16px;
+        }
+
+        .form-group { margin-bottom: 16px; }
+
+        .form-label {
             display: flex;
             justify-content: space-between;
             align-items: center;
-            gap: 20px;
-            padding: 0 20px;
-            background: var(--poly-blue);
-            min-height: var(--header-height);
-            border-bottom: 3px solid var(--poly-cyan);
-            z-index: 100;
-            flex-shrink: 0;
+            margin-bottom: 6px;
         }
 
-        .header-left { display: flex; align-items: center; gap: 18px; flex: 1 1 auto; }
-        .header-right { display: flex; align-items: center; justify-content: flex-end; gap: 14px; flex: 0 1 auto; }
-        .header-nav { display: flex; align-items: center; gap: 10px; flex-wrap: nowrap; }
-
-        .logo-title {
-            font-weight: 800; color: var(--poly-yellow); letter-spacing: 1px;
-            font-size: 1.1em; white-space: nowrap;
-        }
-        .logo-title .subtitle { display: block; font-size: 0.7em; font-weight: 400; color: #ccc; letter-spacing: 0; }
-
-        .btn-nav, .btn-auth {
-            background: rgba(255,255,255,0.05); border: 1px solid var(--poly-cyan);
-            color: white; padding: 8px 15px; border-radius: 5px; cursor: pointer;
-            font-weight: bold; font-size: 0.85em; text-decoration: none; transition: 0.2s; white-space: nowrap;
-        }
-        .btn-nav:hover, .btn-auth:hover { background: var(--poly-cyan); color: #000; transform: translateY(-2px); }
-        .btn-nav.active { background: var(--poly-cyan); color: #000; }
-        .btn-auth.logout { color: var(--danger); border-color: rgba(255,92,92,0.65); background: rgba(255,92,92,0.08); }
-        .btn-auth.logout:hover { background: var(--danger); border-color: var(--danger); color: #fff; }
-
-        /* ===== LAYOUT ===== */
-        #main-container { display: flex; flex: 1; overflow: hidden; }
-
-        /* ===== VIEWER 3D ===== */
-        #viewer-section {
-            flex: 1;
-            position: relative;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            background: radial-gradient(ellipse at center, #0a1a2f 0%, var(--bg-dark) 80%);
-            overflow: hidden;
+        .form-label span {
+            font-weight: 600;
+            font-size: 0.85rem;
+            color: #e5e7eb;
         }
 
-        #viewer-section::before {
-            content: '';
-            position: absolute;
-            inset: 0;
-            background: 
-                radial-gradient(circle at 20% 80%, rgba(0,158,227,0.06) 0%, transparent 50%),
-                radial-gradient(circle at 80% 20%, rgba(0,48,87,0.15) 0%, transparent 50%);
-            pointer-events: none;
+        .form-label small {
+            font-size: 0.7rem;
+            color: var(--text-muted);
         }
 
-        #bracelet-canvas {
+        input[type="text"],
+        textarea {
             width: 100%;
-            height: 100%;
-            display: block;
-        }
-
-        #viewer-overlay {
-            position: absolute;
-            bottom: 30px;
-            left: 50%;
-            transform: translateX(-50%);
-            text-align: center;
-            pointer-events: none;
-        }
-
-        #viewer-bracelet-name {
-            font-size: 1.4em;
-            font-weight: 800;
-            letter-spacing: 3px;
-            text-transform: uppercase;
-            color: white;
-            text-shadow: 0 0 20px rgba(0,158,227,0.8);
-            margin-bottom: 5px;
-            opacity: 0;
-            transition: opacity 0.4s;
-        }
-
-        #viewer-bracelet-info {
-            font-size: 0.85em;
-            color: #aaa;
-            letter-spacing: 1px;
-        }
-
-        #viewer-hint {
-            position: absolute;
-            top: 20px;
-            left: 50%;
-            transform: translateX(-50%);
-            font-size: 0.75em;
-            color: #444;
-            letter-spacing: 2px;
-            text-transform: uppercase;
-            animation: pulseHint 3s infinite;
-        }
-
-        @keyframes pulseHint { 0%,100%{opacity:0.4} 50%{opacity:0.9} }
-        @keyframes slideUpFade { from{opacity:0;transform:translateY(12px)} to{opacity:1;transform:translateY(0)} }
-        @keyframes fadeIn { from{opacity:0} to{opacity:1} }
-
-        /* ===== SIDEBAR ===== */
-        #sidebar-section {
-            width: var(--sidebar-width);
-            min-width: 340px;
-            background: #0b1118;
-            border-left: 1px solid #1a2535;
-            display: flex;
-            flex-direction: column;
-            overflow: hidden;
-        }
-
-        .sidebar-tabs {
-            display: flex;
-            border-bottom: 1px solid #1a2535;
-            flex-shrink: 0;
-        }
-
-        .sidebar-tab {
-            flex: 1;
-            padding: 16px 10px;
-            text-align: center;
-            cursor: pointer;
-            font-size: 0.85em;
-            font-weight: 700;
-            letter-spacing: 1px;
-            text-transform: uppercase;
-            color: #555;
-            border-bottom: 3px solid transparent;
-            transition: all 0.2s;
-            user-select: none;
-        }
-
-        .sidebar-tab.active {
-            color: var(--poly-cyan);
-            border-bottom-color: var(--poly-cyan);
-            background: rgba(0,158,227,0.05);
-        }
-
-        .sidebar-tab:hover:not(.active) { color: #aaa; background: rgba(255,255,255,0.02); }
-
-        .tab-panel { display: none; flex: 1; flex-direction: column; overflow-y: auto; padding: 20px; }
-        .tab-panel.active { display: flex; }
-
-        /* ===== RECHERCHER ===== */
-        .filter-row { display: flex; gap: 8px; margin-bottom: 12px; flex-wrap: wrap; }
-
-        .filter-select, .filter-input {
-            background: #161f2b; border: 1px solid #2a3544; color: white;
-            padding: 8px 10px; border-radius: 5px; font-size: 0.85em;
-            flex: 1; min-width: 100px; outline: none; transition: border-color 0.2s;
-        }
-        .filter-select:focus, .filter-input:focus { border-color: var(--poly-cyan); }
-
-        #bracelets-grid {
-            display: flex;
-            flex-direction: column;
-            gap: 10px;
-            flex: 1;
-        }
-
-        .bracelet-card {
-            background: #161f2b;
-            border: 1px solid #222;
+            padding: 10px 11px;
             border-radius: 10px;
-            padding: 14px;
-            cursor: pointer;
-            transition: all 0.2s;
+            border: 1px solid var(--border-color);
+            background: rgba(15,23,42,0.75);
+            color: #e5e7eb;
+            font-size: 0.9rem;
+            outline: none;
+            transition: border-color 0.15s, box-shadow 0.15s, background 0.15s;
+        }
+
+        input[type="text"]:focus,
+        textarea:focus {
+            border-color: rgba(56,189,248,0.8);
+            box-shadow: 0 0 0 1px rgba(56,189,248,0.4);
+            background: rgba(15,23,42,0.95);
+        }
+
+        textarea {
+            resize: vertical;
+            min-height: 70px;
+            max-height: 160px;
+        }
+
+        .color-row {
             display: flex;
-            align-items: center;
             gap: 12px;
-            animation: slideUpFade 0.3s ease-out backwards;
         }
 
-        .bracelet-card:hover {
-            border-color: var(--poly-cyan);
-            transform: translateX(3px);
-            box-shadow: -3px 0 10px rgba(0,158,227,0.15);
-        }
-
-        .bracelet-card.selected {
-            border-color: var(--poly-cyan);
-            background: rgba(0,158,227,0.08);
-        }
-
-        .bracelet-preview-mini {
-            width: 54px;
-            height: 26px;
-            border-radius: 30px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 7px;
-            font-weight: 900;
-            letter-spacing: 1px;
-            text-transform: uppercase;
-            flex-shrink: 0;
-            border: 2px solid rgba(255,255,255,0.1);
-            overflow: hidden;
-            position: relative;
-        }
-
-        .bracelet-card-info { flex: 1; }
-        .bracelet-card-name { font-weight: 700; font-size: 0.9em; margin-bottom: 2px; }
-        .bracelet-card-meta { font-size: 0.75em; color: #667; }
-
-        .bracelet-card-actions { display: flex; gap: 6px; flex-shrink: 0; }
-        .btn-tiny {
-            background: transparent; border: 1px solid #333; color: #aaa;
-            padding: 4px 8px; border-radius: 4px; cursor: pointer; font-size: 0.75em; transition: 0.2s;
-        }
-        .btn-tiny:hover { border-color: var(--poly-cyan); color: var(--poly-cyan); }
-        .btn-tiny.danger:hover { border-color: var(--danger); color: var(--danger); }
-
-        /* ===== AJOUTER / PERSONNALISER ===== */
-        .section-label {
-            font-size: 0.7em;
-            letter-spacing: 2px;
-            text-transform: uppercase;
-            color: #556;
-            margin-bottom: 8px;
-            margin-top: 16px;
-        }
-        .section-label:first-child { margin-top: 0; }
-
-        .form-field {
-            width: 100%; padding: 10px 12px;
-            background: #161f2b; border: 1px solid #2a3544; color: white;
-            border-radius: 6px; font-size: 0.9em; outline: none;
-            transition: border-color 0.2s; margin-bottom: 10px;
-        }
-        .form-field:focus { border-color: var(--poly-cyan); }
-
-        .color-row { display: flex; gap: 10px; align-items: center; margin-bottom: 10px; }
-        .color-label { font-size: 0.85em; color: #aaa; flex: 1; }
         .color-input {
-            width: 44px; height: 36px; padding: 2px; border: 1px solid #333;
-            border-radius: 5px; cursor: pointer; background: #0b1118;
+            flex: 1;
         }
+
+        .color-box {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .color-box input[type="color"] {
+            width: 42px;
+            height: 32px;
+            padding: 0;
+            border-radius: 10px;
+            border: 1px solid var(--border-color);
+            background: transparent;
+            cursor: pointer;
+        }
+
         .color-hex {
-            width: 90px; background: #161f2b; border: 1px solid #2a3544; color: white;
-            padding: 8px; border-radius: 5px; font-size: 0.8em; font-family: monospace; outline: none;
-        }
-        .color-hex:focus { border-color: var(--poly-cyan); }
-
-        /* Aperçu bracelet dans le formulaire */
-        #preview-wrap {
-            background: #070d14;
-            border-radius: 12px;
-            padding: 20px;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            margin-bottom: 16px;
-            border: 1px solid #1a2535;
-            min-height: 80px;
+            flex: 1;
         }
 
-        #form-bracelet-preview {
-            height: 36px;
-            border-radius: 40px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 10px;
-            font-weight: 900;
-            letter-spacing: 2px;
+        .color-hex input {
+            font-family: "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+            font-size: 0.8rem;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg,#0ea5e9,#22c55e);
+            border: none;
+            color: #0b1120;
+            padding: 11px 14px;
+            border-radius: 999px;
+            cursor: pointer;
+            font-weight: 700;
+            font-size: 0.85rem;
             text-transform: uppercase;
-            padding: 0 20px;
-            min-width: 160px;
-            border: 3px solid rgba(255,255,255,0.08);
-            box-shadow: inset 0 2px 4px rgba(0,0,0,0.4), 0 4px 15px rgba(0,0,0,0.6);
-            transition: all 0.2s;
-        }
-
-        .btn-submit {
-            width: 100%; padding: 12px;
-            background: var(--poly-cyan); border: none;
-            border-radius: 6px; color: white; font-size: 0.9em; font-weight: 700;
-            cursor: pointer; transition: 0.2s; margin-top: 8px;
-        }
-        .btn-submit:hover { filter: brightness(1.1); transform: translateY(-1px); }
-        .btn-submit:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
-        .btn-submit.proposal { background: #f09433; }
-
-        #add-feedback {
-            font-size: 0.82em; text-align: center; margin-top: 8px;
-            min-height: 18px; color: var(--poly-cyan);
-        }
-        #add-feedback.err { color: var(--danger); }
-
-        .no-results { text-align: center; padding: 40px 20px; color: #444; font-size: 0.9em; }
-
-        /* Admin actions */
-        .admin-actions {
-            display: none;
-            gap: 6px;
+            letter-spacing: 0.14em;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            width: 100%;
             margin-top: 8px;
-        }
-        .admin-actions.visible { display: flex; }
-
-        /* ===== MODAL BRACELET ===== */
-        #modal-overlay {
-            position: fixed; inset: 0; background: rgba(0,0,0,0.85); z-index: 200;
-            display: none; justify-content: center; align-items: center; padding: 20px;
-        }
-        #modal-overlay.open { display: flex; }
-
-        #modal-box {
-            background: #0b1118; border: 1px solid #2a3544; border-radius: 14px;
-            padding: 30px; max-width: 480px; width: 100%;
-            animation: slideUpFade 0.3s ease-out;
-            border-top: 3px solid var(--poly-cyan);
+            transition: transform 0.12s, box-shadow 0.12s, filter 0.12s;
         }
 
-        #modal-title { font-size: 1.3em; font-weight: 800; letter-spacing: 2px; margin-bottom: 6px; text-transform: uppercase; }
-        #modal-meta { color: #667; font-size: 0.85em; margin-bottom: 20px; }
-
-        #modal-bracelet-3d {
-            width: 100%; height: 120px;
-            background: #070d14; border-radius: 10px;
-            margin-bottom: 20px; overflow: hidden;
+        .btn-primary:hover {
+            filter: brightness(1.08);
+            transform: translateY(-1px);
+            box-shadow: 0 14px 30px rgba(34,197,94,0.35);
         }
 
-        .modal-info-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 20px; }
-        .modal-info-item { background: #161f2b; padding: 10px 14px; border-radius: 8px; }
-        .modal-info-label { font-size: 0.7em; letter-spacing: 1px; color: #556; text-transform: uppercase; margin-bottom: 3px; }
-        .modal-info-value { font-weight: 700; font-size: 0.95em; }
-
-        .modal-linked { background: #161f2b; padding: 12px 14px; border-radius: 8px; margin-bottom: 20px; border-left: 3px solid var(--poly-cyan); }
-        .modal-linked-label { font-size: 0.7em; letter-spacing: 1px; color: #556; text-transform: uppercase; margin-bottom: 5px; }
-        .modal-linked-value { font-size: 0.9em; color: var(--poly-cyan); font-weight: 700; }
-
-        #modal-close {
-            width: 100%; padding: 10px; background: transparent; border: 1px solid #333;
-            color: #aaa; border-radius: 6px; cursor: pointer; font-size: 0.85em; transition: 0.2s;
+        .btn-primary:active {
+            transform: translateY(0);
+            box-shadow: none;
         }
-        #modal-close:hover { border-color: white; color: white; }
 
-        /* ===== RESPONSIVE ===== */
+        .btn-primary i {
+            font-size: 0.9rem;
+        }
+
+        .feedback {
+            margin-top: 8px;
+            font-size: 0.8rem;
+            color: var(--text-muted);
+            min-height: 18px;
+        }
+
+        .feedback.ok {
+            color: #22c55e;
+        }
+
+        .feedback.err {
+            color: var(--danger);
+        }
+
+        /* ================= 3D CANVAS ================= */
+
+        #canvas-card {
+            padding: 12px;
+        }
+
+        #canvas-container {
+            width: 100%;
+            height: 360px;
+            background: radial-gradient(circle at top,#0b1120 0,#020617 60%,#000 100%);
+            border-radius: 14px;
+            position: relative;
+            border: 1px solid #0f172a;
+            overflow: hidden;
+            cursor: grab;
+        }
+
+        #canvas-container:active {
+            cursor: grabbing;
+        }
+
+        .hint-3d {
+            position: absolute;
+            bottom: 12px;
+            width: 100%;
+            text-align: center;
+            color: #64748b;
+            font-size: 0.78rem;
+            pointer-events: none;
+            text-shadow: 0 2px 4px rgba(0,0,0,0.8);
+        }
+
+        .hint-3d i {
+            margin-right: 6px;
+        }
+
+        .floating-chip {
+            position: absolute;
+            top: 12px;
+            left: 12px;
+            padding: 5px 10px;
+            border-radius: 999px;
+            background: rgba(15,23,42,0.9);
+            border: 1px solid rgba(148,163,184,0.4);
+            font-size: 0.7rem;
+            letter-spacing: 0.14em;
+            text-transform: uppercase;
+            color: #9ca3af;
+        }
+
+        /* ================= EXPLORER ================= */
+
+        #explorer-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill,minmax(260px,1fr));
+            gap: 14px;
+            margin-top: 14px;
+        }
+
+        .bracelet-item {
+            background: radial-gradient(circle at top,#020617 0,#020617 60%,#020617 100%);
+            border-radius: 14px;
+            padding: 14px;
+            border: 1px solid var(--border-color);
+            font-size: 0.85rem;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .mini-bandeau {
+            height: 36px;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 800;
+            font-size: 0.8rem;
+            margin-bottom: 6px;
+            text-transform: uppercase;
+            letter-spacing: 0.12em;
+        }
+
+        .bracelet-meta {
+            color: var(--text-muted);
+            font-size: 0.75rem;
+        }
+
+        .bracelet-actions {
+            display: flex;
+            gap: 6px;
+            margin-top: 4px;
+        }
+
+        .btn-ghost {
+            flex: 1;
+            border-radius: 999px;
+            border: 1px solid #1e293b;
+            background: rgba(15,23,42,0.7);
+            color: #cbd5f5;
+            padding: 5px 0;
+            font-size: 0.75rem;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 4px;
+            transition: 0.12s;
+        }
+
+        .btn-ghost:hover {
+            border-color: rgba(56,189,248,0.65);
+            color: var(--primary-color);
+        }
+
+        .btn-ghost.danger {
+            border-color: rgba(248,113,113,0.55);
+            color: var(--danger);
+        }
+
+        .btn-ghost.danger:hover {
+            background: rgba(127,29,29,0.6);
+        }
+
+        .empty-state {
+            margin-top: 40px;
+            text-align: center;
+            color: var(--text-muted);
+            font-size: 0.85rem;
+        }
+
+        /* ================= RESPONSIVE ================= */
+
         @media (max-width: 900px) {
-            body { height: auto; overflow-y: auto; }
-            #main-container { flex-direction: column; }
-            #viewer-section { height: 350px; flex: none; }
-            #sidebar-section { width: 100%; min-width: 0; border-left: none; border-top: 1px solid #1a2535; height: auto; overflow: visible; }
-            .tab-panel { max-height: 70vh; }
+            body { flex-direction: column; overflow: auto; }
+            .sidebar {
+                width: 100%;
+                flex-direction: row;
+                align-items: center;
+                padding: 10px 14px;
+                border-right: none;
+                border-bottom: 1px solid #0f172a;
+                gap: 12px;
+            }
+            .sidebar-header { flex: 1; }
+            .nav-section-title { display: none; }
+            .nav-item { padding: 8px 10px; font-size: 0.8rem; }
+            .main-content { padding: 16px; }
+            .generator-grid {
+                grid-template-columns: 1fr;
+            }
+            #canvas-container { height: 320px; }
         }
-
-        @media (max-width: 600px) {
-            header { flex-wrap: wrap; padding: 12px 15px; }
-            .header-left, .header-right { width: 100%; justify-content: center; }
-            .header-nav { flex-wrap: wrap; justify-content: center; }
-            .logo-title { font-size: 0.9em; }
-        }
-
-        .site-footer {
-            text-align: center; padding: 12px; font-size: 0.8em; color: #555;
-            background: #050a0f; border-top: 1px solid #111; flex-shrink: 0;
-        }
-        .site-footer a { color: var(--poly-cyan); text-decoration: none; }
-
-        /* Loading */
-        #loading-bracelets { color: #aaa; text-align: center; padding: 30px; font-size: 0.85em; animation: pulseHint 1.5s infinite; }
     </style>
 </head>
+
 <body>
-
-<!-- HEADER -->
-<header>
-    <div class="header-left">
-        <div class="logo-title">
-            ✊SEBR.tech
-            <span class="subtitle">Bracelets du Rezo Polytech</span>
+    <div class="sidebar">
+        <div class="sidebar-header">
+            <div class="sidebar-title">✊ SEBR.tech</div>
+            <div class="sidebar-subtitle">Bracelet studio local</div>
         </div>
-    </div>
-    <div class="header-right">
-        <div class="header-nav">
-            <a href="index.html" class="btn-nav">ACCUEIL</a>
-            <a href="calendrier.html" class="btn-nav">CALENDRIER</a>
-            <a href="bracelets.html" class="btn-nav active">BRACELETS</a>
-            <a href="admin.html" class="btn-nav hidden" id="admin-button">ADMIN</a>
-            <button class="btn-auth" id="auth-button" type="button">Connexion 🔒</button>
+
+        <div>
+            <div class="nav-section-title">Navigation</div>
+            <div class="nav-item active" data-tab="generator" onclick="switchTab('generator', this)">
+                <i class="fas fa-plus"></i>
+                <span>Création</span>
+            </div>
+            <div class="nav-item" data-tab="explorer" onclick="switchTab('explorer', this)">
+                <i class="fas fa-th-list"></i>
+                <span>Historique</span>
+            </div>
         </div>
-    </div>
-</header>
 
-<!-- MAIN -->
-<div id="main-container">
-
-    <!-- VIEWER 3D -->
-    <div id="viewer-section">
-        <div id="viewer-hint">↗ Sélectionnez un bracelet</div>
-        <canvas id="bracelet-canvas"></canvas>
-        <div id="viewer-overlay">
-            <div id="viewer-bracelet-name"></div>
-            <div id="viewer-bracelet-info"></div>
+        <div class="sidebar-footer">
+            Stockage <strong>local</strong> (navigateur).<br>
+            Les modèles sont gardés dans <code>localStorage</code>.<br>
+            <a href="#" onclick="clearAllBracelets(); return false;">Tout effacer</a>
         </div>
     </div>
 
-    <!-- SIDEBAR -->
-    <div id="sidebar-section">
-        <div class="sidebar-tabs">
-            <div class="sidebar-tab active" id="tab-btn-search" onclick="switchTab('search')">🔍 Rechercher</div>
-            <div class="sidebar-tab" id="tab-btn-add" onclick="switchTab('add')">➕ Ajouter</div>
+    <div class="main-content">
+        <div class="main-header">
+            <div>
+                <h1>Bracelet Silicone</h1>
+                <span>Générateur de modèles et historique local</span>
+            </div>
+            <div class="tag-pill">
+                <i class="fas fa-plug"></i> Offline · localStorage
+            </div>
         </div>
 
-        <!-- ONGLET RECHERCHER -->
-        <div class="tab-panel active" id="panel-search">
-            <div class="filter-row">
-                <select class="filter-select" id="filter-ville" onchange="applyFilters()">
-                    <option value="">Toutes les villes</option>
-                    <option value="lille">Lille</option>
-                    <option value="sorbonne">Paris-Sorbonne</option>
-                    <option value="saclay">Paris-Saclay</option>
-                    <option value="nancy">Nancy</option>
-                    <option value="dijon">Dijon</option>
-                    <option value="nantes">Nantes</option>
-                    <option value="angers">Angers</option>
-                    <option value="orleans">Orléans</option>
-                    <option value="tours">Tours</option>
-                    <option value="clermont">Clermont</option>
-                    <option value="lyon">Lyon</option>
-                    <option value="annecy">Annecy</option>
-                    <option value="grenoble">Grenoble</option>
-                    <option value="montpellier">Montpellier</option>
-                    <option value="marseille">Marseille</option>
-                    <option value="nice">Nice</option>
-                </select>
-                <select class="filter-select" id="filter-annee" onchange="applyFilters()">
-                    <option value="">Toutes les années</option>
-                    <option value="2025-2026">2025-2026</option>
-                    <option value="2024-2025">2024-2025</option>
-                    <option value="2023-2024">2023-2024</option>
-                </select>
+        <!-- TAB CREATION -->
+        <div id="generator" class="tab-content active">
+            <div class="generator-grid">
+                <!-- Formulaire -->
+                <div class="card">
+                    <div class="card-title">Paramètres du modèle</div>
+
+                    <div class="form-group">
+                        <div class="form-label">
+                            <span>Texte du bracelet</span>
+                            <small>Max conseillé ~ 20 caractères</small>
+                        </div>
+                        <input type="text" id="input-text" value="POLYUILLE"
+                               maxlength="40" oninput="update3DTexture();">
+                    </div>
+
+                    <div class="form-group">
+                        <div class="form-label">
+                            <span>Couleurs</span>
+                            <small>Silicone + impression</small>
+                        </div>
+                        <div class="color-row">
+                            <div class="color-input">
+                                <div class="color-box">
+                                    <input type="color" id="color-bg" value="#1e293b"
+                                           oninput="syncHexFromColor('bg'); update3DTexture();">
+                                    <div class="color-hex">
+                                        <input type="text" id="color-bg-hex" value="#1e293b"
+                                               maxlength="7" oninput="syncColorFromHex('bg');">
+                                    </div>
+                                </div>
+                                <small class="color-help" style="color:var(--text-muted);font-size:0.7rem;">
+                                    Silicone
+                                </small>
+                            </div>
+                            <div class="color-input">
+                                <div class="color-box">
+                                    <input type="color" id="color-text" value="#ffffff"
+                                           oninput="syncHexFromColor('text'); update3DTexture();">
+                                    <div class="color-hex">
+                                        <input type="text" id="color-text-hex" value="#ffffff"
+                                               maxlength="7" oninput="syncColorFromHex('text');">
+                                    </div>
+                                </div>
+                                <small style="color:var(--text-muted);font-size:0.7rem;">
+                                    Texte / Encre
+                                </small>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <div class="form-label">
+                            <span>Notes internes</span>
+                            <small>Infos client / event / config</small>
+                        </div>
+                        <textarea id="input-note" rows="3"
+                                  placeholder="Ex: Polytech Marseille, soirée intégration, batch test..."></textarea>
+                    </div>
+
+                    <button class="btn-primary" onclick="saveBracelet();">
+                        <i class="fas fa-floppy-disk"></i>
+                        <span>Enregistrer le modèle</span>
+                    </button>
+
+                    <div id="save-feedback" class="feedback"></div>
+                </div>
+
+                <!-- 3D -->
+                <div class="card" id="canvas-card">
+                    <div id="canvas-container">
+                        <div class="floating-chip">3D Preview · silicone texturé</div>
+                        <div class="hint-3d">
+                            <i class="fas fa-arrows-rotate"></i>
+                            Faites glisser pour inspecter · auto-rotation activée
+                        </div>
+                    </div>
+                </div>
             </div>
-            <div class="filter-row">
-                <input type="color" class="color-input" id="filter-color" oninput="applyFilters()" title="Filtrer par couleur" style="width:44px;flex:none;">
-                <input type="text" class="filter-input" id="filter-text" placeholder="Rechercher..." oninput="applyFilters()">
-                <button class="btn-tiny" onclick="resetFilters()">✕</button>
-            </div>
-            <div id="loading-bracelets">Chargement des bracelets...</div>
-            <div id="bracelets-grid" style="display:none;"></div>
-            <div id="no-results" class="no-results" style="display:none;">Aucun bracelet trouvé.</div>
         </div>
 
-        <!-- ONGLET AJOUTER -->
-        <div class="tab-panel" id="panel-add">
-            <div id="add-role-notice" style="display:none; background:rgba(0,158,227,0.08); border:1px solid rgba(0,158,227,0.25); border-radius:6px; padding:10px 14px; font-size:0.8em; color:#aaa; margin-bottom:16px; line-height:1.5;">
-                En tant qu'<strong style="color:var(--poly-cyan)">utilisateur</strong>, votre bracelet sera soumis en proposition et devra être approuvé par un éditeur.
+        <!-- TAB EXPLORER -->
+        <div id="explorer" class="tab-content">
+            <div class="card">
+                <div class="card-title">Historique local</div>
+                <p style="font-size:0.8rem;color:var(--text-muted);margin-bottom:6px;">
+                    Tous les modèles sont stockés uniquement dans ce navigateur.
+                </p>
+                <p style="font-size:0.78rem;color:var(--text-muted);margin-bottom:10px;">
+                    Utilise les boutons <strong>Prévisualiser</strong> pour recharger un modèle dans le 3D,
+                    ou <strong>Dupliquer</strong> pour repartir d'une base similaire.
+                </p>
+                <div id="explorer-grid"></div>
+                <div id="explorer-empty" class="empty-state" style="display:none;">
+                    Aucun modèle enregistré pour l'instant.<br>
+                    Crée un bracelet dans l'onglet <strong>Création</strong>.
+                </div>
             </div>
-            <div id="add-login-notice" style="display:none; background:rgba(255,92,92,0.08); border:1px solid rgba(255,92,92,0.3); border-radius:6px; padding:10px 14px; font-size:0.8em; color:#aaa; margin-bottom:16px;">
-                🔒 Connectez-vous pour ajouter un bracelet.
-            </div>
-
-            <!-- Aperçu -->
-            <div class="section-label">Aperçu en direct</div>
-            <div id="preview-wrap">
-                <div id="form-bracelet-preview">VILLE 2025</div>
-            </div>
-
-            <!-- Couleurs -->
-            <div class="section-label">Couleur du fond</div>
-            <div class="color-row">
-                <input type="color" class="color-input" id="inp-bg-color" value="#0066cc" oninput="syncColorInput('bg')">
-                <input type="text" class="color-hex" id="inp-bg-hex" value="#0066cc" oninput="syncColorHex('bg')" maxlength="7" placeholder="#000000">
-                <span class="color-label">Couleur principale</span>
-            </div>
-
-            <div class="section-label">Couleur du texte</div>
-            <div class="color-row">
-                <input type="color" class="color-input" id="inp-text-color" value="#ffffff" oninput="syncColorInput('text')">
-                <input type="text" class="color-hex" id="inp-text-hex" value="#ffffff" oninput="syncColorHex('text')" maxlength="7" placeholder="#ffffff">
-                <span class="color-label">Texte extrudé</span>
-            </div>
-
-            <!-- Infos -->
-            <div class="section-label">Texte du bracelet</div>
-            <input type="text" class="form-field" id="inp-texte" placeholder="Ex: MARSEILLE 2025" maxlength="30" oninput="updatePreview()">
-
-            <div class="section-label">Ville</div>
-            <select class="form-field" id="inp-ville">
-                <option value="">— Sélectionner —</option>
-                <option value="lille">Lille</option>
-                <option value="sorbonne">Paris-Sorbonne</option>
-                <option value="saclay">Paris-Saclay</option>
-                <option value="nancy">Nancy</option>
-                <option value="dijon">Dijon</option>
-                <option value="nantes">Nantes</option>
-                <option value="angers">Angers</option>
-                <option value="orleans">Orléans</option>
-                <option value="tours">Tours</option>
-                <option value="clermont">Clermont</option>
-                <option value="lyon">Lyon</option>
-                <option value="annecy">Annecy</option>
-                <option value="grenoble">Grenoble</option>
-                <option value="montpellier">Montpellier</option>
-                <option value="marseille">Marseille</option>
-                <option value="nice">Nice</option>
-            </select>
-
-            <div class="section-label">Année</div>
-            <select class="form-field" id="inp-annee">
-                <option value="">— Sélectionner —</option>
-                <option value="2025-2026">2025-2026</option>
-                <option value="2024-2025">2024-2025</option>
-                <option value="2023-2024">2023-2024</option>
-            </select>
-
-            <div class="section-label">Lier à une liste <span style="color:#556">(optionnel)</span></div>
-            <select class="form-field" id="inp-liste-liee">
-                <option value="">— Aucune liste —</option>
-            </select>
-
-            <div class="admin-actions" id="admin-actions">
-                <button class="btn-submit" id="btn-save" onclick="submitBracelet(false)">💾 Enregistrer dans la DB</button>
-            </div>
-            <button class="btn-submit proposal" id="btn-propose" onclick="submitBracelet(true)" style="display:none;">📨 Soumettre en proposition</button>
-
-            <div id="add-feedback"></div>
         </div>
     </div>
-</div>
 
-<!-- MODAL DÉTAIL BRACELET -->
-<div id="modal-overlay" onclick="closeModal(event)">
-    <div id="modal-box">
-        <div id="modal-title">—</div>
-        <div id="modal-meta">—</div>
-        <canvas id="modal-bracelet-3d" width="480" height="120"></canvas>
-        <div class="modal-info-grid" id="modal-info-grid"></div>
-        <div id="modal-linked" class="modal-linked" style="display:none;">
-            <div class="modal-linked-label">Liste liée</div>
-            <div class="modal-linked-value" id="modal-linked-value">—</div>
-        </div>
-        <button id="modal-close" onclick="closeModal()">Fermer</button>
-    </div>
-</div>
+    <script>
+        // ===================== 3D GLOBALS =====================
+        let scene, camera, renderer, braceletGroup, outerMesh, innerMesh, controls;
 
-<footer class="site-footer">
-    &copy; 2026 SEBR.tech — le site du Rezo | <a href="mentions-legales.html">Mentions Légales</a>
-</footer>
+        function init3D() {
+            const container = document.getElementById("canvas-container");
 
-<!-- THREE.JS -->
-<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+            scene = new THREE.Scene();
+            camera = new THREE.PerspectiveCamera(
+                32,
+                container.clientWidth / container.clientHeight,
+                0.1,
+                100
+            );
+            camera.position.set(0, 4, 12);
 
-<script type="module">
-import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-import {
-    getFirestore, collection, getDocs, addDoc, doc, setDoc, deleteDoc,
-    serverTimestamp, getDoc
-} from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
-import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+            renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
+            renderer.setSize(container.clientWidth, container.clientHeight);
+            renderer.setPixelRatio(window.devicePixelRatio);
+            container.appendChild(renderer.domElement);
 
-// ============================================================
-// FIREBASE INIT
-// ============================================================
-const firebaseConfig = {
-    apiKey: "AIzaSyB1_SgV4E80Qxs2vQ-_jIGexv6YYqaiARs",
-    authDomain: "sebr-dea8d.firebaseapp.com",
-    projectId: "sebr-dea8d",
-    storageBucket: "sebr-dea8d.firebasestorage.app",
-    messagingSenderId: "948314281215",
-    appId: "1:948314281215:web:1fddf38350d9a3663e68ca"
-};
+            // Lumière
+            scene.add(new THREE.AmbientLight(0xffffff, 0.9));
+            const sun = new THREE.DirectionalLight(0xffffff, 0.45);
+            sun.position.set(5, 8, 8);
+            scene.add(sun);
 
-const app = initializeApp(firebaseConfig);
-const db = getFirestore(app);
-const auth = getAuth(app);
+            braceletGroup = new THREE.Group();
 
-// ============================================================
-// STATE GLOBAL
-// ============================================================
-let allBracelets = [];
-let filteredBracelets = [];
-
-let currentUser = null;
-let currentUserData = null;
-let editingBraceletId = null;
-
-let mainScene, mainCamera, mainRenderer, mainBracelet, mainAnimId;
-let modalScene, modalCamera, modalRenderer, modalBracelet, modalAnimId;
-
-// ============================================================
-// AUTH
-// ============================================================
-onAuthStateChanged(auth, async (user) => {
-    const authBtn = document.getElementById("auth-button");
-    const adminBtn = document.getElementById("admin-button");
-
-    if (user) {
-        currentUser = user;
-        try {
-            const snap = await getDoc(doc(db, "users", user.email));
-            if (snap.exists()) {
-                currentUserData = { ...snap.data(), email: user.email };
-                const role = currentUserData.role;
-
-                authBtn.textContent = `👤 ${currentUserData.prenom || "Compte"}`;
-                authBtn.className = "btn-auth logout";
-                authBtn.onclick = async () => {
-                    if (confirm("Se déconnecter ?")) {
-                        await signOut(auth);
-                        location.reload();
-                    }
-                };
-
-                if (role === "admin" || role === "editor") {
-                    adminBtn.classList.remove("hidden");
-                    document.getElementById("admin-actions").classList.add("visible");
-                    document.getElementById("btn-propose").style.display = "none";
-                    document.getElementById("add-role-notice").style.display = "none";
-                    document.getElementById("add-login-notice").style.display = "none";
-                } else {
-                    document.getElementById("btn-propose").style.display = "block";
-                    document.getElementById("add-role-notice").style.display = "block";
-                    document.getElementById("add-login-notice").style.display = "none";
-                }
-            }
-        } catch (e) {
-            console.error(e);
-        }
-    } else {
-        currentUser = null;
-        currentUserData = null;
-
-        authBtn.textContent = "Connexion 🔒";
-        authBtn.className = "btn-auth";
-        authBtn.onclick = () => { location.href = "authentification.html"; };
-
-        document.getElementById("add-login-notice").style.display = "block";
-        document.getElementById("btn-propose").style.display = "none";
-        document.getElementById("admin-actions").classList.remove("visible");
-    }
-
-    await loadBracelets();
-    await loadListes();
-});
-
-// ============================================================
-// CHARGEMENT DATA
-// ============================================================
-async function loadBracelets() {
-    try {
-        const snap = await getDocs(collection(db, "bracelets"));
-        allBracelets = [];
-        snap.forEach(d => allBracelets.push({ id: d.id, ...d.data() }));
-        applyFilters();
-        document.getElementById("loading-bracelets").style.display = "none";
-        document.getElementById("bracelets-grid").style.display = "flex";
-    } catch (e) {
-        console.error(e);
-        document.getElementById("loading-bracelets").textContent = "Erreur de chargement.";
-    }
-}
-
-async function loadListes() {
-    const select = document.getElementById("inp-liste-liee");
-    select.innerHTML = '<option value="">— Aucune liste —</option>';
-    // TODO: si tu veux vraiment charger des listes depuis plusieurs collections, tu pourras
-    // ajouter ici un collectionGroup / ou une logique custom.
-}
-
-// ============================================================
-// FILTRES
-// ============================================================
-window.applyFilters = function () {
-    const ville = document.getElementById("filter-ville").value;
-    const annee = document.getElementById("filter-annee").value;
-    const texte = document.getElementById("filter-text").value.toLowerCase();
-    const colorVal = document.getElementById("filter-color").value;
-    const useColor = colorVal && colorVal !== "#000000";
-
-    filteredBracelets = allBracelets.filter(b => {
-        if (ville && b.ville !== ville) return false;
-        if (annee && b.annee !== annee) return false;
-
-        const t = (b.texte || "").toLowerCase();
-        const v = (b.ville || "").toLowerCase();
-        if (texte && !t.includes(texte) && !v.includes(texte)) return false;
-
-        if (useColor) {
-            const dist = colorDist(colorVal, b.couleurFond || "#000000");
-            if (dist > 80) return false;
-        }
-        return true;
-    });
-
-    renderBracelets();
-};
-
-window.resetFilters = function () {
-    document.getElementById("filter-ville").value = "";
-    document.getElementById("filter-annee").value = "";
-    document.getElementById("filter-text").value = "";
-    document.getElementById("filter-color").value = "#000000";
-    applyFilters();
-};
-
-function colorDist(c1, c2) {
-    const r1 = parseInt(c1.slice(1, 3), 16);
-    const g1 = parseInt(c1.slice(3, 5), 16);
-    const b1 = parseInt(c1.slice(5, 7), 16);
-    const r2 = parseInt(c2.slice(1, 3), 16);
-    const g2 = parseInt(c2.slice(3, 5), 16);
-    const b2 = parseInt(c2.slice(5, 7), 16);
-    return Math.sqrt((r1 - r2) ** 2 + (g1 - g2) ** 2 + (b1 - b2) ** 2);
-}
-
-// ============================================================
-// LISTE BRACELETS
-// ============================================================
-function renderBracelets() {
-    const grid = document.getElementById("bracelets-grid");
-    const noRes = document.getElementById("no-results");
-    grid.innerHTML = "";
-
-    if (!filteredBracelets.length) {
-        noRes.style.display = "block";
-        return;
-    }
-    noRes.style.display = "none";
-
-    const canAdmin = currentUserData && (currentUserData.role === "admin" || currentUserData.role === "editor");
-
-    filteredBracelets.forEach((b, i) => {
-        const card = document.createElement("div");
-        card.className = "bracelet-card";
-        card.style.animationDelay = `${i * 0.05}s`;
-
-        const preview = document.createElement("div");
-        preview.className = "bracelet-preview-mini";
-        preview.style.background = b.couleurFond || "#003057";
-        preview.style.color = b.couleurTexte || "#ffffff";
-        preview.textContent = (b.texte || "BRACELET").slice(0, 10);
-
-        const info = document.createElement("div");
-        info.className = "bracelet-card-info";
-        info.innerHTML = `
-            <div class="bracelet-card-name">${escHtml(b.texte || "Sans titre")}</div>
-            <div class="bracelet-card-meta">
-                ${escHtml(b.ville || "?")} · ${escHtml(b.annee || "?")}
-                ${b.listeLiee ? " · 🔗 " + escHtml(b.listeLiee) : ""}
-            </div>
-        `;
-
-        const actions = document.createElement("div");
-        actions.className = "bracelet-card-actions";
-
-        const btnVoir = document.createElement("button");
-        btnVoir.className = "btn-tiny";
-        btnVoir.textContent = "👁";
-        btnVoir.onclick = (e) => { e.stopPropagation(); openModal(b); };
-        actions.appendChild(btnVoir);
-
-        if (canAdmin) {
-            const btnEdit = document.createElement("button");
-            btnEdit.className = "btn-tiny";
-            btnEdit.textContent = "✏️";
-            btnEdit.onclick = (e) => { e.stopPropagation(); openEditForm(b); };
-            actions.appendChild(btnEdit);
-
-            const btnDel = document.createElement("button");
-            btnDel.className = "btn-tiny danger";
-            btnDel.textContent = "🗑";
-            btnDel.onclick = async (e) => {
-                e.stopPropagation();
-                if (!confirm(`Supprimer "${b.texte}" ?`)) return;
-                await deleteDoc(doc(db, "bracelets", b.id));
-                await loadBracelets();
-            };
-            actions.appendChild(btnDel);
-        }
-
-        card.appendChild(preview);
-        card.appendChild(info);
-        card.appendChild(actions);
-
-        card.onclick = () => {
-            document.querySelectorAll(".bracelet-card").forEach(c => c.classList.remove("selected"));
-            card.classList.add("selected");
-            loadBraceletIn3D(b);
-        };
-
-        grid.appendChild(card);
-    });
-}
-
-function escHtml(s) {
-    return String(s || "")
-        .replace(/&/g, "&amp;")
-        .replace(/</g, "&lt;")
-        .replace(/>/g, "&gt;");
-}
-
-// ============================================================
-// FORMULAIRE / APERÇU 2D
-// ============================================================
-window.syncColorInput = function (type) {
-    const color = document.getElementById(`inp-${type}-color`).value;
-    document.getElementById(`inp-${type}-hex`).value = color;
-    updatePreview();
-};
-
-window.syncColorHex = function (type) {
-    let hex = document.getElementById(`inp-${type}-hex`).value;
-    if (/^#[0-9A-Fa-f]{6}$/.test(hex)) {
-        document.getElementById(`inp-${type}-color`).value = hex;
-        updatePreview();
-    }
-};
-
-window.updatePreview = function () {
-    const bg = document.getElementById("inp-bg-color").value;
-    const txt = document.getElementById("inp-text-color").value;
-    const texte = document.getElementById("inp-texte").value || "VILLE 2025";
-
-    const prev = document.getElementById("form-bracelet-preview");
-    prev.style.background = bg;
-    prev.style.color = txt;
-    prev.textContent = texte.toUpperCase();
-
-    // Si on a un bracelet 3D affiché (mode édition), on le régénère
-    if (mainBracelet) {
-        const b = {
-            texte,
-            couleurFond: bg,
-            couleurTexte: txt,
-            ville: document.getElementById("inp-ville").value,
-            annee: document.getElementById("inp-annee").value
-        };
-        loadBraceletIn3D(b);
-    }
-};
-
-// ============================================================
-// SUBMIT BRACELET
-// ============================================================
-window.submitBracelet = async function (isProposal) {
-    if (!currentUser) {
-        alert("Connectez-vous d'abord.");
-        return;
-    }
-
-    const data = {
-        texte: document.getElementById("inp-texte").value.trim(),
-        ville: document.getElementById("inp-ville").value,
-        annee: document.getElementById("inp-annee").value,
-        couleurFond: document.getElementById("inp-bg-color").value,
-        couleurTexte: document.getElementById("inp-text-color").value,
-        listeLiee: document.getElementById("inp-liste-liee").value || null
-    };
-
-    if (!data.texte || !data.ville || !data.annee) {
-        setFeedback("Remplissez tous les champs obligatoires.", true);
-        return;
-    }
-
-    const btn = isProposal ? document.getElementById("btn-propose") : document.getElementById("btn-save");
-    btn.disabled = true;
-    setFeedback("Enregistrement...");
-
-    try {
-        if (isProposal) {
-            await addDoc(collection(db, "proposals"), {
-                type: editingBraceletId ? "bracelet_edit" : "bracelet_add",
-                ecole: data.ville,
-                annee: data.annee,
-                status: "pending",
-                payload: { ...data, braceletId: editingBraceletId || null },
-                authorEmail: currentUser.email,
-                authorPrenom: currentUserData?.prenom || "",
-                createdAt: serverTimestamp()
+            // Extérieur cylindrique (surface texturée)
+            const outerGeo = new THREE.CylinderGeometry(4.5, 4.5, 1, 96, 1, true);
+            const outerMat = new THREE.MeshStandardMaterial({
+                roughness: 0.5,
+                metalness: 0.12,
+                side: THREE.FrontSide
             });
-            setFeedback("✅ Proposition soumise ! En attente d'approbation.");
-        } else {
-            if (editingBraceletId) {
-                await setDoc(doc(db, "bracelets", editingBraceletId), {
-                    ...data,
-                    updatedAt: serverTimestamp(),
-                    updatedBy: currentUser.email
-                }, { merge: true });
-                setFeedback("✅ Bracelet modifié.");
-                editingBraceletId = null;
-            } else {
-                await addDoc(collection(db, "bracelets"), {
-                    ...data,
-                    createdAt: serverTimestamp(),
-                    createdBy: currentUser.email
+            outerMesh = new THREE.Mesh(outerGeo, outerMat);
+
+            // Intérieur (couleur pleine)
+            const innerGeo = new THREE.CylinderGeometry(4.45, 4.45, 1, 96, 1, true);
+            const innerMat = new THREE.MeshStandardMaterial({
+                roughness: 0.85,
+                metalness: 0.03,
+                side: THREE.BackSide
+            });
+            innerMesh = new THREE.Mesh(innerGeo, innerMat);
+
+            braceletGroup.add(outerMesh);
+            braceletGroup.add(innerMesh);
+            scene.add(braceletGroup);
+
+            // Contrôles orbit
+            controls = new THREE.OrbitControls(camera, renderer.domElement);
+            controls.enableZoom = false;
+            controls.enablePan = false;
+            controls.autoRotate = true;
+            controls.autoRotateSpeed = 2.0;
+
+            function animate() {
+                requestAnimationFrame(animate);
+                controls.update();
+                renderer.render(scene, camera);
+            }
+            animate();
+
+            // Resize
+            window.addEventListener("resize", () => {
+                const w = container.clientWidth;
+                const h = container.clientHeight;
+                camera.aspect = w / h;
+                camera.updateProjectionMatrix();
+                renderer.setSize(w, h);
+            });
+        }
+
+        // ===================== TEXTURE UPDATE =====================
+        function update3DTexture() {
+            if (!outerMesh || !innerMesh) return;
+
+            const text = document.getElementById("input-text").value.toUpperCase() || "BRACELET";
+            const bg = document.getElementById("color-bg").value;
+            const tx = document.getElementById("color-text").value;
+
+            // Intérieur
+            innerMesh.material.color.set(bg);
+
+            const canvas = document.createElement("canvas");
+            canvas.width = 2048;
+            canvas.height = 128;
+            const ctx = canvas.getContext("2d");
+
+            // Fond
+            ctx.fillStyle = bg;
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+            // Texte
+            ctx.fillStyle = tx;
+            ctx.font = "bold 70px Arial Black, system-ui, sans-serif";
+            ctx.textBaseline = "middle";
+
+            const spacer = "   ";
+            const repeated = (text + spacer);
+
+            const metrics = ctx.measureText(repeated);
+            const step = Math.max(metrics.width, 260);
+
+            let x = 10;
+            while (x < canvas.width + step) {
+                ctx.fillText(text, x, canvas.height / 2);
+                x += step;
+            }
+
+            const tex = new THREE.CanvasTexture(canvas);
+            tex.wrapS = THREE.RepeatWrapping;
+            tex.wrapT = THREE.ClampToEdgeWrapping;
+            tex.needsUpdate = true;
+
+            outerMesh.material.map = tex;
+            outerMesh.material.needsUpdate = true;
+        }
+
+        // ===================== COLOR SYNC (color <-> hex) =====================
+
+        function normalizeHex(str) {
+            let v = str.trim();
+            if (!v) return null;
+            if (v[0] !== "#") v = "#" + v;
+            if (/^#[0-9a-fA-F]{6}$/.test(v)) return v.toLowerCase();
+            return null;
+        }
+
+        function syncHexFromColor(type) {
+            const colorInput = document.getElementById(type === "bg" ? "color-bg" : "color-text");
+            const hexInput = document.getElementById(type === "bg" ? "color-bg-hex" : "color-text-hex");
+            hexInput.value = colorInput.value.toLowerCase();
+        }
+
+        function syncColorFromHex(type) {
+            const colorInput = document.getElementById(type === "bg" ? "color-bg" : "color-text");
+            const hexInput = document.getElementById(type === "bg" ? "color-bg-hex" : "color-text-hex");
+            const norm = normalizeHex(hexInput.value);
+            if (norm) {
+                hexInput.value = norm;
+                colorInput.value = norm;
+                update3DTexture();
+            }
+        }
+
+        window.syncHexFromColor = syncHexFromColor;
+        window.syncColorFromHex = syncColorFromHex;
+        window.update3DTexture = update3DTexture;
+
+        // ===================== LOCAL STORAGE =====================
+
+        const STORAGE_KEY = "sebr_bracelets";
+
+        function getDB() {
+            try {
+                return JSON.parse(localStorage.getItem(STORAGE_KEY) || "[]");
+            } catch (_) {
+                return [];
+            }
+        }
+
+        function setDB(arr) {
+            localStorage.setItem(STORAGE_KEY, JSON.stringify(arr));
+        }
+
+        function saveBracelet() {
+            const text = document.getElementById("input-text").value.trim();
+            const bg = document.getElementById("color-bg").value;
+            const tx = document.getElementById("color-text").value;
+            const note = document.getElementById("input-note").value.trim();
+            const feedback = document.getElementById("save-feedback");
+
+            if (!text) {
+                feedback.textContent = "Le texte du bracelet est obligatoire.";
+                feedback.className = "feedback err";
+                return;
+            }
+
+            const item = {
+                id: Date.now(),
+                text,
+                bg,
+                tx,
+                note,
+                createdAt: new Date().toISOString()
+            };
+
+            const db = getDB();
+            db.push(item);
+            setDB(db);
+
+            feedback.textContent = "✅ Modèle enregistré dans ce navigateur.";
+            feedback.className = "feedback ok";
+
+            renderExplorer();
+        }
+
+        function deleteBracelet(id) {
+            let db = getDB();
+            db = db.filter(b => b.id !== id);
+            setDB(db);
+            renderExplorer();
+        }
+
+        function loadIntoForm(item) {
+            document.getElementById("input-text").value = item.text;
+            document.getElementById("color-bg").value = item.bg;
+            document.getElementById("color-text").value = item.tx;
+            document.getElementById("color-bg-hex").value = item.bg;
+            document.getElementById("color-text-hex").value = item.tx;
+            document.getElementById("input-note").value = item.note || "";
+            switchTab("generator");
+            update3DTexture();
+            const feedback = document.getElementById("save-feedback");
+            feedback.textContent = `Modèle "${item.text}" chargé depuis l'historique.`;
+            feedback.className = "feedback";
+        }
+
+        function duplicateBracelet(item) {
+            const db = getDB();
+            const copy = {
+                ...item,
+                id: Date.now(),
+                text: item.text + " (copy)"
+            };
+            db.push(copy);
+            setDB(db);
+            renderExplorer();
+        }
+
+        function clearAllBracelets() {
+            if (!confirm("Supprimer définitivement tous les modèles locaux ?")) return;
+            localStorage.removeItem(STORAGE_KEY);
+            renderExplorer();
+        }
+
+        window.saveBracelet = saveBracelet;
+        window.clearAllBracelets = clearAllBracelets;
+
+        function renderExplorer() {
+            const grid = document.getElementById("explorer-grid");
+            const empty = document.getElementById("explorer-empty");
+            const db = getDB();
+
+            grid.innerHTML = "";
+
+            if (!db.length) {
+                empty.style.display = "block";
+                return;
+            }
+            empty.style.display = "none";
+
+            db
+                .sort((a, b) => b.id - a.id)
+                .forEach(item => {
+                    const div = document.createElement("div");
+                    div.className = "bracelet-item";
+
+                    const bandeau = document.createElement("div");
+                    bandeau.className = "mini-bandeau";
+                    bandeau.style.background = item.bg;
+                    bandeau.style.color = item.tx;
+                    bandeau.textContent = item.text.toUpperCase();
+                    div.appendChild(bandeau);
+
+                    const meta = document.createElement("div");
+                    meta.className = "bracelet-meta";
+                    const date = item.createdAt ? new Date(item.createdAt) : null;
+                    meta.innerHTML = `
+                        <strong>${item.text}</strong><br>
+                        ${item.note ? item.note.replace(/\n/g,"<br>") : "Pas de note"}<br>
+                        <span style="opacity:0.7;">
+                        ${date ? "Créé le " + date.toLocaleString("fr-FR") : ""}
+                        </span>
+                    `;
+                    div.appendChild(meta);
+
+                    const actions = document.createElement("div");
+                    actions.className = "bracelet-actions";
+
+                    const btnPreview = document.createElement("button");
+                    btnPreview.className = "btn-ghost";
+                    btnPreview.innerHTML = '<i class="fas fa-eye"></i>Prévisualiser';
+                    btnPreview.onclick = () => loadIntoForm(item);
+                    actions.appendChild(btnPreview);
+
+                    const btnDuplicate = document.createElement("button");
+                    btnDuplicate.className = "btn-ghost";
+                    btnDuplicate.innerHTML = '<i class="fas fa-copy"></i>Dupliquer';
+                    btnDuplicate.onclick = () => duplicateBracelet(item);
+                    actions.appendChild(btnDuplicate);
+
+                    const btnDelete = document.createElement("button");
+                    btnDelete.className = "btn-ghost danger";
+                    btnDelete.innerHTML = '<i class="fas fa-trash"></i>';
+                    btnDelete.onclick = () => deleteBracelet(item.id);
+                    actions.appendChild(btnDelete);
+
+                    div.appendChild(actions);
+
+                    grid.appendChild(div);
                 });
-                setFeedback("✅ Bracelet ajouté.");
-            }
-            await loadBracelets();
         }
-        resetForm();
-    } catch (e) {
-        console.error(e);
-        setFeedback("Erreur : " + e.message, true);
-    } finally {
-        btn.disabled = false;
-    }
-};
 
-function setFeedback(msg, isErr = false) {
-    const el = document.getElementById("add-feedback");
-    el.textContent = msg;
-    el.className = isErr ? "err" : "";
-}
+        // ===================== TABS =====================
 
-function resetForm() {
-    document.getElementById("inp-texte").value = "";
-    document.getElementById("inp-ville").value = "";
-    document.getElementById("inp-annee").value = "";
-    document.getElementById("inp-bg-color").value = "#0066cc";
-    document.getElementById("inp-bg-hex").value = "#0066cc";
-    document.getElementById("inp-text-color").value = "#ffffff";
-    document.getElementById("inp-text-hex").value = "#ffffff";
-    document.getElementById("inp-liste-liee").value = "";
-    editingBraceletId = null;
-    updatePreview();
-}
+        function switchTab(id, el) {
+            document.querySelectorAll(".tab-content").forEach(t => t.classList.remove("active"));
+            document.getElementById(id).classList.add("active");
 
-function openEditForm(b) {
-    editingBraceletId = b.id;
-    document.getElementById("inp-texte").value = b.texte || "";
-    document.getElementById("inp-ville").value = b.ville || "";
-    document.getElementById("inp-annee").value = b.annee || "";
-    document.getElementById("inp-bg-color").value = b.couleurFond || "#0066cc";
-    document.getElementById("inp-bg-hex").value = b.couleurFond || "#0066cc";
-    document.getElementById("inp-text-color").value = b.couleurTexte || "#ffffff";
-    document.getElementById("inp-text-hex").value = b.couleurTexte || "#ffffff";
-    document.getElementById("inp-liste-liee").value = b.listeLiee || "";
-    updatePreview();
-    switchTab("add");
-    setFeedback(`Mode édition : "${b.texte}"`);
-}
-
-// ============================================================
-// TABS
-// ============================================================
-window.switchTab = function (tab) {
-    document.querySelectorAll(".sidebar-tab").forEach(t => t.classList.remove("active"));
-    document.querySelectorAll(".tab-panel").forEach(p => p.classList.remove("active"));
-    document.getElementById(`tab-btn-${tab}`).classList.add("active");
-    document.getElementById(`panel-${tab}`).classList.add("active");
-};
-
-// ============================================================
-// THREE.JS – BRACELET SILICONE TEXTURÉ
-// ============================================================
-function createSiliconeBracelet(text, bgColor, textColor) {
-    const group = new THREE.Group();
-
-    const outerGeom = new THREE.TorusGeometry(1.5, 0.25, 32, 128);
-    const innerGeom = new THREE.TorusGeometry(1.48, 0.23, 16, 64);
-
-    const ringsGeom = new THREE.TorusGeometry(1.5, 0.255, 8, 64);
-
-    const textCanvas = document.createElement("canvas");
-    textCanvas.width = 1024;
-    textCanvas.height = 128;
-    const ctx = textCanvas.getContext("2d");
-
-    ctx.fillStyle = bgColor;
-    ctx.fillRect(0, 0, textCanvas.width, textCanvas.height);
-
-    ctx.font = "bold 64px 'Segoe UI', sans-serif";
-    ctx.fillStyle = textColor;
-    ctx.textAlign = "center";
-    ctx.textBaseline = "middle";
-    const displayText = (text || "BRACELET").toUpperCase();
-    ctx.fillText(displayText, textCanvas.width / 2, textCanvas.height / 2);
-
-    const tex = new THREE.CanvasTexture(textCanvas);
-    tex.wrapS = THREE.RepeatWrapping;
-    tex.wrapT = THREE.ClampToEdgeWrapping;
-    tex.repeat.set(1, 1);
-
-    const outerMat = new THREE.MeshStandardMaterial({
-        map: tex,
-        roughness: 0.4,
-        metalness: 0.1
-    });
-
-    const innerMat = new THREE.MeshStandardMaterial({
-        color: bgColor,
-        roughness: 0.7,
-        metalness: 0.05
-    });
-
-    const ringMat = new THREE.MeshStandardMaterial({
-        color: bgColor,
-        roughness: 0.2,
-        metalness: 0.4
-    });
-
-    const outerMesh = new THREE.Mesh(outerGeom, outerMat);
-    const innerMesh = new THREE.Mesh(innerGeom, innerMat);
-    const ringMesh = new THREE.Mesh(ringsGeom, ringMat);
-
-    outerMesh.castShadow = true;
-    outerMesh.receiveShadow = true;
-    innerMesh.castShadow = true;
-    innerMesh.receiveShadow = true;
-    ringMesh.castShadow = true;
-    ringMesh.receiveShadow = true;
-
-    group.add(outerMesh);
-    group.add(innerMesh);
-    group.add(ringMesh);
-
-    return group;
-}
-
-function initMainViewer() {
-    const canvas = document.getElementById("bracelet-canvas");
-    const section = document.getElementById("viewer-section");
-    const W = section.clientWidth;
-    const H = section.clientHeight;
-
-    mainScene = new THREE.Scene();
-    mainCamera = new THREE.PerspectiveCamera(45, W / H, 0.1, 100);
-    mainCamera.position.set(0, 0, 5);
-
-    mainRenderer = new THREE.WebGLRenderer({ canvas, antialias: true, alpha: true });
-    mainRenderer.setSize(W, H);
-    mainRenderer.setPixelRatio(window.devicePixelRatio);
-    mainRenderer.setClearColor(0x000000, 0);
-
-    const amb = new THREE.AmbientLight(0xffffff, 0.5);
-    mainScene.add(amb);
-    const dir = new THREE.DirectionalLight(0xffffff, 1.0);
-    dir.position.set(5, 5, 5);
-    mainScene.add(dir);
-    const dir2 = new THREE.DirectionalLight(0x009ee3, 0.4);
-    dir2.position.set(-5, -3, 2);
-    mainScene.add(dir2);
-
-    mainBracelet = createSiliconeBracelet("REZO POLYTECH", "#003057", "#009ee3");
-    mainScene.add(mainBracelet);
-
-    function animate() {
-        mainAnimId = requestAnimationFrame(animate);
-        if (mainBracelet) {
-            mainBracelet.rotation.y += 0.01;
-        }
-        mainRenderer.render(mainScene, mainCamera);
-    }
-    animate();
-
-    window.addEventListener("resize", () => {
-        const W2 = section.clientWidth;
-        const H2 = section.clientHeight;
-        mainCamera.aspect = W2 / H2;
-        mainCamera.updateProjectionMatrix();
-        mainRenderer.setSize(W2, H2);
-    });
-}
-
-function loadBraceletIn3D(b) {
-    if (!mainScene) return;
-    if (mainBracelet) {
-        mainScene.remove(mainBracelet);
-        mainBracelet.traverse(o => {
-            if (o.geometry) o.geometry.dispose();
-            if (o.material) {
-                if (Array.isArray(o.material)) o.material.forEach(m => m.dispose());
-                else o.material.dispose();
+            document.querySelectorAll(".nav-item").forEach(n => n.classList.remove("active"));
+            if (el) el.classList.add("active");
+            else {
+                const nav = document.querySelector(`.nav-item[data-tab="${id}"]`);
+                if (nav) nav.classList.add("active");
             }
+
+            if (id === "explorer") {
+                renderExplorer();
+            }
+        }
+        window.switchTab = switchTab;
+
+        // ===================== INIT =====================
+
+        window.addEventListener("load", () => {
+            init3D();
+            update3DTexture();
+            renderExplorer();
         });
-    }
-    mainBracelet = createSiliconeBracelet(
-        b.texte || "BRACELET",
-        b.couleurFond || "#003057",
-        b.couleurTexte || "#ffffff"
-    );
-    mainScene.add(mainBracelet);
-
-    const nameEl = document.getElementById("viewer-bracelet-name");
-    const infoEl = document.getElementById("viewer-bracelet-info");
-    nameEl.textContent = (b.texte || "").toUpperCase();
-    infoEl.textContent = `${b.ville || "?"} • ${b.annee || "?"}`;
-    nameEl.style.opacity = "1";
-}
-
-// ============================================================
-// MODAL 3D
-// ============================================================
-function openModal(b) {
-    const overlay = document.getElementById("modal-overlay");
-    overlay.classList.add("open");
-
-    document.getElementById("modal-title").textContent = (b.texte || "").toUpperCase();
-    document.getElementById("modal-meta").textContent = `${b.ville || "?"} • ${b.annee || "?"}`;
-
-    const grid = document.getElementById("modal-info-grid");
-    grid.innerHTML = "";
-    const addInfo = (label, value) => {
-        const item = document.createElement("div");
-        item.className = "modal-info-item";
-        item.innerHTML = `
-            <div class="modal-info-label">${label}</div>
-            <div class="modal-info-value">${escHtml(value || "—")}</div>
-        `;
-        grid.appendChild(item);
-    };
-    addInfo("Ville", b.ville);
-    addInfo("Année", b.annee);
-    addInfo("Couleur fond", b.couleurFond);
-    addInfo("Couleur texte", b.couleurTexte);
-
-    if (b.listeLiee) {
-        const linked = document.getElementById("modal-linked");
-        linked.style.display = "block";
-        document.getElementById("modal-linked-value").textContent = b.listeLiee;
-    } else {
-        document.getElementById("modal-linked").style.display = "none";
-    }
-
-    initModalViewer(b);
-}
-
-function closeModal(e) {
-    if (e && e.target && e.target.id && e.target.id !== "modal-overlay") return;
-    document.getElementById("modal-overlay").classList.remove("open");
-    if (modalAnimId) cancelAnimationFrame(modalAnimId);
-    if (modalScene && modalBracelet) {
-        modalScene.remove(modalBracelet);
-    }
-}
-
-window.closeModal = closeModal;
-
-function initModalViewer(b) {
-    const canvas = document.getElementById("modal-bracelet-3d");
-    const W = canvas.clientWidth || 480;
-    const H = canvas.clientHeight || 120;
-
-    if (modalAnimId) cancelAnimationFrame(modalAnimId);
-
-    modalScene = new THREE.Scene();
-    modalCamera = new THREE.PerspectiveCamera(45, W / H, 0.1, 100);
-    modalCamera.position.set(0, 0, 5);
-
-    modalRenderer = new THREE.WebGLRenderer({ canvas, antialias: true, alpha: true });
-    modalRenderer.setSize(W, H);
-    modalRenderer.setPixelRatio(window.devicePixelRatio);
-    modalRenderer.setClearColor(0x000000, 0);
-
-    const amb = new THREE.AmbientLight(0xffffff, 0.7);
-    modalScene.add(amb);
-    const dir = new THREE.DirectionalLight(0xffffff, 0.8);
-    dir.position.set(3, 4, 5);
-    modalScene.add(dir);
-
-    modalBracelet = createSiliconeBracelet(
-        b.texte || "BRACELET",
-        b.couleurFond || "#003057",
-        b.couleurTexte || "#ffffff"
-    );
-    modalScene.add(modalBracelet);
-
-    function animate() {
-        modalAnimId = requestAnimationFrame(animate);
-        if (modalBracelet) modalBracelet.rotation.y += 0.02;
-        modalRenderer.render(modalScene, modalCamera);
-    }
-    animate();
-}
-
-// ============================================================
-// INIT
-// ============================================================
-window.addEventListener("DOMContentLoaded", () => {
-    initMainViewer();
-    updatePreview();
-});
-</script>
-
+    </script>
 </body>
 </html>
