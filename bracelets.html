@@ -585,10 +585,13 @@
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
 import {
     getFirestore, collection, getDocs, addDoc, doc, setDoc, deleteDoc,
-    query, where, orderBy, serverTimestamp, getDoc
+    serverTimestamp, getDoc
 } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
 
+// ============================================================
+// FIREBASE INIT
+// ============================================================
 const firebaseConfig = {
     apiKey: "AIzaSyB1_SgV4E80Qxs2vQ-_jIGexv6YYqaiARs",
     authDomain: "sebr-dea8d.firebaseapp.com",
@@ -597,28 +600,30 @@ const firebaseConfig = {
     messagingSenderId: "948314281215",
     appId: "1:948314281215:web:1fddf38350d9a3663e68ca"
 };
+
 const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
 const auth = getAuth(app);
 
 // ============================================================
-// STATE
+// STATE GLOBAL
 // ============================================================
 let allBracelets = [];
 let filteredBracelets = [];
+
 let currentUser = null;
 let currentUserData = null;
-let selectedBraceletData = null;
 let editingBraceletId = null;
-let mainScene, mainCamera, mainRenderer, mainBracelet, animFrameId;
+
+let mainScene, mainCamera, mainRenderer, mainBracelet, mainAnimId;
 let modalScene, modalCamera, modalRenderer, modalBracelet, modalAnimId;
 
 // ============================================================
 // AUTH
 // ============================================================
 onAuthStateChanged(auth, async (user) => {
-    const authBtn = document.getElementById('auth-button');
-    const adminBtn = document.getElementById('admin-button');
+    const authBtn = document.getElementById("auth-button");
+    const adminBtn = document.getElementById("admin-button");
 
     if (user) {
         currentUser = user;
@@ -628,40 +633,49 @@ onAuthStateChanged(auth, async (user) => {
                 currentUserData = { ...snap.data(), email: user.email };
                 const role = currentUserData.role;
 
-                authBtn.textContent = `👤 ${currentUserData.prenom || 'Compte'}`;
-                authBtn.className = 'btn-auth logout';
-                authBtn.onclick = async () => { if(confirm('Se déconnecter ?')) { await signOut(auth); location.reload(); } };
+                authBtn.textContent = `👤 ${currentUserData.prenom || "Compte"}`;
+                authBtn.className = "btn-auth logout";
+                authBtn.onclick = async () => {
+                    if (confirm("Se déconnecter ?")) {
+                        await signOut(auth);
+                        location.reload();
+                    }
+                };
 
-                if (role === 'admin' || role === 'editor') {
-                    adminBtn.classList.remove('hidden');
-                    document.getElementById('admin-actions').classList.add('visible');
-                    document.getElementById('btn-propose').style.display = 'none';
-                    document.getElementById('add-role-notice').style.display = 'none';
-                    document.getElementById('add-login-notice').style.display = 'none';
+                if (role === "admin" || role === "editor") {
+                    adminBtn.classList.remove("hidden");
+                    document.getElementById("admin-actions").classList.add("visible");
+                    document.getElementById("btn-propose").style.display = "none";
+                    document.getElementById("add-role-notice").style.display = "none";
+                    document.getElementById("add-login-notice").style.display = "none";
                 } else {
-                    // user: peut proposer
-                    document.getElementById('btn-propose').style.display = 'block';
-                    document.getElementById('add-role-notice').style.display = 'block';
-                    document.getElementById('add-login-notice').style.display = 'none';
+                    document.getElementById("btn-propose").style.display = "block";
+                    document.getElementById("add-role-notice").style.display = "block";
+                    document.getElementById("add-login-notice").style.display = "none";
                 }
             }
-        } catch(e) { console.error(e); }
+        } catch (e) {
+            console.error(e);
+        }
     } else {
         currentUser = null;
         currentUserData = null;
-        authBtn.textContent = 'Connexion 🔒';
-        authBtn.className = 'btn-auth';
-        authBtn.onclick = () => { location.href = 'authentification.html'; };
-        document.getElementById('add-login-notice').style.display = 'block';
-        document.getElementById('btn-propose').style.display = 'none';
-        document.getElementById('admin-actions').classList.remove('visible');
+
+        authBtn.textContent = "Connexion 🔒";
+        authBtn.className = "btn-auth";
+        authBtn.onclick = () => { location.href = "authentification.html"; };
+
+        document.getElementById("add-login-notice").style.display = "block";
+        document.getElementById("btn-propose").style.display = "none";
+        document.getElementById("admin-actions").classList.remove("visible");
     }
 
-    loadListes(); // on charge les listes pour le select
+    await loadBracelets();
+    await loadListes();
 });
 
 // ============================================================
-// CHARGEMENT BRACELETS
+// CHARGEMENT DATA
 // ============================================================
 async function loadBracelets() {
     try {
@@ -669,41 +683,41 @@ async function loadBracelets() {
         allBracelets = [];
         snap.forEach(d => allBracelets.push({ id: d.id, ...d.data() }));
         applyFilters();
-        document.getElementById('loading-bracelets').style.display = 'none';
-        document.getElementById('bracelets-grid').style.display = 'flex';
-    } catch(e) {
-        document.getElementById('loading-bracelets').textContent = 'Erreur de chargement.';
+        document.getElementById("loading-bracelets").style.display = "none";
+        document.getElementById("bracelets-grid").style.display = "flex";
+    } catch (e) {
         console.error(e);
+        document.getElementById("loading-bracelets").textContent = "Erreur de chargement.";
     }
 }
 
 async function loadListes() {
-    const select = document.getElementById('inp-liste-liee');
+    const select = document.getElementById("inp-liste-liee");
     select.innerHTML = '<option value="">— Aucune liste —</option>';
-    try {
-        // Chercher dans toutes les archives
-        const { collectionGroup } = await import("https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js");
-        // Fallback: on list avec des requêtes statiques si collectionGroup non disponible
-    } catch(e) {}
+    // TODO: si tu veux vraiment charger des listes depuis plusieurs collections, tu pourras
+    // ajouter ici un collectionGroup / ou une logique custom.
 }
 
 // ============================================================
 // FILTRES
 // ============================================================
-window.applyFilters = function() {
-    const ville = document.getElementById('filter-ville').value;
-    const annee = document.getElementById('filter-annee').value;
-    const texte = document.getElementById('filter-text').value.toLowerCase();
-    const colorVal = document.getElementById('filter-color').value;
-    const useColor = colorVal && colorVal !== '#000000';
+window.applyFilters = function () {
+    const ville = document.getElementById("filter-ville").value;
+    const annee = document.getElementById("filter-annee").value;
+    const texte = document.getElementById("filter-text").value.toLowerCase();
+    const colorVal = document.getElementById("filter-color").value;
+    const useColor = colorVal && colorVal !== "#000000";
 
     filteredBracelets = allBracelets.filter(b => {
         if (ville && b.ville !== ville) return false;
         if (annee && b.annee !== annee) return false;
-        if (texte && !(b.texte || '').toLowerCase().includes(texte) && !(b.ville || '').toLowerCase().includes(texte)) return false;
+
+        const t = (b.texte || "").toLowerCase();
+        const v = (b.ville || "").toLowerCase();
+        if (texte && !t.includes(texte) && !v.includes(texte)) return false;
+
         if (useColor) {
-            // Filtre couleur approximatif (± 30 en hex)
-            const dist = colorDist(colorVal, b.couleurFond || '#000000');
+            const dist = colorDist(colorVal, b.couleurFond || "#000000");
             if (dist > 80) return false;
         }
         return true;
@@ -712,73 +726,80 @@ window.applyFilters = function() {
     renderBracelets();
 };
 
-window.resetFilters = function() {
-    document.getElementById('filter-ville').value = '';
-    document.getElementById('filter-annee').value = '';
-    document.getElementById('filter-text').value = '';
-    document.getElementById('filter-color').value = '#000000';
+window.resetFilters = function () {
+    document.getElementById("filter-ville").value = "";
+    document.getElementById("filter-annee").value = "";
+    document.getElementById("filter-text").value = "";
+    document.getElementById("filter-color").value = "#000000";
     applyFilters();
 };
 
 function colorDist(c1, c2) {
-    const r1 = parseInt(c1.slice(1,3),16), g1 = parseInt(c1.slice(3,5),16), b1 = parseInt(c1.slice(5,7),16);
-    const r2 = parseInt(c2.slice(1,3),16), g2 = parseInt(c2.slice(3,5),16), b2 = parseInt(c2.slice(5,7),16);
-    return Math.sqrt((r1-r2)**2+(g1-g2)**2+(b1-b2)**2);
+    const r1 = parseInt(c1.slice(1, 3), 16);
+    const g1 = parseInt(c1.slice(3, 5), 16);
+    const b1 = parseInt(c1.slice(5, 7), 16);
+    const r2 = parseInt(c2.slice(1, 3), 16);
+    const g2 = parseInt(c2.slice(3, 5), 16);
+    const b2 = parseInt(c2.slice(5, 7), 16);
+    return Math.sqrt((r1 - r2) ** 2 + (g1 - g2) ** 2 + (b1 - b2) ** 2);
 }
 
 // ============================================================
-// RENDER LISTE
+// LISTE BRACELETS
 // ============================================================
 function renderBracelets() {
-    const grid = document.getElementById('bracelets-grid');
-    const noRes = document.getElementById('no-results');
-    grid.innerHTML = '';
+    const grid = document.getElementById("bracelets-grid");
+    const noRes = document.getElementById("no-results");
+    grid.innerHTML = "";
 
-    if (filteredBracelets.length === 0) {
-        noRes.style.display = 'block';
+    if (!filteredBracelets.length) {
+        noRes.style.display = "block";
         return;
     }
-    noRes.style.display = 'none';
+    noRes.style.display = "none";
 
-    const canAdmin = currentUserData && (currentUserData.role === 'admin' || currentUserData.role === 'editor');
+    const canAdmin = currentUserData && (currentUserData.role === "admin" || currentUserData.role === "editor");
 
     filteredBracelets.forEach((b, i) => {
-        const card = document.createElement('div');
-        card.className = 'bracelet-card';
+        const card = document.createElement("div");
+        card.className = "bracelet-card";
         card.style.animationDelay = `${i * 0.05}s`;
 
-        const preview = document.createElement('div');
-        preview.className = 'bracelet-preview-mini';
-        preview.style.background = b.couleurFond || '#003057';
-        preview.style.color = b.couleurTexte || '#ffffff';
-        preview.textContent = (b.texte || 'BRACELET').slice(0, 10);
+        const preview = document.createElement("div");
+        preview.className = "bracelet-preview-mini";
+        preview.style.background = b.couleurFond || "#003057";
+        preview.style.color = b.couleurTexte || "#ffffff";
+        preview.textContent = (b.texte || "BRACELET").slice(0, 10);
 
-        const info = document.createElement('div');
-        info.className = 'bracelet-card-info';
+        const info = document.createElement("div");
+        info.className = "bracelet-card-info";
         info.innerHTML = `
-            <div class="bracelet-card-name">${escHtml(b.texte || 'Sans titre')}</div>
-            <div class="bracelet-card-meta">${escHtml(b.ville || '?')} · ${escHtml(b.annee || '?')}${b.listeLiee ? ' · 🔗 ' + escHtml(b.listeLiee) : ''}</div>
+            <div class="bracelet-card-name">${escHtml(b.texte || "Sans titre")}</div>
+            <div class="bracelet-card-meta">
+                ${escHtml(b.ville || "?")} · ${escHtml(b.annee || "?")}
+                ${b.listeLiee ? " · 🔗 " + escHtml(b.listeLiee) : ""}
+            </div>
         `;
 
-        const actions = document.createElement('div');
-        actions.className = 'bracelet-card-actions';
+        const actions = document.createElement("div");
+        actions.className = "bracelet-card-actions";
 
-        const btnVoir = document.createElement('button');
-        btnVoir.className = 'btn-tiny';
-        btnVoir.textContent = '👁';
+        const btnVoir = document.createElement("button");
+        btnVoir.className = "btn-tiny";
+        btnVoir.textContent = "👁";
         btnVoir.onclick = (e) => { e.stopPropagation(); openModal(b); };
         actions.appendChild(btnVoir);
 
         if (canAdmin) {
-            const btnEdit = document.createElement('button');
-            btnEdit.className = 'btn-tiny';
-            btnEdit.textContent = '✏️';
+            const btnEdit = document.createElement("button");
+            btnEdit.className = "btn-tiny";
+            btnEdit.textContent = "✏️";
             btnEdit.onclick = (e) => { e.stopPropagation(); openEditForm(b); };
             actions.appendChild(btnEdit);
 
-            const btnDel = document.createElement('button');
-            btnDel.className = 'btn-tiny danger';
-            btnDel.textContent = '🗑';
+            const btnDel = document.createElement("button");
+            btnDel.className = "btn-tiny danger";
+            btnDel.textContent = "🗑";
             btnDel.onclick = async (e) => {
                 e.stopPropagation();
                 if (!confirm(`Supprimer "${b.texte}" ?`)) return;
@@ -793,8 +814,8 @@ function renderBracelets() {
         card.appendChild(actions);
 
         card.onclick = () => {
-            document.querySelectorAll('.bracelet-card').forEach(c => c.classList.remove('selected'));
-            card.classList.add('selected');
+            document.querySelectorAll(".bracelet-card").forEach(c => c.classList.remove("selected"));
+            card.classList.add("selected");
             loadBraceletIn3D(b);
         };
 
@@ -803,19 +824,22 @@ function renderBracelets() {
 }
 
 function escHtml(s) {
-    return String(s || '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+    return String(s || "")
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;");
 }
 
 // ============================================================
-// FORMULAIRE APERÇU EN DIRECT
+// FORMULAIRE / APERÇU 2D
 // ============================================================
-window.syncColorInput = function(type) {
+window.syncColorInput = function (type) {
     const color = document.getElementById(`inp-${type}-color`).value;
     document.getElementById(`inp-${type}-hex`).value = color;
     updatePreview();
 };
 
-window.syncColorHex = function(type) {
+window.syncColorHex = function (type) {
     let hex = document.getElementById(`inp-${type}-hex`).value;
     if (/^#[0-9A-Fa-f]{6}$/.test(hex)) {
         document.getElementById(`inp-${type}-color`).value = hex;
@@ -823,140 +847,216 @@ window.syncColorHex = function(type) {
     }
 };
 
-window.updatePreview = function() {
-    const bg = document.getElementById('inp-bg-color').value;
-    const txt = document.getElementById('inp-text-color').value;
-    const texte = document.getElementById('inp-texte').value || 'VILLE 2025';
+window.updatePreview = function () {
+    const bg = document.getElementById("inp-bg-color").value;
+    const txt = document.getElementById("inp-text-color").value;
+    const texte = document.getElementById("inp-texte").value || "VILLE 2025";
 
-    const prev = document.getElementById('form-bracelet-preview');
+    const prev = document.getElementById("form-bracelet-preview");
     prev.style.background = bg;
     prev.style.color = txt;
     prev.textContent = texte.toUpperCase();
 
-    // Mettre à jour le 3D principal si on est en mode édition
+    // Si on a un bracelet 3D affiché (mode édition), on le régénère
     if (mainBracelet) {
-        updateBraceletColors(mainBracelet, bg, txt, texte);
+        const b = {
+            texte,
+            couleurFond: bg,
+            couleurTexte: txt,
+            ville: document.getElementById("inp-ville").value,
+            annee: document.getElementById("inp-annee").value
+        };
+        loadBraceletIn3D(b);
     }
 };
 
 // ============================================================
 // SUBMIT BRACELET
 // ============================================================
-window.submitBracelet = async function(isProposal) {
-    if (!currentUser) { alert('Connectez-vous d\'abord.'); return; }
-
-    const data = {
-        texte: document.getElementById('inp-texte').value.trim(),
-        ville: document.getElementById('inp-ville').value,
-        annee: document.getElementById('inp-annee').value,
-        couleurFond: document.getElementById('inp-bg-color').value,
-        couleurTexte: document.getElementById('inp-text-color').value,
-        listeLiee: document.getElementById('inp-liste-liee').value || null,
-    };
-
-    if (!data.texte || !data.ville || !data.annee) {
-        setFeedback('Remplissez tous les champs obligatoires.', true);
+window.submitBracelet = async function (isProposal) {
+    if (!currentUser) {
+        alert("Connectez-vous d'abord.");
         return;
     }
 
-    const btn = isProposal ? document.getElementById('btn-propose') : document.getElementById('btn-save');
+    const data = {
+        texte: document.getElementById("inp-texte").value.trim(),
+        ville: document.getElementById("inp-ville").value,
+        annee: document.getElementById("inp-annee").value,
+        couleurFond: document.getElementById("inp-bg-color").value,
+        couleurTexte: document.getElementById("inp-text-color").value,
+        listeLiee: document.getElementById("inp-liste-liee").value || null
+    };
+
+    if (!data.texte || !data.ville || !data.annee) {
+        setFeedback("Remplissez tous les champs obligatoires.", true);
+        return;
+    }
+
+    const btn = isProposal ? document.getElementById("btn-propose") : document.getElementById("btn-save");
     btn.disabled = true;
-    setFeedback('Enregistrement...');
+    setFeedback("Enregistrement...");
 
     try {
         if (isProposal) {
-            // Proposal pour les users
             await addDoc(collection(db, "proposals"), {
-                type: editingBraceletId ? 'bracelet_edit' : 'bracelet_add',
+                type: editingBraceletId ? "bracelet_edit" : "bracelet_add",
                 ecole: data.ville,
                 annee: data.annee,
-                status: 'pending',
+                status: "pending",
                 payload: { ...data, braceletId: editingBraceletId || null },
                 authorEmail: currentUser.email,
-                authorPrenom: currentUserData?.prenom || '',
+                authorPrenom: currentUserData?.prenom || "",
                 createdAt: serverTimestamp()
             });
-            setFeedback('✅ Proposition soumise ! En attente d\'approbation.');
+            setFeedback("✅ Proposition soumise ! En attente d'approbation.");
         } else {
-            // Direct pour admin/editor
             if (editingBraceletId) {
                 await setDoc(doc(db, "bracelets", editingBraceletId), {
-                    ...data, updatedAt: serverTimestamp(), updatedBy: currentUser.email
+                    ...data,
+                    updatedAt: serverTimestamp(),
+                    updatedBy: currentUser.email
                 }, { merge: true });
-                setFeedback('✅ Bracelet modifié.');
+                setFeedback("✅ Bracelet modifié.");
                 editingBraceletId = null;
             } else {
                 await addDoc(collection(db, "bracelets"), {
-                    ...data, createdAt: serverTimestamp(), createdBy: currentUser.email
+                    ...data,
+                    createdAt: serverTimestamp(),
+                    createdBy: currentUser.email
                 });
-                setFeedback('✅ Bracelet ajouté.');
+                setFeedback("✅ Bracelet ajouté.");
             }
             await loadBracelets();
         }
         resetForm();
-    } catch(e) {
-        setFeedback('Erreur : ' + e.message, true);
+    } catch (e) {
         console.error(e);
+        setFeedback("Erreur : " + e.message, true);
     } finally {
         btn.disabled = false;
     }
 };
 
 function setFeedback(msg, isErr = false) {
-    const el = document.getElementById('add-feedback');
+    const el = document.getElementById("add-feedback");
     el.textContent = msg;
-    el.className = isErr ? 'err' : '';
+    el.className = isErr ? "err" : "";
 }
 
 function resetForm() {
-    document.getElementById('inp-texte').value = '';
-    document.getElementById('inp-ville').value = '';
-    document.getElementById('inp-annee').value = '';
-    document.getElementById('inp-bg-color').value = '#0066cc';
-    document.getElementById('inp-bg-hex').value = '#0066cc';
-    document.getElementById('inp-text-color').value = '#ffffff';
-    document.getElementById('inp-text-hex').value = '#ffffff';
-    document.getElementById('inp-liste-liee').value = '';
+    document.getElementById("inp-texte").value = "";
+    document.getElementById("inp-ville").value = "";
+    document.getElementById("inp-annee").value = "";
+    document.getElementById("inp-bg-color").value = "#0066cc";
+    document.getElementById("inp-bg-hex").value = "#0066cc";
+    document.getElementById("inp-text-color").value = "#ffffff";
+    document.getElementById("inp-text-hex").value = "#ffffff";
+    document.getElementById("inp-liste-liee").value = "";
     editingBraceletId = null;
     updatePreview();
 }
 
 function openEditForm(b) {
     editingBraceletId = b.id;
-    document.getElementById('inp-texte').value = b.texte || '';
-    document.getElementById('inp-ville').value = b.ville || '';
-    document.getElementById('inp-annee').value = b.annee || '';
-    document.getElementById('inp-bg-color').value = b.couleurFond || '#0066cc';
-    document.getElementById('inp-bg-hex').value = b.couleurFond || '#0066cc';
-    document.getElementById('inp-text-color').value = b.couleurTexte || '#ffffff';
-    document.getElementById('inp-text-hex').value = b.couleurTexte || '#ffffff';
-    document.getElementById('inp-liste-liee').value = b.listeLiee || '';
+    document.getElementById("inp-texte").value = b.texte || "";
+    document.getElementById("inp-ville").value = b.ville || "";
+    document.getElementById("inp-annee").value = b.annee || "";
+    document.getElementById("inp-bg-color").value = b.couleurFond || "#0066cc";
+    document.getElementById("inp-bg-hex").value = b.couleurFond || "#0066cc";
+    document.getElementById("inp-text-color").value = b.couleurTexte || "#ffffff";
+    document.getElementById("inp-text-hex").value = b.couleurTexte || "#ffffff";
+    document.getElementById("inp-liste-liee").value = b.listeLiee || "";
     updatePreview();
-    switchTab('add');
+    switchTab("add");
     setFeedback(`Mode édition : "${b.texte}"`);
 }
 
 // ============================================================
 // TABS
 // ============================================================
-window.switchTab = function(tab) {
-    document.querySelectorAll('.sidebar-tab').forEach(t => t.classList.remove('active'));
-    document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
-    document.getElementById(`tab-btn-${tab}`).classList.add('active');
-    document.getElementById(`panel-${tab}`).classList.add('active');
+window.switchTab = function (tab) {
+    document.querySelectorAll(".sidebar-tab").forEach(t => t.classList.remove("active"));
+    document.querySelectorAll(".tab-panel").forEach(p => p.classList.remove("active"));
+    document.getElementById(`tab-btn-${tab}`).classList.add("active");
+    document.getElementById(`panel-${tab}`).classList.add("active");
 };
 
 // ============================================================
-// THREE.JS - BRACELET 3D PRINCIPAL
+// THREE.JS – BRACELET SILICONE TEXTURÉ
 // ============================================================
+function createSiliconeBracelet(text, bgColor, textColor) {
+    const group = new THREE.Group();
+
+    const outerGeom = new THREE.TorusGeometry(1.5, 0.25, 32, 128);
+    const innerGeom = new THREE.TorusGeometry(1.48, 0.23, 16, 64);
+
+    const ringsGeom = new THREE.TorusGeometry(1.5, 0.255, 8, 64);
+
+    const textCanvas = document.createElement("canvas");
+    textCanvas.width = 1024;
+    textCanvas.height = 128;
+    const ctx = textCanvas.getContext("2d");
+
+    ctx.fillStyle = bgColor;
+    ctx.fillRect(0, 0, textCanvas.width, textCanvas.height);
+
+    ctx.font = "bold 64px 'Segoe UI', sans-serif";
+    ctx.fillStyle = textColor;
+    ctx.textAlign = "center";
+    ctx.textBaseline = "middle";
+    const displayText = (text || "BRACELET").toUpperCase();
+    ctx.fillText(displayText, textCanvas.width / 2, textCanvas.height / 2);
+
+    const tex = new THREE.CanvasTexture(textCanvas);
+    tex.wrapS = THREE.RepeatWrapping;
+    tex.wrapT = THREE.ClampToEdgeWrapping;
+    tex.repeat.set(1, 1);
+
+    const outerMat = new THREE.MeshStandardMaterial({
+        map: tex,
+        roughness: 0.4,
+        metalness: 0.1
+    });
+
+    const innerMat = new THREE.MeshStandardMaterial({
+        color: bgColor,
+        roughness: 0.7,
+        metalness: 0.05
+    });
+
+    const ringMat = new THREE.MeshStandardMaterial({
+        color: bgColor,
+        roughness: 0.2,
+        metalness: 0.4
+    });
+
+    const outerMesh = new THREE.Mesh(outerGeom, outerMat);
+    const innerMesh = new THREE.Mesh(innerGeom, innerMat);
+    const ringMesh = new THREE.Mesh(ringsGeom, ringMat);
+
+    outerMesh.castShadow = true;
+    outerMesh.receiveShadow = true;
+    innerMesh.castShadow = true;
+    innerMesh.receiveShadow = true;
+    ringMesh.castShadow = true;
+    ringMesh.receiveShadow = true;
+
+    group.add(outerMesh);
+    group.add(innerMesh);
+    group.add(ringMesh);
+
+    return group;
+}
+
 function initMainViewer() {
-    const canvas = document.getElementById('bracelet-canvas');
-    const section = document.getElementById('viewer-section');
+    const canvas = document.getElementById("bracelet-canvas");
+    const section = document.getElementById("viewer-section");
     const W = section.clientWidth;
     const H = section.clientHeight;
 
     mainScene = new THREE.Scene();
-    mainCamera = new THREE.PerspectiveCamera(45, W/H, 0.1, 100);
+    mainCamera = new THREE.PerspectiveCamera(45, W / H, 0.1, 100);
     mainCamera.position.set(0, 0, 5);
 
     mainRenderer = new THREE.WebGLRenderer({ canvas, antialias: true, alpha: true });
@@ -964,7 +1064,6 @@ function initMainViewer() {
     mainRenderer.setPixelRatio(window.devicePixelRatio);
     mainRenderer.setClearColor(0x000000, 0);
 
-    // Lumières
     const amb = new THREE.AmbientLight(0xffffff, 0.5);
     mainScene.add(amb);
     const dir = new THREE.DirectionalLight(0xffffff, 1.0);
@@ -974,199 +1073,145 @@ function initMainViewer() {
     dir2.position.set(-5, -3, 2);
     mainScene.add(dir2);
 
-    // Bracelet par défaut
-    mainBracelet = createBracelet('#003057', '#009ee3', 'REZO POLYTECH');
+    mainBracelet = createSiliconeBracelet("REZO POLYTECH", "#003057", "#009ee3");
     mainScene.add(mainBracelet);
 
-    // Animation
-    let t = 0;
     function animate() {
-        animFrameId = requestAnimationFrame(animate);
-        t += 0.005;
-        mainBracelet.rotation.y += 0.012;
-        mainBracelet.rotation.x = Math.sin(t) * 0.15;
-        mainBracelet.position.y = Math.sin(t * 0.7) * 0.08;
+        mainAnimId = requestAnimationFrame(animate);
+        if (mainBracelet) {
+            mainBracelet.rotation.y += 0.01;
+        }
         mainRenderer.render(mainScene, mainCamera);
     }
     animate();
 
-    window.addEventListener('resize', () => {
-        const W2 = section.clientWidth, H2 = section.clientHeight;
-        mainCamera.aspect = W2/H2;
+    window.addEventListener("resize", () => {
+        const W2 = section.clientWidth;
+        const H2 = section.clientHeight;
+        mainCamera.aspect = W2 / H2;
         mainCamera.updateProjectionMatrix();
         mainRenderer.setSize(W2, H2);
     });
 }
 
-function createBracelet(bgColor, textColor, text) {
-    const group = new THREE.Group();
-
-    // Tore principal (corps du bracelet)
-    const torusGeo = new THREE.TorusGeometry(1.6, 0.28, 32, 80);
-    const torusMat = new THREE.MeshPhongMaterial({
-        color: new THREE.Color(bgColor),
-        shininess: 80,
-        specular: new THREE.Color(0x444444)
-    });
-    const torus = new THREE.Mesh(torusGeo, torusMat);
-    group.add(torus);
-
-    // Texte extrudé simulé par des petits cubes disposés en cercle
-    // On crée une bande de "relief" pour simuler le texte en relief
-    const textStr = text.toUpperCase().slice(0, 20);
-    const nChars = textStr.length;
-    const textColor3 = new THREE.Color(textColor);
-
-    for (let i = 0; i < nChars; i++) {
-        const angle = (i / nChars) * Math.PI * 2 - Math.PI / 2;
-        const charGeo = new THREE.BoxGeometry(0.14, 0.18, 0.08);
-        const charMat = new THREE.MeshPhongMaterial({
-            color: textColor3,
-            shininess: 120,
-            specular: new THREE.Color(0x888888)
-        });
-        const charMesh = new THREE.Mesh(charGeo, charMat);
-        const r = 1.6;
-        charMesh.position.x = Math.cos(angle) * r;
-        charMesh.position.y = Math.sin(angle) * r;
-        charMesh.position.z = 0.30;
-        charMesh.rotation.z = angle + Math.PI / 2;
-        group.add(charMesh);
-    }
-
-    return group;
-}
-
-function updateBraceletColors(bracelet, bgColor, textColor, text) {
-    if (!bracelet) return;
-    const torus = bracelet.children[0];
-    if (torus && torus.material) {
-        torus.material.color.set(bgColor);
-    }
-    // Mettre à jour couleur texte sur les autres enfants
-    for (let i = 1; i < bracelet.children.length; i++) {
-        if (bracelet.children[i].material) {
-            bracelet.children[i].material.color.set(textColor);
-        }
-    }
-}
-
 function loadBraceletIn3D(b) {
-    if (!mainBracelet) return;
-
-    // Supprimer l'ancien bracelet et en créer un nouveau
-    mainScene.remove(mainBracelet);
-    mainBracelet = createBracelet(b.couleurFond || '#003057', b.couleurTexte || '#ffffff', b.texte || 'BRACELET');
+    if (!mainScene) return;
+    if (mainBracelet) {
+        mainScene.remove(mainBracelet);
+        mainBracelet.traverse(o => {
+            if (o.geometry) o.geometry.dispose();
+            if (o.material) {
+                if (Array.isArray(o.material)) o.material.forEach(m => m.dispose());
+                else o.material.dispose();
+            }
+        });
+    }
+    mainBracelet = createSiliconeBracelet(
+        b.texte || "BRACELET",
+        b.couleurFond || "#003057",
+        b.couleurTexte || "#ffffff"
+    );
     mainScene.add(mainBracelet);
 
-    // Afficher les infos
-    const nameEl = document.getElementById('viewer-bracelet-name');
-    const infoEl = document.getElementById('viewer-bracelet-info');
-    nameEl.textContent = (b.texte || 'BRACELET').toUpperCase();
-    infoEl.textContent = `${b.ville ? b.ville.toUpperCase() : ''} · ${b.annee || ''}`;
-    nameEl.style.opacity = '1';
-
-    document.getElementById('viewer-hint').style.opacity = '0';
-    selectedBraceletData = b;
+    const nameEl = document.getElementById("viewer-bracelet-name");
+    const infoEl = document.getElementById("viewer-bracelet-info");
+    nameEl.textContent = (b.texte || "").toUpperCase();
+    infoEl.textContent = `${b.ville || "?"} • ${b.annee || "?"}`;
+    nameEl.style.opacity = "1";
 }
 
 // ============================================================
-// MODAL DÉTAIL
+// MODAL 3D
 // ============================================================
-window.openModal = function(b) {
-    document.getElementById('modal-title').textContent = (b.texte || 'Bracelet').toUpperCase();
-    document.getElementById('modal-meta').textContent = `${b.ville || '?'} · ${b.annee || '?'}`;
+function openModal(b) {
+    const overlay = document.getElementById("modal-overlay");
+    overlay.classList.add("open");
 
-    // Info grid
-    const grid = document.getElementById('modal-info-grid');
-    grid.innerHTML = `
-        <div class="modal-info-item">
-            <div class="modal-info-label">Couleur fond</div>
-            <div class="modal-info-value" style="display:flex;align-items:center;gap:8px;">
-                <span style="width:18px;height:18px;border-radius:3px;background:${escHtml(b.couleurFond||'#000')};display:inline-block;border:1px solid #333;"></span>
-                ${escHtml(b.couleurFond || '—')}
-            </div>
-        </div>
-        <div class="modal-info-item">
-            <div class="modal-info-label">Couleur texte</div>
-            <div class="modal-info-value" style="display:flex;align-items:center;gap:8px;">
-                <span style="width:18px;height:18px;border-radius:3px;background:${escHtml(b.couleurTexte||'#fff')};display:inline-block;border:1px solid #333;"></span>
-                ${escHtml(b.couleurTexte || '—')}
-            </div>
-        </div>
-        <div class="modal-info-item">
-            <div class="modal-info-label">Ville</div>
-            <div class="modal-info-value">${escHtml(b.ville || '—')}</div>
-        </div>
-        <div class="modal-info-item">
-            <div class="modal-info-label">Année</div>
-            <div class="modal-info-value">${escHtml(b.annee || '—')}</div>
-        </div>
-    `;
+    document.getElementById("modal-title").textContent = (b.texte || "").toUpperCase();
+    document.getElementById("modal-meta").textContent = `${b.ville || "?"} • ${b.annee || "?"}`;
 
-    const linkedEl = document.getElementById('modal-linked');
-    const linkedVal = document.getElementById('modal-linked-value');
+    const grid = document.getElementById("modal-info-grid");
+    grid.innerHTML = "";
+    const addInfo = (label, value) => {
+        const item = document.createElement("div");
+        item.className = "modal-info-item";
+        item.innerHTML = `
+            <div class="modal-info-label">${label}</div>
+            <div class="modal-info-value">${escHtml(value || "—")}</div>
+        `;
+        grid.appendChild(item);
+    };
+    addInfo("Ville", b.ville);
+    addInfo("Année", b.annee);
+    addInfo("Couleur fond", b.couleurFond);
+    addInfo("Couleur texte", b.couleurTexte);
+
     if (b.listeLiee) {
-        linkedEl.style.display = 'block';
-        linkedVal.textContent = b.listeLiee;
+        const linked = document.getElementById("modal-linked");
+        linked.style.display = "block";
+        document.getElementById("modal-linked-value").textContent = b.listeLiee;
     } else {
-        linkedEl.style.display = 'none';
+        document.getElementById("modal-linked").style.display = "none";
     }
 
-    // Mini 3D dans la modal
     initModalViewer(b);
+}
 
-    document.getElementById('modal-overlay').classList.add('open');
-};
+function closeModal(e) {
+    if (e && e.target && e.target.id && e.target.id !== "modal-overlay") return;
+    document.getElementById("modal-overlay").classList.remove("open");
+    if (modalAnimId) cancelAnimationFrame(modalAnimId);
+    if (modalScene && modalBracelet) {
+        modalScene.remove(modalBracelet);
+    }
+}
+
+window.closeModal = closeModal;
 
 function initModalViewer(b) {
-    if (modalAnimId) cancelAnimationFrame(modalAnimId);
-    if (modalRenderer) modalRenderer.dispose();
+    const canvas = document.getElementById("modal-bracelet-3d");
+    const W = canvas.clientWidth || 480;
+    const H = canvas.clientHeight || 120;
 
-    const canvas = document.getElementById('modal-bracelet-3d');
+    if (modalAnimId) cancelAnimationFrame(modalAnimId);
+
     modalScene = new THREE.Scene();
-    modalCamera = new THREE.PerspectiveCamera(45, 480/120, 0.1, 100);
-    modalCamera.position.set(0, 0, 5.5);
+    modalCamera = new THREE.PerspectiveCamera(45, W / H, 0.1, 100);
+    modalCamera.position.set(0, 0, 5);
 
     modalRenderer = new THREE.WebGLRenderer({ canvas, antialias: true, alpha: true });
-    modalRenderer.setSize(canvas.clientWidth || 480, 120);
-    modalRenderer.setClearColor(0x070d14, 1);
+    modalRenderer.setSize(W, H);
+    modalRenderer.setPixelRatio(window.devicePixelRatio);
+    modalRenderer.setClearColor(0x000000, 0);
 
-    const amb = new THREE.AmbientLight(0xffffff, 0.6);
+    const amb = new THREE.AmbientLight(0xffffff, 0.7);
     modalScene.add(amb);
-    const dir = new THREE.DirectionalLight(0xffffff, 1);
-    dir.position.set(3, 3, 3);
+    const dir = new THREE.DirectionalLight(0xffffff, 0.8);
+    dir.position.set(3, 4, 5);
     modalScene.add(dir);
 
-    modalBracelet = createBracelet(b.couleurFond || '#003057', b.couleurTexte || '#ffffff', b.texte || 'BRACELET');
-    modalBracelet.scale.set(0.72, 0.72, 0.72);
+    modalBracelet = createSiliconeBracelet(
+        b.texte || "BRACELET",
+        b.couleurFond || "#003057",
+        b.couleurTexte || "#ffffff"
+    );
     modalScene.add(modalBracelet);
 
-    function animateModal() {
-        modalAnimId = requestAnimationFrame(animateModal);
-        modalBracelet.rotation.y += 0.018;
+    function animate() {
+        modalAnimId = requestAnimationFrame(animate);
+        if (modalBracelet) modalBracelet.rotation.y += 0.02;
         modalRenderer.render(modalScene, modalCamera);
     }
-    animateModal();
+    animate();
 }
-
-window.closeModal = function(e) {
-    if (e && e.target !== document.getElementById('modal-overlay') && e.target !== document.getElementById('modal-close')) return;
-    document.getElementById('modal-overlay').classList.remove('open');
-    if (modalAnimId) cancelAnimationFrame(modalAnimId);
-};
 
 // ============================================================
 // INIT
 // ============================================================
-document.addEventListener('DOMContentLoaded', () => {
+window.addEventListener("DOMContentLoaded", () => {
     initMainViewer();
-    loadBracelets();
     updatePreview();
 });
-
-// Export des fonctions globales nécessaires
-window.loadBracelets = loadBracelets;
 </script>
 
 </body>
