@@ -277,6 +277,7 @@
             100% { box-shadow: 0 0 0 0 rgba(227, 204, 0, 0); }
         }
 
+        /* 1. On retire l'animation de la classe de base */
         .ecole-point {
             position: absolute;
             width: 7.5%;
@@ -289,8 +290,18 @@
             transition: all 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275);
             z-index: 10;
             filter: drop-shadow(0 2px 4px rgba(0,0,0,0.5));
+            /* Supprime la ligne animation ici */
+        }
+        
+        /* 2. On l'applique seulement quand le body a la classe 'is-loading' */
+        .is-loading .ecole-point {
             animation: popIn 1.2s cubic-bezier(0.175, 0.885, 0.32, 1.275) backwards;
         }
+        
+        /* On fait de même pour la carte de France si tu veux qu'elle reste fixe après */
+        .is-loading .france-svg {
+            animation: fadeInDropdown 1s ease-out forwards;
+        }        
 
         .ecole-point:not(.active):hover {
             transform: scale(1.4);
@@ -542,6 +553,7 @@
 
 <header>
     <div class="header-left">
+        <body class="is-loading">
         <div class="logo-title">
             ✊SEBR.tech
             <span class="subtitle">Site d'Exploration des Bureaux du Rezo Polytech</span>
@@ -997,6 +1009,13 @@
             const p = document.querySelector(`.ecole-point[data-folder="${h}"]`);
             if (p) ouvrirEcole(h, p.dataset.name, p.style.getPropertyValue('--halo-color'));
         }
+    });
+
+    // On retire la classe de chargement après l'animation initiale
+    window.addEventListener('load', () => {
+        setTimeout(() => {
+            document.body.classList.remove('is-loading');
+        }, 4500); // 3.2s de délai max + 1.2s de durée
     });
 </script>
 
