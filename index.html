@@ -693,31 +693,6 @@
     let currentEcole = null;
     let connectedUserProfile = null;
 
-    window.retourCarte = function () {
-        // Nettoie le hash sans rechargement
-        if (history.replaceState) {
-            const cleanUrl = window.location.href.split('#')[0];
-            history.replaceState(null, document.title, cleanUrl);
-        } else {
-            window.location.hash = '';
-        }
-    
-        // Désactive le point actif
-        document.querySelectorAll('.ecole-point').forEach(p => p.classList.remove('active'));
-    
-        // Remet le titre et le contenu par défaut, sans recharger
-        sideTitle.innerHTML = 'Le Rezo Polytech';
-        sideTitle.style.color = ''; // revient à la couleur CSS par défaut
-    
-        sideContent.innerHTML = `
-            <div style="background: #161f2b; padding: 20px; border-radius: 10px; border-left: 4px solid var(--poly-cyan); animation: slideUpFade 0.4s ease-out;">
-                Cliquez sur une école pour voir ses bureaux et ses listes.
-            </div>
-        `;
-    
-        currentEcole = null;
-    };
-    
     function updateAuthUI(user, profile = null) {
         if (user) {
             const prenom = profile?.prenom || user.displayName || user.email?.split('@')[0] || 'toi';
@@ -818,7 +793,7 @@
         sideTitle.style.color = cityColor;
 
         sideContent.innerHTML = `
-            <div class="btn-back" onclick="retourCarte()">← Retour à la carte</div>
+            <div class="btn-back" onclick="location.hash=''; location.reload()">← Retour à la carte</div>
             <div id="dynamic-area"><div class="loading-text" style="text-align:center; padding:20px; font-weight: bold; color: ${cityColor};">Chargement des données ${annee}...</div></div>
         `;
 
