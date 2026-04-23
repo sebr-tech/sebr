@@ -949,229 +949,208 @@ window.switchTab = function(tab) {
 // ============================================================
 // THREE.JS - BRACELET 3D PRINCIPAL
 // ============================================================
-// ============================================================
-// BRACELET TEXTURE — canvas 2D avec texte répété
-// ============================================================
 function makeBraceletTexture(textColor, text) {
-  const W = 2048;
-  const H = 256;
-  const c = document.createElement('canvas');
-  c.width = W;
-  c.height = H;
-  const ctx = c.getContext('2d');
+    const W = 2048;
+    const H = 256;
+    const c = document.createElement('canvas');
+    c.width = W;
+    c.height = H;
+    const ctx = c.getContext('2d');
 
-  ctx.clearRect(0, 0, W, H);
+    ctx.clearRect(0, 0, W, H);
 
-  const str = (text || 'BRACELET').toUpperCase();
-  const fontSize = 118;
-  ctx.font = `900 ${fontSize}px Arial Black, Arial, sans-serif`;
-  ctx.textAlign = 'center';
-  ctx.textBaseline = 'middle';
+    const str = (text || 'BRACELET').toUpperCase();
+    const fontSize = 118;
+    ctx.font = `900 ${fontSize}px Arial Black, Arial, sans-serif`;
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
 
-  const col = new THREE.Color(textColor || '#ffffff');
-  ctx.fillStyle = `rgb(${Math.round(col.r*255)}, ${Math.round(col.g*255)}, ${Math.round(col.b*255)})`;
+    const col = new THREE.Color(textColor || '#ffffff');
+    ctx.fillStyle = `rgb(${Math.round(col.r * 255)}, ${Math.round(col.g * 255)}, ${Math.round(col.b * 255)})`;
 
-  const x = W * 0.5;
-  const y = H * 0.58;
-  ctx.fillText(str, x, y);
+    ctx.shadowColor = 'rgba(0,0,0,0.22)';
+    ctx.shadowBlur = 8;
+    ctx.shadowOffsetY = 2;
 
-  const tex = new THREE.CanvasTexture(c);
-  tex.wrapS = THREE.ClampToEdgeWrapping;
-  tex.wrapT = THREE.ClampToEdgeWrapping;
-  tex.needsUpdate = true;
-  return tex;
-}
+    const x = W * 0.5;
+    const y = H * 0.58;
+    ctx.fillText(str, x, y);
 
-function createBracelet(bgColor, textColor, text) {
-  const group = new THREE.Group();
-
-  const radius = 2.05;
-  const tube = 0.34;
-  const radialSeg = 24;
-  const tubularSeg = 220;
-
-  const geo = new THREE.TorusGeometry(radius, tube, radialSeg, tubularSeg);
-
-  const baseMat = new THREE.MeshPhysicalMaterial({
-    color: bgColor || '#0066cc',
-    roughness: 0.72,
-    metalness: 0.02,
-    clearcoat: 0.08,
-    clearcoatRoughness: 0.9
-  });
-
-  const bracelet = new THREE.Mesh(geo, baseMat);
-  group.add(bracelet);
-
-  const textTex = makeBraceletTexture(textColor, text);
-
-  const textMat = new THREE.MeshBasicMaterial({
-    map: textTex,
-    transparent: true,
-    depthWrite: false
-  });
-
-  const labelGeo = new THREE.CylinderGeometry(radius + tube * 0.98, radius + tube * 0.98, 0.34, 220, 1, true);
-  const label = new THREE.Mesh(labelGeo, textMat);
-
-  label.rotation.z = Math.PI / 2;
-  label.rotation.y = -Math.PI / 2;
-  label.scale.set(1, 1, 0.92);
-
-  group.add(label);
-
-  group.userData = { bracelet, label, textTex };
-  return group;
-}
-
-function updateBraceletColors(braceletGroup, bgColor, textColor, text) {
-  if (!braceletGroup) return;
-
-  const { bracelet, label, textTex } = braceletGroup.userData || {};
-  if (bracelet && bracelet.material) {
-    bracelet.material.color.set(bgColor || '#0066cc');
-  }
-
-  if (label && label.material) {
-    if (textTex) textTex.dispose();
-    const newTex = makeBraceletTexture(textColor, text);
-    label.material.map = newTex;
-    label.material.needsUpdate = true;
-    braceletGroup.userData.textTex = newTex;
-  }
+    const tex = new THREE.CanvasTexture(c);
+    tex.wrapS = THREE.ClampToEdgeWrapping;
+    tex.wrapT = THREE.ClampToEdgeWrapping;
+    tex.needsUpdate = true;
+    return tex;
 }
 
 function createBracelet(bgColor, textColor, text) {
     const group = new THREE.Group();
 
-    const R = 2.0;
-    const T = 0.14;
-    const geo = new THREE.TorusGeometry(R, T, 8, 120);
+    const radius = 2.05;
+    const tube = 0.34;
+    const radialSeg = 32;
+    const tubularSeg = 260;
 
-    const pos = geo.attributes.position;
-    for (let i = 0; i < pos.count; i++) {
-        const x = pos.getX(i);
-        const y = pos.getY(i);
-        const z = pos.getZ(i);
-
-        const rDist = Math.sqrt(x*x + z*z);
-        const dir = rDist > 0.001 ? new THREE.Vector2(x / rDist, z / rDist) : new THREE.Vector2(1, 0);
-
-        const deltaR = rDist - R;
-        const newR = R + deltaR * 0.45;
-        const newY = y * 3.2;
-
-        pos.setXYZ(i, dir.x * newR, newY, dir.y * newR);
-    }
-
-    geo.computeVertexNormals();
-
-    const texture = makeBraceletTexture(bgColor, textColor, text);
-
-    const mat = new THREE.MeshPhongMaterial({
-        map: texture,
-        shininess: 55,
-        specular: new THREE.Color(0x333333),
-        side: THREE.DoubleSide
+    const baseGeo = new THREE.TorusGeometry(radius, tube, radialSeg, tubularSeg);
+    const baseMat = new THREE.MeshPhysicalMaterial({
+        color: bgColor || '#0066cc',
+        roughness: 0.82,
+        metalness: 0.01,
+        clearcoat: 0.05,
+        clearcoatRoughness: 0.95
     });
 
-    const mesh = new THREE.Mesh(geo, mat);
-    mesh.userData = { texture, bgColor, textColor, text };
-    group.add(mesh);
+    const bracelet = new THREE.Mesh(baseGeo, baseMat);
+    group.add(bracelet);
+
+    const textTex = makeBraceletTexture(textColor, text);
+    const labelGeo = new THREE.CylinderGeometry(
+        radius + tube * 0.92,
+        radius + tube * 0.92,
+        tube * 1.52,
+        tubularSeg,
+        1,
+        true
+    );
+
+    const labelMat = new THREE.MeshBasicMaterial({
+        map: textTex,
+        transparent: true,
+        side: THREE.DoubleSide,
+        depthWrite: false
+    });
+
+    const label = new THREE.Mesh(labelGeo, labelMat);
+    label.rotation.z = Math.PI / 2;
+    label.rotation.y = -Math.PI / 2;
+    label.scale.set(1, 1, 0.86);
+    group.add(label);
+
+    group.userData = {
+        bracelet,
+        label,
+        textTex
+    };
 
     return group;
 }
 
-function updateBraceletColors(bracelet, bgColor, textColor, text) {
-    if (!bracelet || !bracelet.children[0]) return;
-    const mesh = bracelet.children[0];
-    if (mesh.userData.texture) mesh.userData.texture.dispose();
+function updateBraceletColors(braceletGroup, bgColor, textColor, text) {
+    if (!braceletGroup) return;
 
-    const newTex = makeBraceletTexture(bgColor, textColor, text);
-    mesh.material.map = newTex;
-    mesh.material.needsUpdate = true;
-    mesh.userData = { texture: newTex, bgColor, textColor, text };
+    const { bracelet, label, textTex } = braceletGroup.userData || {};
+
+    if (bracelet && bracelet.material) {
+        bracelet.material.color.set(bgColor || '#0066cc');
+        bracelet.material.needsUpdate = true;
+    }
+
+    if (label && label.material) {
+        if (textTex) textTex.dispose();
+        const newTex = makeBraceletTexture(textColor, text);
+        label.material.map = newTex;
+        label.material.needsUpdate = true;
+        braceletGroup.userData.textTex = newTex;
+    }
+}
+
+function applyBraceletPose(mesh) {
+    if (!mesh) return;
+    mesh.rotation.x = Math.PI * 0.33;
+    mesh.rotation.y = Math.PI * 0.12;
+    mesh.rotation.z = -Math.PI * 0.10;
+    mesh.position.y = -0.15;
 }
 
 function initMainViewer() {
-  const canvas = document.getElementById('bracelet-canvas');
-  const section = document.getElementById('viewer-section');
-  const W = section.clientWidth;
-  const H = section.clientHeight;
+    const canvas = document.getElementById('bracelet-canvas');
+    const section = document.getElementById('viewer-section');
+    const W = Math.max(section.clientWidth, 1);
+    const H = Math.max(section.clientHeight, 1);
 
-  mainScene = new THREE.Scene();
+    mainScene = new THREE.Scene();
 
-  mainCamera = new THREE.PerspectiveCamera(35, W / H, 0.1, 100);
+    mainCamera = new THREE.PerspectiveCamera(35, W / H, 0.1, 100);
     mainCamera.position.set(0, 2.2, 7.4);
     mainCamera.lookAt(0, 0.15, 0);
 
-  mainRenderer = new THREE.WebGLRenderer({
-    canvas,
-    antialias: true,
-    alpha: true
-  });
-  mainRenderer.setSize(W, H);
-  mainRenderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
-  mainRenderer.setClearColor(0x000000, 0);
+    mainRenderer = new THREE.WebGLRenderer({
+        canvas,
+        antialias: true,
+        alpha: true
+    });
+    mainRenderer.setSize(W, H);
+    mainRenderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
+    mainRenderer.setClearColor(0x000000, 0);
 
-  const amb = new THREE.AmbientLight(0xffffff, 0.55);
-  mainScene.add(amb);
+    const amb = new THREE.AmbientLight(0xffffff, 1.15);
+    mainScene.add(amb);
 
-  const key = new THREE.DirectionalLight(0xffffff, 1.1);
-  key.position.set(-4, 6, 5);
-  mainScene.add(key);
+    const key = new THREE.DirectionalLight(0xffffff, 1.8);
+    key.position.set(4, 6, 6);
+    mainScene.add(key);
 
-  const fill = new THREE.DirectionalLight(0xddeeff, 0.35);
-  fill.position.set(5, 2, -3);
-  mainScene.add(fill);
+    const fill = new THREE.DirectionalLight(0xbfdcff, 0.9);
+    fill.position.set(-5, 3, 4);
+    mainScene.add(fill);
 
-  const rim = new THREE.DirectionalLight(0xffffff, 0.25);
-  rim.position.set(0, -4, -5);
-  mainScene.add(rim);
+    const rim = new THREE.DirectionalLight(0xffffff, 1.0);
+    rim.position.set(0, 2, -6);
+    mainScene.add(rim);
 
-  mainBracelet.rotation.x = Math.PI * 0.33;
-    mainBracelet.rotation.y = Math.PI * 0.12;
-    mainBracelet.rotation.z = -Math.PI * 0.10;
-    mainBracelet.position.y = -0.15;
+    mainBracelet = createBracelet('#003057', '#ffffff', 'REZO POLYTECH');
+    applyBraceletPose(mainBracelet);
+    mainScene.add(mainBracelet);
 
-  let t = 0;
-function animate() {
-  animFrameId = requestAnimationFrame(animate);
-  t += 0.01;
+    let t = 0;
+    function animate() {
+        animFrameId = requestAnimationFrame(animate);
+        t += 0.01;
 
-  mainBracelet.rotation.y = Math.PI * 0.12 + Math.sin(t * 0.7) * 0.08;
-  mainBracelet.rotation.x = Math.PI * 0.33 + Math.sin(t * 0.4) * 0.015;
-  mainBracelet.position.y = -0.15 + Math.sin(t * 0.9) * 0.03;
+        if (mainBracelet) {
+            mainBracelet.rotation.y = Math.PI * 0.12 + Math.sin(t * 0.7) * 0.08;
+            mainBracelet.rotation.x = Math.PI * 0.33 + Math.sin(t * 0.4) * 0.015;
+            mainBracelet.rotation.z = -Math.PI * 0.10;
+            mainBracelet.position.y = -0.15 + Math.sin(t * 0.9) * 0.03;
+        }
 
-  mainRenderer.render(mainScene, mainCamera);
-}
-  animate();
+        mainRenderer.render(mainScene, mainCamera);
+    }
+    animate();
 
-  window.addEventListener('resize', () => {
-    const W2 = section.clientWidth;
-    const H2 = section.clientHeight;
-    mainCamera.aspect = W2 / H2;
-    mainCamera.updateProjectionMatrix();
-    mainRenderer.setSize(W2, H2);
-  });
+    window.addEventListener('resize', () => {
+        const W2 = Math.max(section.clientWidth, 1);
+        const H2 = Math.max(section.clientHeight, 1);
+        mainCamera.aspect = W2 / H2;
+        mainCamera.updateProjectionMatrix();
+        mainRenderer.setSize(W2, H2);
+    });
 }
 
 function loadBraceletIn3D(b) {
-    if (!mainBracelet) return;
+    if (!mainScene) return;
 
-    // Supprimer l'ancien bracelet et en créer un nouveau
-    mainScene.remove(mainBracelet);
-    mainBracelet = createBracelet(b.couleurFond || '#003057', b.couleurTexte || '#ffffff', b.texte || 'BRACELET');
+    if (mainBracelet) {
+        mainScene.remove(mainBracelet);
+    }
+
+    mainBracelet = createBracelet(
+        b.couleurFond || '#003057',
+        b.couleurTexte || '#ffffff',
+        b.texte || 'BRACELET'
+    );
+
+    applyBraceletPose(mainBracelet);
     mainScene.add(mainBracelet);
 
-    // Afficher les infos
     const nameEl = document.getElementById('viewer-bracelet-name');
     const infoEl = document.getElementById('viewer-bracelet-info');
+
     nameEl.textContent = (b.texte || 'BRACELET').toUpperCase();
     infoEl.textContent = `${b.ville ? b.ville.toUpperCase() : ''} · ${b.annee || ''}`;
     nameEl.style.opacity = '1';
-
     document.getElementById('viewer-hint').style.opacity = '0';
+
     selectedBraceletData = b;
 }
 
