@@ -400,64 +400,36 @@ export function initAjoutListe(userData) {
             const dPass  = document.getElementById('date-passation').value;
 
             if (isUser()) {
-                // --- 1. Vérification BDE ---
-                const oldBde = currentData.bde_actuel || {};
-                const newBde = {
-                    prez: document.getElementById('bde-prez').value.trim(),
-                    vp: document.getElementById('bde-vp').value.trim(),
-                    rr: document.getElementById('bde-rr').value.trim(),
-                    insta: document.getElementById('bde-insta').value.trim()
-                };
-
-                // On check si le texte a changé OU si une nouvelle photo a été uploadée
-                const bdeChanged = (newBde.prez !== oldBde.prez) || (newBde.vp !== oldBde.vp) || 
-                                   (newBde.rr !== oldBde.rr) || (newBde.insta !== oldBde.insta) ||
-                                   uploadedFiles.bde.photo || uploadedFiles.bde.photo_coll;
-
-                if (bdeChanged) {
-                    await submitProposal('bde_info', { ...uploadedFiles.bde, ...newBde });
-                }
-
-                // --- 2. Vérification BDP ---
-                const oldBdp = currentData.bdp_actuel || {};
-                const newBdp = {
-                    prez: document.getElementById('bdp-prez').value.trim(),
-                    insta: document.getElementById('bdp-insta').value.trim()
-                };
-
-                const bdpChanged = (newBdp.prez !== oldBdp.prez) || (newBdp.insta !== oldBdp.insta) ||
-                                   uploadedFiles.bdp.photo || uploadedFiles.bdp.photo_coll;
-
-                if (bdpChanged) {
-                    await submitProposal('bdp_info', { ...uploadedFiles.bdp, ...newBdp });
-                }
-
-                // --- 3. Vérification DATES ---
-                // Fonction helper pour comparer les dates (YYYY-MM-DD)
-                const getOldDate = (ts) => ts ? (ts.toDate ? ts.toDate() : new Date(ts.seconds * 1000)).toISOString().split('T')[0] : "";
+                const bdePayload = { ...uploadedFiles.bde, prez: document.getElementById('bde-prez').value, vp: document.getElementById('bde-vp').value, rr: document.getElementById('bde-rr').value, insta: document.getElementById('bde-insta').value };
+                const bdpPayload = { ...uploadedFiles.bdp, prez: document.getElementById('bdp-prez').value, insta: document.getElementById('bdp-insta').value };
                 
-                const datesChanged = dStart !== getOldDate(currentData.campagne_start) ||
-                                     dEnd   !== getOldDate(currentData.campagne_end) ||
-                                     dPass  !== getOldDate(currentData.passation_date);
-
-                if (datesChanged) {
+                if (Object.values(bdePayload).some(v => v)) await submitProposal('bde_info', bdePayload);
+                if (Object.values(bdpPayload).some(v => v)) await submitProposal('bdp_info', bdpPayload);
+                if (dStart || dEnd || dPass) {
                     await submitProposal('dates', {
                         campagne_start: dStart ? Timestamp.fromDate(new Date(dStart + "T12:00:00")) : null,
                         campagne_end: dEnd ? Timestamp.fromDate(new Date(dEnd + "T12:00:00")) : null,
                         passation_date: dPass ? Timestamp.fromDate(new Date(dPass + "T12:00:00")) : null
                     });
                 }
-                
-                if (!bdeChanged && !bdpChanged && !datesChanged) {
-                    showStatus("ℹ️ Aucune modification détectée.", false);
-                }
-
             } else {
-                // LE RESTE DU CODE (ELSE) POUR L'ADMIN NE CHANGE PAS
                 Object.assign(currentData.bde_actuel, uploadedFiles.bde);
-                // ... (garde ton code existant ici pour la sauvegarde directe admin)
+                Object.assign(currentData.bdp_actuel, uploadedFiles.bdp);
+                currentData.bde_actuel.prez = document.getElementById('bde-prez').value;
+                currentData.bde_actuel.vp = document.getElementById('bde-vp').value;
+                currentData.bde_actuel.rr = document.getElementById('bde-rr').value;
+                currentData.bde_actuel.insta = document.getElementById('bde-insta').value;
+                currentData.bdp_actuel.prez = document.getElementById('bdp-prez').value;
+                currentData.bdp_actuel.insta = document.getElementById('bdp-insta').value;
+                currentData.campagne_start = dStart ? Timestamp.fromDate(new Date(dStart + "T12:00:00")) : null;
+                currentData.campagne_end = dEnd ? Timestamp.fromDate(new Date(dEnd + "T12:00:00")) : null;
+                currentData.passation_date = dPass ? Timestamp.fromDate(new Date(dPass + "T12:00:00")) : null;
                 await saveAll();
             }
+            if (hasImage) setTimeout(() => reloadAfterUpload(), 1500);
+        } catch (e) { showStatus("❌ " + e.message, true); }
+        finally { btn.disabled = false; btn.innerText = isUser() ? "📤 Proposer" : "💾 Sauvegarder"; }
+    };
 
     // CLIC AJOUT/MODIF LISTE
     document.getElementById('btn-add-item').onclick = async () => {
