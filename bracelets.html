@@ -950,8 +950,8 @@ window.switchTab = function(tab) {
 // THREE.JS - BRACELET 3D PRINCIPAL
 // ============================================================
 function makeBraceletTexture(textColor, text) {
-    const W = 4096;
-    const H = 512;
+    const W = 1024;
+    const H = 256;
     const c = document.createElement('canvas');
     c.width = W;
     c.height = H;
@@ -959,25 +959,20 @@ function makeBraceletTexture(textColor, text) {
 
     ctx.clearRect(0, 0, W, H);
 
-    const str = ((text || 'BRACELET').toUpperCase()).trim();
-    const repeated = `   ${str}   ✦   ${str}   ✦   ${str}   ✦   `;
+    const str = ((text || 'VILLE 2025').toUpperCase()).trim();
 
-    const fontSize = 150;
-    ctx.font = `900 ${fontSize}px Arial Black, Arial, sans-serif`;
-    ctx.textAlign = 'left';
+    ctx.font = '900 92px Arial Black, Arial, sans-serif';
+    ctx.textAlign = 'center';
     ctx.textBaseline = 'middle';
 
     const col = new THREE.Color(textColor || '#ffffff');
-    ctx.fillStyle = `rgba(${Math.round(col.r * 255)}, ${Math.round(col.g * 255)}, ${Math.round(col.b * 255)}, 1)`;
+    ctx.fillStyle = `rgb(${Math.round(col.r * 255)}, ${Math.round(col.g * 255)}, ${Math.round(col.b * 255)})`;
 
-    const y = H * 0.52;
-    const textWidth = ctx.measureText(repeated).width;
+    ctx.shadowColor = 'rgba(0,0,0,0.30)';
+    ctx.shadowBlur = 6;
+    ctx.shadowOffsetY = 2;
 
-    let x = -textWidth * 0.15;
-    while (x < W) {
-        ctx.fillText(repeated, x, y);
-        x += textWidth + 80;
-    }
+    ctx.fillText(str, W / 2, H / 2);
 
     const tex = new THREE.CanvasTexture(c);
     tex.needsUpdate = true;
@@ -990,31 +985,37 @@ function createBracelet(bgColor, textColor, text) {
     const radius = 2.45;
     const tube = 0.16;
     const radialSeg = 24;
-    const tubularSeg = 320;
+    const tubularSeg = 220;
 
     const baseGeo = new THREE.TorusGeometry(radius, tube, radialSeg, tubularSeg);
     baseGeo.scale(1, 0.58, 1);
 
-    const textTex = makeBraceletTexture(textColor, text);
-    textTex.wrapS = THREE.RepeatWrapping;
-    textTex.wrapT = THREE.ClampToEdgeWrapping;
-    textTex.repeat.set(1, 1);
-
     const baseMat = new THREE.MeshPhysicalMaterial({
         color: bgColor || '#0066cc',
-        roughness: 0.88,
+        roughness: 0.9,
         metalness: 0.0,
-        clearcoat: 0.08,
-        clearcoatRoughness: 0.92,
-        map: textTex,
-        transparent: true
+        clearcoat: 0.06,
+        clearcoatRoughness: 0.95
     });
 
     const bracelet = new THREE.Mesh(baseGeo, baseMat);
     group.add(bracelet);
 
+    const textTex = makeBraceletTexture(textColor, text);
+    const textMat = new THREE.SpriteMaterial({
+        map: textTex,
+        transparent: true,
+        depthWrite: false
+    });
+
+    const textSprite = new THREE.Sprite(textMat);
+    textSprite.scale.set(3.3, 0.8, 1);
+    textSprite.position.set(0, 1.02, 0.18);
+    group.add(textSprite);
+
     group.userData = {
         bracelet,
+        textSprite,
         textTex
     };
 
@@ -1024,19 +1025,18 @@ function createBracelet(bgColor, textColor, text) {
 function updateBraceletColors(braceletGroup, bgColor, textColor, text) {
     if (!braceletGroup) return;
 
-    const { bracelet, textTex } = braceletGroup.userData || {};
+    const { bracelet, textSprite, textTex } = braceletGroup.userData || {};
 
-    if (bracelet && bracelet.material) {
+    if (bracelet?.material) {
         bracelet.material.color.set(bgColor || '#0066cc');
+        bracelet.material.needsUpdate = true;
+    }
 
+    if (textSprite?.material) {
         if (textTex) textTex.dispose();
         const newTex = makeBraceletTexture(textColor, text);
-        newTex.wrapS = THREE.RepeatWrapping;
-        newTex.wrapT = THREE.ClampToEdgeWrapping;
-        newTex.repeat.set(1, 1);
-
-        bracelet.material.map = newTex;
-        bracelet.material.needsUpdate = true;
+        textSprite.material.map = newTex;
+        textSprite.material.needsUpdate = true;
         braceletGroup.userData.textTex = newTex;
     }
 }
