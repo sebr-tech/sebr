@@ -3,6 +3,7 @@ import {
     doc,
     getDoc,
     setDoc,
+    addDoc,
     collection,
     getDocs,
     query,
@@ -41,13 +42,13 @@ function getEcoleNom(id) {
 async function applyProposal(proposal) {
     const { ecole, annee, type, payload } = proposal;
 
-    if (!ecole || !annee || !type || !payload) {
+    if (!type || !payload) {
         throw new Error("Proposal invalide (champ manquant).");
     }
 
-    // Références des documents cibles
-    const archiveRef = doc(db, "ecoles", ecole, "archives", annee);
-    const eventRef   = doc(db, "ecoles", ecole, "events", annee);
+    // Références des documents cibles (pour les types liste/events)
+    const archiveRef = ecole && annee ? doc(db, "ecoles", ecole, "archives", annee) : null;
+    const eventRef   = ecole && annee ? doc(db, "ecoles", ecole, "events", annee) : null;
 
     switch (type) {
         
@@ -67,7 +68,6 @@ async function applyProposal(proposal) {
         case "liste_bde_add":
         case "liste_bdp_add":
         case "fakeliste_add": {
-            const field = type.replace('_add', 's'); // bde_add -> listes_bde (via logique de ton premier code)
             const collectionKey = type === "fakeliste_add" ? "fakelistes" : (type === "liste_bde_add" ? "listes_bde" : "listes_bdp");
             
             const snap = await getDoc(archiveRef);
@@ -91,7 +91,6 @@ async function applyProposal(proposal) {
             let data = snap.data();
             const currentList = Array.isArray(data[collectionKey]) ? data[collectionKey] : [];
             
-            // On cherche par nom pour remplacer
             const index = currentList.findIndex(l => l.nom === payload.nom);
             if (index !== -1) {
                 currentList[index] = payload;
@@ -108,8 +107,6 @@ async function applyProposal(proposal) {
             const field = type === "bde_info" ? "bde_actuel" : "bdp_actuel";
             const snap = await getDoc(archiveRef);
             let existingData = snap.exists() ? (snap.data()[field] || {}) : {};
-            
-            // On fusionne les nouvelles infos avec les anciennes (pour ne pas perdre les photos si non changées)
             const merged = { ...existingData, ...payload };
             await setDoc(archiveRef, { [field]: merged }, { merge: true });
             break;
@@ -118,6 +115,34 @@ async function applyProposal(proposal) {
         // 5. DATES DE CAMPAGNE / PASSATION
         case "dates": {
             await setDoc(archiveRef, payload, { merge: true });
+            break;
+        }
+
+        // =============================================
+        // 6. BRACELETS — AJOUT
+        // =============================================
+        case "bracelet_add": {
+            const { braceletId, ...braceletData } = payload;
+            // Créer un nouveau document dans la collection "bracelets"
+            await addDoc(collection(db, "bracelets"), {
+                ...braceletData,
+                approvedAt: new Date(),
+                approvedBy: 'admin'
+            });
+            break;
+        }
+
+        // =============================================
+        // 7. BRACELETS — MODIFICATION
+        // =============================================
+        case "bracelet_edit": {
+            const { braceletId, ...braceletData } = payload;
+            if (!braceletId) throw new Error("braceletId manquant pour la modification.");
+            await setDoc(doc(db, "bracelets", braceletId), {
+                ...braceletData,
+                updatedAt: new Date(),
+                updatedBy: 'admin'
+            }, { merge: true });
             break;
         }
 
@@ -135,6 +160,42 @@ async function markProposal(proposalId, status) {
         status,
         processedAt: new Date()
     });
+}
+
+/**
+ * Rendu du label d'une proposition selon son type
+ */
+function getProposalLabel(p) {
+    if (p.type === 'bracelet_add' || p.type === 'bracelet_edit') {
+        return `🪬 ${p.payload?.texte || 'Bracelet'} (${p.payload?.ville || '?'} · ${p.payload?.annee || '?'})`;
+    }
+    return p.payload?.nom || p.payload?.title || p.type || "(Détails)";
+}
+
+/**
+ * Rendu du détail d'une proposition selon son type
+ */
+function renderProposalDetail(p) {
+    if (p.type === 'bracelet_add' || p.type === 'bracelet_edit') {
+        const bg = p.payload?.couleurFond || '#003057';
+        const txt = p.payload?.couleurTexte || '#ffffff';
+        const texte = p.payload?.texte || 'BRACELET';
+        return `
+            <div style="margin-top:10px;">
+                <div style="display:inline-flex;align-items:center;justify-content:center;
+                    background:${bg};color:${txt};height:36px;border-radius:40px;
+                    padding:0 20px;font-size:10px;font-weight:900;letter-spacing:2px;
+                    text-transform:uppercase;border:2px solid rgba(255,255,255,0.1);">
+                    ${texte.toUpperCase()}
+                </div>
+                <div style="margin-top:8px;font-size:0.82em;color:#aaa;">
+                    Fond: ${bg} · Texte: ${txt}
+                    ${p.payload?.listeLiee ? ' · 🔗 ' + p.payload.listeLiee : ''}
+                </div>
+            </div>
+        `;
+    }
+    return `<pre style="font-size:0.8em;color:#aaa;margin-top:8px;white-space:pre-wrap;">${JSON.stringify(p.payload, null, 2)}</pre>`;
 }
 
 /**
@@ -191,21 +252,29 @@ async function loadPendingProposals(currentUser) {
 
         proposals.forEach(p => {
             const ecoleNom = getEcoleNom(p.ecole);
-            const label = p.payload?.nom || p.payload?.title || p.type || "(Détails)";
+            const label = getProposalLabel(p);
+            const isBracelet = p.type === 'bracelet_add' || p.type === 'bracelet_edit';
 
             const tr = document.createElement("tr");
             tr.innerHTML = `
                 <td style="padding:12px; border-bottom:1px solid #222;">
-                    <strong style="color:#009EE3;">${label}</strong>
+                    <strong style="color:${isBracelet ? '#f09433' : '#009EE3'};">${label}</strong>
                     <div style="font-size:0.8em; color:#777; margin-top:4px;">
                         Par ${p.authorPrenom || "Anonyme"} (${p.authorEmail})
                     </div>
+                    ${isBracelet ? renderProposalDetail(p) : ''}
                 </td>
                 <td style="padding:12px; border-bottom:1px solid #222; color:#ccc;">${ecoleNom}</td>
                 <td style="padding:12px; border-bottom:1px solid #222; color:#ccc;">${p.annee || "—"}</td>
-                <td style="padding:12px; border-bottom:1px solid #222;"><span class="badge-type">${p.type}</span></td>
+                <td style="padding:12px; border-bottom:1px solid #222;">
+                    <span style="background:${isBracelet ? 'rgba(240,148,51,0.15)' : 'rgba(0,158,227,0.1)'};
+                        color:${isBracelet ? '#f09433' : '#009EE3'};
+                        padding:3px 8px; border-radius:4px; font-size:0.8em;">
+                        ${p.type}
+                    </span>
+                </td>
                 <td style="padding:12px; border-bottom:1px solid #222; text-align:right;">
-                    <button class="btn-voir-prop" data-id="${p.id}" style="cursor:pointer; background:#333; color:white; border:none; padding:5px 10px; border-radius:4px; margin-right:5px;">👁️</button>
+                    ${!isBracelet ? `<button class="btn-voir-prop" data-id="${p.id}" style="cursor:pointer; background:#333; color:white; border:none; padding:5px 10px; border-radius:4px; margin-right:5px;">👁️</button>` : ''}
                     <button class="btn-approve-prop" data-id="${p.id}" style="cursor:pointer; background:#28a745; color:white; border:none; padding:5px 10px; border-radius:4px; margin-right:5px;">✅</button>
                     <button class="btn-reject-prop" data-id="${p.id}" style="cursor:pointer; background:#cb2d3e; color:white; border:none; padding:5px 10px; border-radius:4px;">❌</button>
                 </td>
@@ -231,7 +300,6 @@ async function loadPendingProposals(currentUser) {
                     await applyProposal(prop);
                     await markProposal(prop.id, "approved");
                     
-                    // Bonus: On incrémente le compteur de l'utilisateur
                     if (prop.authorEmail) {
                         const uRef = doc(db, "users", prop.authorEmail);
                         const uSnap = await getDoc(uRef);
