@@ -493,7 +493,7 @@
             <!-- Aperçu -->
             <div class="section-label">Aperçu en direct</div>
             <div id="preview-wrap">
-                <div id="form-bracelet-preview">VILLE 2025</div>
+                <div id="form-bracelet-preview">SEBR.tech Le Site du Rezo</div>
             </div>
 
             <!-- Couleurs -->
@@ -513,7 +513,7 @@
 
             <!-- Infos -->
             <div class="section-label">Texte du bracelet</div>
-            <input type="text" class="form-field" id="inp-texte" placeholder="Ex: MARSEILLE 2025" maxlength="30" oninput="updatePreview()">
+            <input type="text" class="form-field" id="inp-texte" placeholder="Ex: SEBR.tech Le site du Rezo" maxlength="30" oninput="updatePreview()">
 
             <div class="section-label">Ville</div>
             <select class="form-field" id="inp-ville">
@@ -826,7 +826,7 @@ window.syncColorHex = function(type) {
 window.updatePreview = function() {
     const bg = document.getElementById('inp-bg-color').value;
     const txt = document.getElementById('inp-text-color').value;
-    const texte = document.getElementById('inp-texte').value || 'VILLE 2025';
+    const texte = document.getElementById('inp-texte').value || 'SEBR.tech Le Site du Rezo';
 
     const prev = document.getElementById('form-bracelet-preview');
     prev.style.background = bg;
