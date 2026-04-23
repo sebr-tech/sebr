@@ -952,65 +952,93 @@ window.switchTab = function(tab) {
 // ============================================================
 // BRACELET TEXTURE — canvas 2D avec texte répété
 // ============================================================
-function makeBraceletTexture(bgColor, textColor, text) {
-    const W = 2048, H = 256;
-    const c = document.createElement('canvas');
-    c.width = W;
-    c.height = H;
-    const ctx = c.getContext('2d');
+function makeBraceletTexture(textColor, text) {
+  const W = 2048;
+  const H = 256;
+  const c = document.createElement('canvas');
+  c.width = W;
+  c.height = H;
+  const ctx = c.getContext('2d');
 
-    const grad = ctx.createLinearGradient(0, 0, 0, H);
-    const col = new THREE.Color(bgColor);
-    const r = Math.round(col.r * 255), g = Math.round(col.g * 255), b = Math.round(col.b * 255);
+  ctx.clearRect(0, 0, W, H);
 
-    grad.addColorStop(0, `rgba(${Math.min(r+40,255)},${Math.min(g+40,255)},${Math.min(b+40,255)},1)`);
-    grad.addColorStop(0.3, `rgb(${r},${g},${b})`);
-    grad.addColorStop(0.7, `rgb(${r},${g},${b})`);
-    grad.addColorStop(1, `rgba(${Math.max(r-30,0)},${Math.max(g-30,0)},${Math.max(b-30,0)},1)`);
+  const str = (text || 'BRACELET').toUpperCase();
+  const fontSize = 118;
+  ctx.font = `900 ${fontSize}px Arial Black, Arial, sans-serif`;
+  ctx.textAlign = 'center';
+  ctx.textBaseline = 'middle';
 
-    ctx.fillStyle = grad;
-    ctx.fillRect(0, 0, W, H);
+  const col = new THREE.Color(textColor || '#ffffff');
+  ctx.fillStyle = `rgb(${Math.round(col.r*255)}, ${Math.round(col.g*255)}, ${Math.round(col.b*255)})`;
 
-    ctx.fillStyle = `rgba(0,0,0,0.18)`;
-    ctx.fillRect(0, 0, W, 18);
-    ctx.fillRect(0, H - 18, W, 18);
+  const x = W * 0.5;
+  const y = H * 0.58;
+  ctx.fillText(str, x, y);
 
-    const str = (text || 'BRACELET').toUpperCase();
-    const fontSize = Math.round(H * 0.46);
-    ctx.font = `900 ${fontSize}px Arial Black, Arial, sans-serif`;
-    ctx.textAlign = 'center';
-    ctx.textBaseline = 'middle';
+  const tex = new THREE.CanvasTexture(c);
+  tex.wrapS = THREE.ClampToEdgeWrapping;
+  tex.wrapT = THREE.ClampToEdgeWrapping;
+  tex.needsUpdate = true;
+  return tex;
+}
 
-    const measured = ctx.measureText(str + '  ').width;
-    const reps = Math.ceil((W * 2.2) / measured) + 1;
-    const cy = H / 2 + 2;
+function createBracelet(bgColor, textColor, text) {
+  const group = new THREE.Group();
 
-    ctx.fillStyle = `rgba(0,0,0,0.35)`;
-    for (let i = -1; i <= reps; i++) {
-        const x = i * measured + measured / 2 + 3;
-        ctx.fillText(str + '  ', x, cy + 4);
-    }
+  const radius = 2.05;
+  const tube = 0.34;
+  const radialSeg = 24;
+  const tubularSeg = 220;
 
-    const tcol = new THREE.Color(textColor);
-    const tr = Math.round(tcol.r * 255), tg = Math.round(tcol.g * 255), tb = Math.round(tcol.b * 255);
+  const geo = new THREE.TorusGeometry(radius, tube, radialSeg, tubularSeg);
 
-    ctx.fillStyle = `rgba(${Math.min(tr+60,255)},${Math.min(tg+60,255)},${Math.min(tb+60,255)},0.5)`;
-    for (let i = -1; i <= reps; i++) {
-        const x = i * measured + measured / 2 + 1;
-        ctx.fillText(str + '  ', x, cy - 2);
-    }
+  const baseMat = new THREE.MeshPhysicalMaterial({
+    color: bgColor || '#0066cc',
+    roughness: 0.72,
+    metalness: 0.02,
+    clearcoat: 0.08,
+    clearcoatRoughness: 0.9
+  });
 
-    ctx.fillStyle = `rgb(${tr},${tg},${tb})`;
-    for (let i = -1; i <= reps; i++) {
-        const x = i * measured + measured / 2;
-        ctx.fillText(str + '  ', x, cy);
-    }
+  const bracelet = new THREE.Mesh(geo, baseMat);
+  group.add(bracelet);
 
-    const tex = new THREE.CanvasTexture(c);
-    tex.wrapS = THREE.RepeatWrapping;
-    tex.wrapT = THREE.ClampToEdgeWrapping;
-    tex.repeat.set(1, 1);
-    return tex;
+  const textTex = makeBraceletTexture(textColor, text);
+
+  const textMat = new THREE.MeshBasicMaterial({
+    map: textTex,
+    transparent: true,
+    depthWrite: false
+  });
+
+  const labelGeo = new THREE.CylinderGeometry(radius + tube * 0.98, radius + tube * 0.98, 0.34, 220, 1, true);
+  const label = new THREE.Mesh(labelGeo, textMat);
+
+  label.rotation.z = Math.PI / 2;
+  label.rotation.y = -Math.PI / 2;
+  label.scale.set(1, 1, 0.92);
+
+  group.add(label);
+
+  group.userData = { bracelet, label, textTex };
+  return group;
+}
+
+function updateBraceletColors(braceletGroup, bgColor, textColor, text) {
+  if (!braceletGroup) return;
+
+  const { bracelet, label, textTex } = braceletGroup.userData || {};
+  if (bracelet && bracelet.material) {
+    bracelet.material.color.set(bgColor || '#0066cc');
+  }
+
+  if (label && label.material) {
+    if (textTex) textTex.dispose();
+    const newTex = makeBraceletTexture(textColor, text);
+    label.material.map = newTex;
+    label.material.needsUpdate = true;
+    braceletGroup.userData.textTex = newTex;
+  }
 }
 
 function createBracelet(bgColor, textColor, text) {
@@ -1073,9 +1101,9 @@ function initMainViewer() {
 
   mainScene = new THREE.Scene();
 
-  mainCamera = new THREE.PerspectiveCamera(42, W / H, 0.1, 100);
-  mainCamera.position.set(0, 2.8, 5.5);
-  mainCamera.lookAt(0, 0, 0);
+  mainCamera = new THREE.PerspectiveCamera(35, W / H, 0.1, 100);
+    mainCamera.position.set(0, 2.2, 7.4);
+    mainCamera.lookAt(0, 0.15, 0);
 
   mainRenderer = new THREE.WebGLRenderer({
     canvas,
@@ -1101,19 +1129,22 @@ function initMainViewer() {
   rim.position.set(0, -4, -5);
   mainScene.add(rim);
 
-  mainBracelet = createBracelet('#003057', '#009ee3', 'REZO POLYTECH');
-  mainBracelet.rotation.x = Math.PI * 0.18;
-  mainBracelet.rotation.z = Math.PI * 0.08;
-  mainScene.add(mainBracelet);
+  mainBracelet.rotation.x = Math.PI * 0.33;
+    mainBracelet.rotation.y = Math.PI * 0.12;
+    mainBracelet.rotation.z = -Math.PI * 0.10;
+    mainBracelet.position.y = -0.15;
 
   let t = 0;
-  function animate() {
-    animFrameId = requestAnimationFrame(animate);
-    t += 0.004;
-    mainBracelet.rotation.y += 0.008;
-    mainBracelet.position.y = Math.sin(t) * 0.6 + 0.07;
-    mainRenderer.render(mainScene, mainCamera);
-  }
+function animate() {
+  animFrameId = requestAnimationFrame(animate);
+  t += 0.01;
+
+  mainBracelet.rotation.y = Math.PI * 0.12 + Math.sin(t * 0.7) * 0.08;
+  mainBracelet.rotation.x = Math.PI * 0.33 + Math.sin(t * 0.4) * 0.015;
+  mainBracelet.position.y = -0.15 + Math.sin(t * 0.9) * 0.03;
+
+  mainRenderer.render(mainScene, mainCamera);
+}
   animate();
 
   window.addEventListener('resize', () => {
