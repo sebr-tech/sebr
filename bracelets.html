@@ -628,7 +628,7 @@ onAuthStateChanged(auth, async (user) => {
                 currentUserData = { ...snap.data(), email: user.email };
                 const role = currentUserData.role;
 
-                authBtn.textContent = `👤 ${currentUserData.prenom || 'Compte'}`;
+                authBtn.textContent = `👤 ${currentUserData.prenom || 'Deconnexion'}`;
                 authBtn.className = 'btn-auth logout';
                 authBtn.onclick = async () => { if(confirm('Se déconnecter ?')) { await signOut(auth); location.reload(); } };
 
@@ -950,8 +950,8 @@ window.switchTab = function(tab) {
 // THREE.JS - BRACELET 3D PRINCIPAL
 // ============================================================
 function makeBraceletTexture(textColor, text) {
-    const W = 2048;
-    const H = 256;
+    const W = 4096;
+    const H = 512;
     const c = document.createElement('canvas');
     c.width = W;
     c.height = H;
@@ -959,10 +959,12 @@ function makeBraceletTexture(textColor, text) {
 
     ctx.clearRect(0, 0, W, H);
 
-    const str = (text || 'BRACELET').toUpperCase();
-    const fontSize = 118;
+    const str = ((text || 'BRACELET').toUpperCase()).trim();
+    const repeated = `   ✦ ${str} ✦ ${str} ✦ ${str} ✦ ${str} ✦   `;
+
+    const fontSize = 170;
     ctx.font = `900 ${fontSize}px Arial Black, Arial, sans-serif`;
-    ctx.textAlign = 'center';
+    ctx.textAlign = 'left';
     ctx.textBaseline = 'middle';
 
     const col = new THREE.Color(textColor || '#ffffff');
@@ -972,42 +974,53 @@ function makeBraceletTexture(textColor, text) {
     ctx.shadowBlur = 8;
     ctx.shadowOffsetY = 2;
 
-    const x = W * 0.5;
-    const y = H * 0.58;
-    ctx.fillText(str, x, y);
+    const y = H * 0.56;
+    const metrics = ctx.measureText(repeated);
+    const textWidth = metrics.width;
+
+    let x = -textWidth * 0.15;
+    while (x < W) {
+        ctx.fillText(repeated, x, y);
+        x += textWidth + 80;
+    }
 
     const tex = new THREE.CanvasTexture(c);
-    tex.wrapS = THREE.ClampToEdgeWrapping;
+    tex.wrapS = THREE.RepeatWrapping;
     tex.wrapT = THREE.ClampToEdgeWrapping;
+    tex.repeat.set(1, 1);
     tex.needsUpdate = true;
+
     return tex;
 }
 
 function createBracelet(bgColor, textColor, text) {
     const group = new THREE.Group();
 
-    const radius = 2.05;
-    const tube = 0.34;
-    const radialSeg = 32;
-    const tubularSeg = 260;
+    const radius = 2.45;
+    const tube = 0.16;
+    const radialSeg = 24;
+    const tubularSeg = 320;
 
     const baseGeo = new THREE.TorusGeometry(radius, tube, radialSeg, tubularSeg);
+    baseGeo.scale(1, 0.58, 1);
+
     const baseMat = new THREE.MeshPhysicalMaterial({
         color: bgColor || '#0066cc',
-        roughness: 0.82,
-        metalness: 0.01,
-        clearcoat: 0.05,
-        clearcoatRoughness: 0.95
+        roughness: 0.88,
+        metalness: 0.0,
+        clearcoat: 0.08,
+        clearcoatRoughness: 0.92
     });
 
     const bracelet = new THREE.Mesh(baseGeo, baseMat);
     group.add(bracelet);
 
     const textTex = makeBraceletTexture(textColor, text);
+
     const labelGeo = new THREE.CylinderGeometry(
-        radius + tube * 0.92,
-        radius + tube * 0.92,
-        tube * 1.52,
+        radius + tube * 0.78,
+        radius + tube * 0.78,
+        tube * 1.9,
         tubularSeg,
         1,
         true
@@ -1017,13 +1030,14 @@ function createBracelet(bgColor, textColor, text) {
         map: textTex,
         transparent: true,
         side: THREE.DoubleSide,
-        depthWrite: false
+        depthWrite: false,
+        alphaTest: 0.05
     });
 
     const label = new THREE.Mesh(labelGeo, labelMat);
     label.rotation.z = Math.PI / 2;
     label.rotation.y = -Math.PI / 2;
-    label.scale.set(1, 1, 0.86);
+    label.scale.set(1, 1, 0.52);
     group.add(label);
 
     group.userData = {
@@ -1056,10 +1070,10 @@ function updateBraceletColors(braceletGroup, bgColor, textColor, text) {
 
 function applyBraceletPose(mesh) {
     if (!mesh) return;
-    mesh.rotation.x = Math.PI * 0.33;
-    mesh.rotation.y = Math.PI * 0.12;
-    mesh.rotation.z = -Math.PI * 0.10;
-    mesh.position.y = -0.15;
+    mesh.rotation.x = Math.PI * 0.40;
+    mesh.rotation.y = Math.PI * 0.10;
+    mesh.rotation.z = -Math.PI * 0.16;
+    mesh.position.y = -0.05;
 }
 
 function initMainViewer() {
@@ -1070,9 +1084,9 @@ function initMainViewer() {
 
     mainScene = new THREE.Scene();
 
-    mainCamera = new THREE.PerspectiveCamera(35, W / H, 0.1, 100);
-    mainCamera.position.set(0, 2.2, 7.4);
-    mainCamera.lookAt(0, 0.15, 0);
+    mainCamera = new THREE.PerspectiveCamera(30, W / H, 0.1, 100);
+    mainCamera.position.set(0, 1.7, 8.6);
+    mainCamera.lookAt(0, 0.0, 0);
 
     mainRenderer = new THREE.WebGLRenderer({
         canvas,
