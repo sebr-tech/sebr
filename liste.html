@@ -66,7 +66,7 @@
         }
         .photo-collective { 
             width: 100%; 
-            height: auto; /* La hauteur s'ajustera toute seule selon le ratio */
+            height: auto;
             display: block;
         }
         .no-photo { padding: 40px; text-align: center; color: #666; font-style: italic; }
@@ -95,6 +95,90 @@
 
         #loader { text-align: center; padding: 50px; color: #aaa; font-style: italic; }
 
+        /* ===== SECTION BRACELETS ===== */
+        .bracelets-section {
+            width: 100%;
+            margin-top: 10px;
+        }
+
+        .bracelets-section h3 {
+            font-size: 0.9em;
+            letter-spacing: 2px;
+            color: var(--theme-color, #009EE3);
+            text-transform: uppercase;
+            margin-bottom: 15px;
+            border-left: 3px solid var(--theme-color, #009EE3);
+            padding-left: 10px;
+        }
+
+        .bracelets-grid-detail {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 14px;
+        }
+
+        .bracelet-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 8px;
+            cursor: pointer;
+            transition: transform 0.2s;
+        }
+
+        .bracelet-item:hover { transform: translateY(-3px); }
+
+        .bracelet-shape {
+            width: 130px;
+            height: 50px;
+            border-radius: 50px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 8px;
+            font-weight: 900;
+            letter-spacing: 1.5px;
+            text-transform: uppercase;
+            border: 3px solid rgba(255,255,255,0.08);
+            box-shadow: inset 0 2px 4px rgba(0,0,0,0.35), 0 6px 18px rgba(0,0,0,0.5);
+            position: relative;
+            overflow: hidden;
+        }
+
+        /* Effet silicone légèrement brillant sur le dessus */
+        .bracelet-shape::after {
+            content: '';
+            position: absolute;
+            top: 4px;
+            left: 15%;
+            right: 15%;
+            height: 6px;
+            background: rgba(255,255,255,0.12);
+            border-radius: 10px;
+        }
+
+        .bracelet-label {
+            font-size: 0.72em;
+            color: #667;
+            text-align: center;
+            max-width: 130px;
+        }
+
+        .btn-voir-bracelet {
+            font-size: 0.7em;
+            color: var(--theme-color, #009EE3);
+            background: transparent;
+            border: 1px solid rgba(0,158,227,0.3);
+            padding: 3px 10px;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: 0.2s;
+        }
+
+        .btn-voir-bracelet:hover {
+            background: rgba(0,158,227,0.1);
+        }
+
         @media (max-width: 600px) {
             .hero-section { flex-direction: column; text-align: center; }
             .hero-info { text-align: center; }
@@ -113,7 +197,7 @@
 
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-        import { getFirestore, doc, getDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+        import { getFirestore, doc, getDoc, collection, query, where, getDocs } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
         const firebaseConfig = {
             apiKey: "AIzaSyB1_SgV4E80Qxs2vQ-_jIGexv6YYqaiARs",
@@ -127,14 +211,8 @@
         const db = getFirestore(app);
 
         // --- Helpers sécurisés ---
+        function t(str) { return str ? String(str) : ''; }
 
-        // Échappe le texte brut pour éviter toute injection via textContent
-        function t(str) {
-            return str ? String(str) : '';
-        }
-
-        // Valide qu'une URL d'image est bien une URL http/https ou un chemin relatif simple
-        // Bloque les javascript:, data:, etc.
         function safeImgSrc(src) {
             if (!src) return '';
             const s = String(src).trim();
@@ -142,7 +220,6 @@
             return '';
         }
 
-        // Valide un lien Instagram : doit pointer vers instagram.com uniquement
         function safeInstaLink(instaString) {
             if (!instaString) return null;
             let link = String(instaString).trim();
@@ -150,60 +227,37 @@
             else if (!link.startsWith('http')) link = 'https://www.instagram.com/' + link;
             try {
                 const url = new URL(link);
-                if (url.hostname === 'www.instagram.com' || url.hostname === 'instagram.com') {
-                    return url.href;
-                }
+                if (url.hostname === 'www.instagram.com' || url.hostname === 'instagram.com') return url.href;
             } catch (_) {}
             return null;
         }
 
-        // Valide la couleur CSS (hex uniquement) pour éviter injection CSS
         function safeColor(color) {
             if (!color) return '#009EE3';
             return /^#[0-9A-Fa-f]{3,8}$/.test(String(color).trim()) ? color : '#009EE3';
         }
 
-        // Valide les paramètres URL : ecoleId, annee, typeKey, itemId
-        // N'accepte que des caractères alphanumériques, tirets et underscores
         function safeParam(val) {
             if (!val) return null;
             return /^[a-zA-Z0-9_\-]+$/.test(val) ? val : null;
         }
 
-        // Pour annee : format YYYY-YYYY
         function safeAnnee(val) {
             if (!val) return null;
             return /^\d{4}-\d{4}$/.test(val) ? val : null;
         }
 
-        // Pour itemId : peut contenir des espaces et accents (noms de listes)
-        // mais on bloque les caractères dangereux
-        function safeItemId(val) {
-            if (!val) return null;
-            const decoded = decodeURIComponent(val);
-            // Bloque < > " ' ` ; ( ) { } \ /
-            return /[<>"'`;(){}\\/]/.test(decoded) ? null : decoded;
-        }
-
-        // --- Lecture des params URL ---
         const params = new URLSearchParams(window.location.search);
-        const ecoleId  = safeParam(params.get('ecole'));
-        const annee    = safeAnnee(params.get('annee'));
-        const typeKey  = safeParam(params.get('type'));
-        const itemId   = safeItemId(params.get('id'));
+        const ecoleId = safeParam(params.get('ecole'));
+        const annee   = safeAnnee(params.get('annee'));
+        const typeKey = safeParam(params.get('type'));
+        const itemId  = params.get('id') ? decodeURIComponent(params.get('id')) : null;
 
-        const ALLOWED_TYPES = ['bde_actuel', 'bdp_actuel', 'listes_bde', 'listes_bdp', 'fakelistes'];
+        const loader  = document.getElementById('loader');
 
         async function loadData() {
-            const loader = document.getElementById('loader');
-
             if (!ecoleId || !annee || !typeKey || !itemId) {
-                loader.textContent = "Paramètres invalides.";
-                return;
-            }
-
-            if (!ALLOWED_TYPES.includes(typeKey)) {
-                loader.textContent = "Type inconnu.";
+                loader.textContent = "Paramètres manquants.";
                 return;
             }
 
@@ -232,7 +286,10 @@
                 const eventSnap = await getDoc(doc(db, "ecoles", ecoleId, "events", annee));
                 const eventsData = eventSnap.exists() ? eventSnap.data() : { locaux: [] };
 
-                renderPage(item, eventsData, typeKey);
+                // Charger les bracelets liés
+                const bracelets = await loadLinkedBracelets(ecoleId, annee, item.nom, typeKey);
+
+                renderPage(item, eventsData, typeKey, bracelets);
 
             } catch (error) {
                 console.error("Erreur:", error);
@@ -240,25 +297,62 @@
             }
         }
 
-        // --- Construction DOM sécurisée (sans innerHTML sur des données non fiables) ---
+        // Charger les bracelets depuis la collection "bracelets" liés à cette liste/ville/année
+        async function loadLinkedBracelets(ecoleId, annee, nomListe, typeKey) {
+            try {
+                let bracelets = [];
+
+                // Chercher par listeLiee (nom exact de la liste)
+                if (nomListe) {
+                    const q1 = query(
+                        collection(db, "bracelets"),
+                        where("listeLiee", "==", nomListe)
+                    );
+                    const snap1 = await getDocs(q1);
+                    snap1.forEach(d => bracelets.push({ id: d.id, ...d.data() }));
+                }
+
+                // Chercher aussi les bracelets liés uniquement à la ville+année (sans liste spécifique)
+                // si on est sur la page BDE/BDP (pas une liste spécifique)
+                if (typeKey === 'bde_actuel' || typeKey === 'bdp_actuel') {
+                    const q2 = query(
+                        collection(db, "bracelets"),
+                        where("ville", "==", ecoleId),
+                        where("annee", "==", annee),
+                        where("listeLiee", "==", null)
+                    );
+                    try {
+                        const snap2 = await getDocs(q2);
+                        snap2.forEach(d => {
+                            if (!bracelets.find(b => b.id === d.id)) {
+                                bracelets.push({ id: d.id, ...d.data() });
+                            }
+                        });
+                    } catch(e) { /* index peut ne pas exister encore */ }
+                }
+
+                return bracelets;
+            } catch (e) {
+                console.error("Erreur chargement bracelets:", e);
+                return [];
+            }
+        }
+
         function createElement(tag, attrs = {}, textContent = null) {
             const el = document.createElement(tag);
             for (const [k, v] of Object.entries(attrs)) {
-                if (k === 'style') {
-                    el.setAttribute('style', v);
-                } else {
-                    el.setAttribute(k, v);
-                }
+                if (k === 'style') el.setAttribute('style', v);
+                else el.setAttribute(k, v);
             }
             if (textContent !== null) el.textContent = textContent;
             return el;
         }
 
-        function renderPage(item, eventsData, typeKey) {
+        function renderPage(item, eventsData, typeKey, bracelets) {
             document.getElementById('loader').style.display = 'none';
             const content = document.getElementById('main-content');
             content.style.display = 'flex';
-            content.innerHTML = ''; // reset
+            content.innerHTML = '';
 
             const themeColor = safeColor(item.couleur);
             document.documentElement.style.setProperty('--theme-color', themeColor);
@@ -272,18 +366,15 @@
                     : (item.logo || `${ecoleId}.png`)
             );
             const logoImg = createElement('img', { class: 'hero-logo', src: logoSrc || '' });
-            // onerror sécurisé via addEventListener (pas d'inline JS)
             logoImg.addEventListener('error', () => { logoImg.src = 'default.png'; });
             heroSection.appendChild(logoImg);
 
             const heroInfo = createElement('div', { class: 'hero-info' });
-
             const h1 = createElement('h1', {}, t(item.nom || (typeKey === 'bde_actuel' ? 'BDE' : 'BDP')));
             heroInfo.appendChild(h1);
-
             const h2 = createElement('h2', {}, `Prez : ${t(item.prez || 'Inconnu')}`);
             heroInfo.appendChild(h2);
-            
+
             if (item.vp && item.vp.trim() !== "") {
                 const h2Vp = createElement('h2', { style: 'margin-bottom: 5px; color: #ccc; font-size: 1em;' }, `VP : ${t(item.vp)}`);
                 heroInfo.appendChild(h2Vp);
@@ -378,6 +469,41 @@
 
                 section.appendChild(grid);
                 content.appendChild(section);
+            }
+
+            // --- BRACELETS LIÉS ---
+            if (bracelets.length > 0) {
+                const braceletsSection = createElement('div', { class: 'bracelets-section' });
+                const bh3 = createElement('h3', {}, '🪬 Bracelets');
+                braceletsSection.appendChild(bh3);
+
+                const bGrid = createElement('div', { class: 'bracelets-grid-detail' });
+
+                bracelets.forEach(b => {
+                    const bItem = createElement('div', { class: 'bracelet-item' });
+
+                    const bShape = createElement('div', { 
+                        class: 'bracelet-shape',
+                        style: `background: ${b.couleurFond || '#003057'}; color: ${b.couleurTexte || '#ffffff'};`
+                    });
+                    bShape.textContent = (b.texte || 'BRACELET').slice(0, 14);
+                    bItem.appendChild(bShape);
+
+                    const bLabel = createElement('div', { class: 'bracelet-label' });
+                    bLabel.textContent = `${b.ville || ''} · ${b.annee || ''}`;
+                    bItem.appendChild(bLabel);
+
+                    const bBtn = createElement('button', { class: 'btn-voir-bracelet' }, '👁 Voir');
+                    bBtn.addEventListener('click', () => {
+                        window.open(`bracelets.html`, '_blank');
+                    });
+                    bItem.appendChild(bBtn);
+
+                    bGrid.appendChild(bItem);
+                });
+
+                braceletsSection.appendChild(bGrid);
+                content.appendChild(braceletsSection);
             }
         }
 
