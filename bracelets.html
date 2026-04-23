@@ -1066,82 +1066,63 @@ function updateBraceletColors(bracelet, bgColor, textColor, text) {
 }
 
 function initMainViewer() {
-    const canvas = document.getElementById('bracelet-canvas');
-    const section = document.getElementById('viewer-section');
-    const W = section.clientWidth;
-    const H = section.clientHeight;
+  const canvas = document.getElementById('bracelet-canvas');
+  const section = document.getElementById('viewer-section');
+  const W = section.clientWidth;
+  const H = section.clientHeight;
 
-    mainScene = new THREE.Scene();
+  mainScene = new THREE.Scene();
 
-    // Caméra légèrement au dessus et de côté, comme sur la photo 2
-    camera = new THREE.PerspectiveCamera(42, width / height, 0.1, 100);
-    camera.position.set(0, 2.8, 5.5);
-    camera.lookAt(0, 0, 0);
-    
-    scene.add(new THREE.AmbientLight(0xffffff, 0.55));
-    
-    const key = new THREE.DirectionalLight(0xffffff, 1.1);
-    key.position.set(-4, 6, 5);
-    scene.add(key);
-    
-    const fill = new THREE.DirectionalLight(0xddeeff, 0.35);
-    fill.position.set(5, 2, -3);
-    scene.add(fill);
-    
-    const rim = new THREE.DirectionalLight(0xffffff, 0.25);
-    rim.position.set(0, -4, -5);
-    scene.add(rim);
+  mainCamera = new THREE.PerspectiveCamera(42, W / H, 0.1, 100);
+  mainCamera.position.set(0, 2.8, 5.5);
+  mainCamera.lookAt(0, 0, 0);
 
-    mainRenderer = new THREE.WebGLRenderer({ canvas, antialias: true, alpha: true });
-    mainRenderer.setSize(W, H);
-    mainRenderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
-    mainRenderer.setClearColor(0x000000, 0);
-    mainRenderer.shadowMap.enabled = true;
+  mainRenderer = new THREE.WebGLRenderer({
+    canvas,
+    antialias: true,
+    alpha: true
+  });
+  mainRenderer.setSize(W, H);
+  mainRenderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+  mainRenderer.setClearColor(0x000000, 0);
 
-    // Lumières — simuler la lumière douce de studio comme sur la photo
-    const amb = new THREE.AmbientLight(0xffffff, 0.55);
-    mainScene.add(amb);
+  const amb = new THREE.AmbientLight(0xffffff, 0.55);
+  mainScene.add(amb);
 
-    // Lumière principale depuis le haut-gauche
-    const key = new THREE.DirectionalLight(0xffffff, 1.1);
-    key.position.set(-4, 6, 5);
-    mainScene.add(key);
+  const key = new THREE.DirectionalLight(0xffffff, 1.1);
+  key.position.set(-4, 6, 5);
+  mainScene.add(key);
 
-    // Lumière de remplissage douce
-    const fill = new THREE.DirectionalLight(0xddeeff, 0.35);
-    fill.position.set(5, 2, -3);
-    mainScene.add(fill);
+  const fill = new THREE.DirectionalLight(0xddeeff, 0.35);
+  fill.position.set(5, 2, -3);
+  mainScene.add(fill);
 
-    // Lumière de contour (rim light)
-    const rim = new THREE.DirectionalLight(0xffffff, 0.25);
-    rim.position.set(0, -4, -5);
-    mainScene.add(rim);
+  const rim = new THREE.DirectionalLight(0xffffff, 0.25);
+  rim.position.set(0, -4, -5);
+  mainScene.add(rim);
 
-    // Bracelet par défaut
-    mainBracelet = createBracelet('#003057', '#009ee3', 'REZO POLYTECH');
-    // Incliné comme un vrai bracelet posé légèrement de côté
-    mainBracelet.rotation.x = Math.PI * 0.18;
-    mainBracelet.rotation.z = Math.PI * 0.08;
-    mainScene.add(mainBracelet);
+  mainBracelet = createBracelet('#003057', '#009ee3', 'REZO POLYTECH');
+  mainBracelet.rotation.x = Math.PI * 0.18;
+  mainBracelet.rotation.z = Math.PI * 0.08;
+  mainScene.add(mainBracelet);
 
-    // Animation lente — rotation Y douce
-    let t = 0;
-    function animate() {
-        animFrameId = requestAnimationFrame(animate);
-        t += 0.004;
-        mainBracelet.rotation.y += 0.008;
-        // Légère oscillation verticale
-        mainBracelet.position.y = Math.sin(t * 0.6) * 0.07;
-        mainRenderer.render(mainScene, mainCamera);
-    }
-    animate();
+  let t = 0;
+  function animate() {
+    animFrameId = requestAnimationFrame(animate);
+    t += 0.004;
+    mainBracelet.rotation.y += 0.008;
+    mainBracelet.position.y = Math.sin(t) * 0.6 + 0.07;
+    mainRenderer.render(mainScene, mainCamera);
+  }
+  animate();
 
-    window.addEventListener('resize', () => {
-        const W2 = section.clientWidth, H2 = section.clientHeight;
-        mainCamera.aspect = W2/H2;
-        mainCamera.updateProjectionMatrix();
-        mainRenderer.setSize(W2, H2);
-    });
+  window.addEventListener('resize', () => {
+    const W2 = section.clientWidth;
+    const H2 = section.clientHeight;
+    mainCamera.aspect = W2 / H2;
+    mainCamera.updateProjectionMatrix();
+    mainRenderer.setSize(W2, H2);
+  });
 }
 
 function loadBraceletIn3D(b) {
