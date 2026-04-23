@@ -948,75 +948,95 @@ window.switchTab = function(tab) {
 
 // ============================================================
 // THREE.JS - BRACELET 3D PRINCIPAL
+// Inspiré du viewer cylindre de référence
 // ============================================================
-function makeBraceletTexture(textColor, text) {
-    const W = 1024;
-    const H = 256;
-    const c = document.createElement('canvas');
-    c.width = W;
-    c.height = H;
-    const ctx = c.getContext('2d');
 
-    ctx.clearRect(0, 0, W, H);
+function makeBraceletTexture(bgColor, textColor, text) {
+    const canvas = document.createElement('canvas');
+    canvas.width = 2048;
+    canvas.height = 256;
+    const ctx = canvas.getContext('2d');
 
-    const str = ((text || 'VILLE 2025').toUpperCase()).trim();
+    const bg = bgColor || '#003057';
+    const tx = textColor || '#ffffff';
+    const val = (text || 'VILLE 2025').toUpperCase().trim();
 
-    ctx.font = '900 92px Arial Black, Arial, sans-serif';
-    ctx.textAlign = 'center';
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+    ctx.fillStyle = bg;
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+    ctx.fillStyle = tx;
     ctx.textBaseline = 'middle';
+    ctx.textAlign = 'center';
 
-    const col = new THREE.Color(textColor || '#ffffff');
-    ctx.fillStyle = `rgb(${Math.round(col.r * 255)}, ${Math.round(col.g * 255)}, ${Math.round(col.b * 255)})`;
+    let fontSize = 112;
+    ctx.font = `900 ${fontSize}px Arial Black, Arial, sans-serif`;
 
-    ctx.shadowColor = 'rgba(0,0,0,0.30)';
-    ctx.shadowBlur = 6;
+    let textWidth = ctx.measureText(val).width;
+    const maxAllowedWidth = (canvas.width / 2) - 120;
+
+    if (textWidth > maxAllowedWidth) {
+        fontSize = Math.max(52, Math.floor(fontSize * (maxAllowedWidth / textWidth)));
+        ctx.font = `900 ${fontSize}px Arial Black, Arial, sans-serif`;
+    }
+
+    ctx.shadowColor = 'rgba(0,0,0,0.18)';
+    ctx.shadowBlur = 4;
     ctx.shadowOffsetY = 2;
 
-    ctx.fillText(str, W / 2, H / 2);
+    ctx.fillText(val, canvas.width * 0.25, canvas.height / 2);
+    ctx.fillText(val, canvas.width * 0.75, canvas.height / 2);
 
-    const tex = new THREE.CanvasTexture(c);
+    const tex = new THREE.CanvasTexture(canvas);
+    tex.wrapS = THREE.RepeatWrapping;
+    tex.wrapT = THREE.ClampToEdgeWrapping;
+    tex.repeat.set(1, 1);
     tex.needsUpdate = true;
+
     return tex;
 }
 
 function createBracelet(bgColor, textColor, text) {
     const group = new THREE.Group();
 
-    const radius = 2.45;
-    const tube = 0.16;
-    const radialSeg = 24;
-    const tubularSeg = 220;
+    const radius = 2.9;
+    const height = 0.52;
+    const radialSegments = 96;
 
-    const baseGeo = new THREE.TorusGeometry(radius, tube, radialSeg, tubularSeg);
-    baseGeo.scale(1, 0.58, 1);
-
-    const baseMat = new THREE.MeshPhysicalMaterial({
-        color: bgColor || '#0066cc',
-        roughness: 0.9,
-        metalness: 0.0,
-        clearcoat: 0.06,
-        clearcoatRoughness: 0.95
+    const outerGeo = new THREE.CylinderGeometry(radius, radius, height, radialSegments, 1, true);
+    const outerTex = makeBraceletTexture(bgColor, textColor, text);
+    const outerMat = new THREE.MeshStandardMaterial({
+        map: outerTex,
+        roughness: 0.62,
+        metalness: 0.06
     });
+    const outerMesh = new THREE.Mesh(outerGeo, outerMat);
 
-    const bracelet = new THREE.Mesh(baseGeo, baseMat);
-    group.add(bracelet);
-
-    const textTex = makeBraceletTexture(textColor, text);
-    const textMat = new THREE.SpriteMaterial({
-        map: textTex,
-        transparent: true,
-        depthWrite: false
+    const innerGeo = new THREE.CylinderGeometry(radius - 0.09, radius - 0.09, height, radialSegments, 1, true);
+    const innerMat = new THREE.MeshStandardMaterial({
+        color: bgColor || '#003057',
+        roughness: 0.86,
+        metalness: 0.02,
+        side: THREE.BackSide
     });
+    const innerMesh = new THREE.Mesh(innerGeo, innerMat);
 
-    const textSprite = new THREE.Sprite(textMat);
-    textSprite.scale.set(3.3, 0.8, 1);
-    textSprite.position.set(0, 1.02, 0.18);
-    group.add(textSprite);
+    group.add(outerMesh);
+    group.add(innerMesh);
+
+    group.rotation.z = Math.PI / 2;
+    group.rotation.x = Math.PI * 0.28;
+    group.rotation.y = Math.PI * 0.08;
+    group.position.y = -0.1;
 
     group.userData = {
-        bracelet,
-        textSprite,
-        textTex
+        outerMesh,
+        innerMesh,
+        texture: outerTex,
+        bgColor: bgColor || '#003057',
+        textColor: textColor || '#ffffff',
+        text: text || 'VILLE 2025'
     };
 
     return group;
@@ -1025,28 +1045,35 @@ function createBracelet(bgColor, textColor, text) {
 function updateBraceletColors(braceletGroup, bgColor, textColor, text) {
     if (!braceletGroup) return;
 
-    const { bracelet, textSprite, textTex } = braceletGroup.userData || {};
+    const data = braceletGroup.userData || {};
+    const { outerMesh, innerMesh, texture } = data;
 
-    if (bracelet?.material) {
-        bracelet.material.color.set(bgColor || '#0066cc');
-        bracelet.material.needsUpdate = true;
+    if (texture) texture.dispose();
+
+    const newTex = makeBraceletTexture(bgColor, textColor, text);
+
+    if (outerMesh && outerMesh.material) {
+        outerMesh.material.map = newTex;
+        outerMesh.material.needsUpdate = true;
     }
 
-    if (textSprite?.material) {
-        if (textTex) textTex.dispose();
-        const newTex = makeBraceletTexture(textColor, text);
-        textSprite.material.map = newTex;
-        textSprite.material.needsUpdate = true;
-        braceletGroup.userData.textTex = newTex;
+    if (innerMesh && innerMesh.material) {
+        innerMesh.material.color.set(bgColor || '#003057');
+        innerMesh.material.needsUpdate = true;
     }
+
+    braceletGroup.userData.texture = newTex;
+    braceletGroup.userData.bgColor = bgColor;
+    braceletGroup.userData.textColor = textColor;
+    braceletGroup.userData.text = text;
 }
 
 function applyBraceletPose(mesh) {
     if (!mesh) return;
-    mesh.rotation.x = Math.PI * 0.40;
-    mesh.rotation.y = Math.PI * 0.10;
-    mesh.rotation.z = -Math.PI * 0.16;
-    mesh.position.y = -0.05;
+    mesh.rotation.z = Math.PI / 2;
+    mesh.rotation.x = Math.PI * 0.28;
+    mesh.rotation.y = Math.PI * 0.08;
+    mesh.position.y = -0.1;
 }
 
 function initMainViewer() {
@@ -1058,8 +1085,8 @@ function initMainViewer() {
     mainScene = new THREE.Scene();
 
     mainCamera = new THREE.PerspectiveCamera(30, W / H, 0.1, 100);
-    mainCamera.position.set(0, 1.7, 8.6);
-    mainCamera.lookAt(0, 0.0, 0);
+    mainCamera.position.set(0, 4, 12);
+    mainCamera.lookAt(0, 0, 0);
 
     mainRenderer = new THREE.WebGLRenderer({
         canvas,
@@ -1070,23 +1097,17 @@ function initMainViewer() {
     mainRenderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
     mainRenderer.setClearColor(0x000000, 0);
 
-    const amb = new THREE.AmbientLight(0xffffff, 1.15);
-    mainScene.add(amb);
+    mainScene.add(new THREE.AmbientLight(0xffffff, 0.8));
 
-    const key = new THREE.DirectionalLight(0xffffff, 1.8);
-    key.position.set(4, 6, 6);
-    mainScene.add(key);
+    const sun = new THREE.DirectionalLight(0xffffff, 0.55);
+    sun.position.set(5, 5, 5);
+    mainScene.add(sun);
 
-    const fill = new THREE.DirectionalLight(0xbfdcff, 0.9);
-    fill.position.set(-5, 3, 4);
+    const fill = new THREE.DirectionalLight(0xcfe6ff, 0.25);
+    fill.position.set(-4, 2, -2);
     mainScene.add(fill);
 
-    const rim = new THREE.DirectionalLight(0xffffff, 1.0);
-    rim.position.set(0, 2, -6);
-    mainScene.add(rim);
-
     mainBracelet = createBracelet('#003057', '#ffffff', 'REZO POLYTECH');
-    applyBraceletPose(mainBracelet);
     mainScene.add(mainBracelet);
 
     let t = 0;
@@ -1095,10 +1116,10 @@ function initMainViewer() {
         t += 0.01;
 
         if (mainBracelet) {
-            mainBracelet.rotation.y = Math.PI * 0.12 + Math.sin(t * 0.7) * 0.08;
-            mainBracelet.rotation.x = Math.PI * 0.33 + Math.sin(t * 0.4) * 0.015;
-            mainBracelet.rotation.z = -Math.PI * 0.10;
-            mainBracelet.position.y = -0.15 + Math.sin(t * 0.9) * 0.03;
+            mainBracelet.rotation.y = Math.PI * 0.08 + Math.sin(t * 0.7) * 0.18;
+            mainBracelet.rotation.x = Math.PI * 0.28 + Math.sin(t * 0.35) * 0.02;
+            mainBracelet.rotation.z = Math.PI / 2;
+            mainBracelet.position.y = -0.1 + Math.sin(t * 0.9) * 0.02;
         }
 
         mainRenderer.render(mainScene, mainCamera);
@@ -1118,6 +1139,8 @@ function loadBraceletIn3D(b) {
     if (!mainScene) return;
 
     if (mainBracelet) {
+        const oldTex = mainBracelet.userData?.texture;
+        if (oldTex) oldTex.dispose();
         mainScene.remove(mainBracelet);
     }
 
@@ -1126,8 +1149,6 @@ function loadBraceletIn3D(b) {
         b.couleurTexte || '#ffffff',
         b.texte || 'BRACELET'
     );
-
-    applyBraceletPose(mainBracelet);
     mainScene.add(mainBracelet);
 
     const nameEl = document.getElementById('viewer-bracelet-name');
@@ -1136,8 +1157,8 @@ function loadBraceletIn3D(b) {
     nameEl.textContent = (b.texte || 'BRACELET').toUpperCase();
     infoEl.textContent = `${b.ville ? b.ville.toUpperCase() : ''} · ${b.annee || ''}`;
     nameEl.style.opacity = '1';
-    document.getElementById('viewer-hint').style.opacity = '0';
 
+    document.getElementById('viewer-hint').style.opacity = '0';
     selectedBraceletData = b;
 }
 
