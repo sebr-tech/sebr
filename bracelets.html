@@ -992,13 +992,20 @@ window.submitBracelet = async function(isProposal) {
         console.error("Erreur vérification limite:", e);
     }
 
+    const listeSelectionnee = document.getElementById('inp-liste-liee').value;
+
     const data = {
         texte: document.getElementById('inp-texte').value.trim(),
         ville: document.getElementById('inp-ville').value,
-        annee: document.getElementById('inp-annee-form').value,   // FIX
+        annee: document.getElementById('inp-annee-form').value,
         couleurFond: document.getElementById('inp-bg-color').value,
         couleurTexte: document.getElementById('inp-text-color').value,
-        listeLiee: document.getElementById('inp-liste-liee').value || null,
+        listeLiee:
+            !listeSelectionnee ||
+            listeSelectionnee === 'BDE actuel' ||
+            listeSelectionnee === 'BDP actuel'
+                ? null
+                : listeSelectionnee,
     };
 
     if (!data.texte || !data.ville || !data.annee) {
