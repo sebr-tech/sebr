@@ -580,7 +580,7 @@
 
 <!-- THREE.JS -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
-
+<script src="https://unpkg.com/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
 import {
@@ -1025,10 +1025,10 @@ function createBracelet(bgColor, textColor, text) {
     group.add(outerMesh);
     group.add(innerMesh);
 
-    group.rotation.z = Math.PI / 2;
-    group.rotation.x = Math.PI * 0.28;
-    group.rotation.y = Math.PI * 0.08;
-    group.position.y = -0.1;
+    // Bracelet à plat, légèrement incliné vers la caméra
+    group.rotation.x = Math.PI / 2;      // le cylindre "couche"
+    group.rotation.z = Math.PI * 0.12;   // petite inclinaison
+    group.position.y = 0;
 
     group.userData = {
         outerMesh,
@@ -1070,12 +1070,11 @@ function updateBraceletColors(braceletGroup, bgColor, textColor, text) {
 
 function applyBraceletPose(mesh) {
     if (!mesh) return;
-    mesh.rotation.z = Math.PI / 2;
-    mesh.rotation.x = Math.PI * 0.28;
-    mesh.rotation.y = Math.PI * 0.08;
-    mesh.position.y = -0.1;
+    mesh.rotation.x = Math.PI / 2;
+    mesh.rotation.y = 0;
+    mesh.rotation.z = Math.PI * 0.12;
+    mesh.position.y = 0;
 }
-
 function initMainViewer() {
     const canvas = document.getElementById('bracelet-canvas');
     const section = document.getElementById('viewer-section');
@@ -1114,14 +1113,12 @@ function initMainViewer() {
     function animate() {
         animFrameId = requestAnimationFrame(animate);
         t += 0.01;
-
+    
         if (mainBracelet) {
-            mainBracelet.rotation.y = Math.PI * 0.08 + Math.sin(t * 0.7) * 0.18;
-            mainBracelet.rotation.x = Math.PI * 0.28 + Math.sin(t * 0.35) * 0.02;
-            mainBracelet.rotation.z = Math.PI / 2;
-            mainBracelet.position.y = -0.1 + Math.sin(t * 0.9) * 0.02;
+            // on fait tourner à plat autour de l’axe vertical de la scène
+            mainBracelet.rotation.y = Math.sin(t * 0.6) * 0.35;
         }
-
+    
         mainRenderer.render(mainScene, mainCamera);
     }
     animate();
