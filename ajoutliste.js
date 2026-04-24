@@ -61,16 +61,11 @@ async function submitProposal(type, payload) {
     const userSnap = await getDoc(userRef);
     if (!userSnap.exists()) throw new Error("Utilisateur introuvable.");
 
-    const userData  = userSnap.data();
-    const count     = userData.proposalsCount || 0;
-
-    if (count >= MAX_PROPOSALS) {
-        throw new Error(`Vous avez atteint la limite de ${MAX_PROPOSALS} propositions.`);
-    }
-
+    const userData = userSnap.data();
     const ecole = document.getElementById('ecole-select').value;
     const annee = document.getElementById('annee-select').value;
 
+    // On envoie directement. Si les Rules disent "Non", ça part en erreur.
     await addDoc(collection(db, "proposals"), {
         authorEmail:  user.email,
         authorPrenom: userData.prenom || "",
@@ -79,22 +74,10 @@ async function submitProposal(type, payload) {
         type,
         payload,
         status:    "pending",
-        createdAt: serverTimestamp()
+        createdAt: serverTimestamp() // Très important pour la règle de temps
     });
 
-    await updateDoc(userRef, { proposalsCount: increment(1) });
-
-    const remaining = MAX_PROPOSALS - count - 1;
-    showStatus(`📤 Proposition envoyée ! Elle sera validée par un éditeur. Il reste ${remaining} proposition(s).`);
-    updateProposalCounter(count + 1);
-}
-
-function updateProposalCounter(count) {
-    const el = document.getElementById('proposal-counter');
-    if (el) {
-        el.textContent = `${MAX_PROPOSALS - count} proposition(s) restante(s)`;
-        el.style.color = count >= MAX_PROPOSALS ? '#ed1c24' : count >= 7 ? '#f09433' : '#28a745';
-    }
+    showStatus(`📤 Proposition envoyée ! Elle sera validée par un éditeur.`);
 }
 
 /* ══════════ UTILS IMAGES (RESIZING & API) ══════════ */
