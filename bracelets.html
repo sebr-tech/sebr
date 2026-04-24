@@ -770,70 +770,50 @@ window.switchTab = function(tab) {
 
 // Génère la texture visuelle ET la carte de relief (bump map)
 function createBraceletTextures(bgColor, textColor, text) {
-    // Canvas pour la couleur (Haute résolution pour éviter l'écrasement)
-    const colorCanvas = document.createElement('canvas');
-    colorCanvas.width = 4096; // Ratio super large adapté à la circonférence
-    colorCanvas.height = 256;
-    const ctx = colorCanvas.getContext('2d');
+    const canvas = document.createElement('canvas');
+    canvas.width = 4096; canvas.height = 256;
+    const ctx = canvas.getContext('2d');
 
-    // Canvas pour le relief (Bump Map)
     const bumpCanvas = document.createElement('canvas');
-    bumpCanvas.width = 4096;
-    bumpCanvas.height = 256;
-    const bumpCtx = bumpCanvas.getContext('2d');
+    bumpCanvas.width = 4096; bumpCanvas.height = 256;
+    const bCtx = bumpCanvas.getContext('2d');
 
-    const bg = bgColor || '#003057';
-    const tx = textColor || '#ffffff';
-    const val = (text || 'VILLE 2025').toUpperCase().trim();
+    ctx.fillStyle = bgColor || '#003057';
+    ctx.fillRect(0,0, canvas.width, canvas.height);
+    bCtx.fillStyle = '#808080';
+    bCtx.fillRect(0,0, bumpCanvas.width, bumpCanvas.height);
 
-    // Remplissage des fonds
-    ctx.fillStyle = bg;
-    ctx.fillRect(0, 0, colorCanvas.width, colorCanvas.height);
+    const val = (text || '').toUpperCase();
     
-    bumpCtx.fillStyle = '#808080'; // Gris moyen = surface plate sans relief
-    bumpCtx.fillRect(0, 0, bumpCanvas.width, bumpCanvas.height);
-
-    // Paramètres typographiques
-    const fontSize = 130; // Texte plus grand et bien proportionné
-    const fontStr = `900 ${fontSize}px "Arial Black", "Impact", sans-serif`;
+    // LOGIQUE DE CALCUL DE LA TAILLE DE POLICE
+    let fontSize = 135; // Taille par défaut
+    ctx.font = `900 ${fontSize}px "Arial Black", sans-serif`;
     
-    ctx.font = fontStr;
-    ctx.textBaseline = 'middle';
-    ctx.textAlign = 'center';
-    
-    bumpCtx.font = fontStr;
-    bumpCtx.textBaseline = 'middle';
-    bumpCtx.textAlign = 'center';
+    const maxWidth = canvas.width * 0.42; // Espace max autorisé pour le texte sur une face
+    let textWidth = ctx.measureText(val).width;
 
-    // Fonction pour dessiner le texte en double face (devant et derrière le bracelet)
-    const drawText = (context, isBump) => {
-        if (isBump) {
-            context.fillStyle = '#ffffff'; // Blanc = Extrusion vers l'extérieur
-            context.shadowColor = '#ffffff';
-            context.shadowBlur = 8; // Adoucit légèrement les bords de l'extrusion
-        } else {
-            context.fillStyle = tx;
-        }
-        // Face 1
-        context.fillText(val, colorCanvas.width * 0.25, colorCanvas.height / 2);
-        // Face 2
-        context.fillText(val, colorCanvas.width * 0.75, colorCanvas.height / 2);
-    };
+    if (textWidth > maxWidth) {
+        fontSize = Math.floor(fontSize * (maxWidth / textWidth));
+        if (fontSize < 35) fontSize = 35; // Taille minimum de sécurité
+    }
 
-    drawText(ctx, false);
-    drawText(bumpCtx, true);
+    const finalFont = `900 ${fontSize}px "Arial Black", sans-serif`;
+    [ctx, bCtx].forEach(c => {
+        c.font = finalFont;
+        c.textAlign = 'center';
+        c.textBaseline = 'middle';
+    });
 
-    const map = new THREE.CanvasTexture(colorCanvas);
-    map.wrapS = THREE.RepeatWrapping;
-    map.wrapT = THREE.ClampToEdgeWrapping;
-    map.anisotropy = 16; // Filtre haute qualité pour un texte ultra net
+    ctx.fillStyle = textColor || '#ffffff';
+    bCtx.fillStyle = '#ffffff';
+    bCtx.shadowBlur = 6; bCtx.shadowColor = 'white';
 
-    const bumpMap = new THREE.CanvasTexture(bumpCanvas);
-    bumpMap.wrapS = THREE.RepeatWrapping;
-    bumpMap.wrapT = THREE.ClampToEdgeWrapping;
-    bumpMap.anisotropy = 16;
+    [0.25, 0.75].forEach(pos => {
+        ctx.fillText(val, canvas.width * pos, canvas.height/2);
+        bCtx.fillText(val, bumpCanvas.width * pos, bumpCanvas.height/2);
+    });
 
-    return { map, bumpMap };
+    return { map: new THREE.CanvasTexture(canvas), bump: new THREE.CanvasTexture(bumpCanvas) };
 }
 
 function createBracelet(bgColor, textColor, text) {
