@@ -813,8 +813,8 @@ window.loadListes = async function loadListes() {
     // B. LISTES LOCALES (ecoles/{ville}/archives/{annee})
     //    Noms de champs : listesbde, listesbdp, fakelistes
     // ─────────────────────────────────────────
-    pushGroupFromArray(dataLocal.listesbde,   `BDE (${ville})`);
-    pushGroupFromArray(dataLocal.listesbdp,   `BDP (${ville})`);
+    pushGroupFromArray(dataLocal.bde_listes,   `BDE (${ville})`);
+    pushGroupFromArray(dataLocal.bdp_listes,   `BDP (${ville})`);
     pushGroupFromArray(dataLocal.fakelistes,  `Fake (${ville})`);
 
     // ─────────────────────────────────────────
