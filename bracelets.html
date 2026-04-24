@@ -410,7 +410,7 @@
             <input type="text" class="form-field" id="inp-texte" placeholder="Ex: SEBR.tech Le site du Rezo" maxlength="30" oninput="updatePreview()">
 
             <div class="section-label">Ville</div>
-            <select class="form-field" id="inp-ville">
+            <select class="form-field" id="inp-ville" onchange="loadListes()">
                 <option value="">— Sélectionner —</option>
                 <option value="lille">Lille</option>
                 <option value="sorbonne">Paris-Sorbonne</option>
@@ -723,8 +723,9 @@ async function loadBracelets() {
     }
 }
 
-// FIX: Utilisation des bons IDs inp-ville et inp-annee-form
-async function loadListes() {
+// FIX: exposé sur window car appelé depuis onchange inline dans le HTML
+// (les fonctions dans type="module" ne sont pas globales par défaut)
+window.loadListes = async function loadListes() {
     const ville = document.getElementById('inp-ville').value;
     const annee = document.getElementById('inp-annee-form').value;
     const select = document.getElementById('inp-liste-liee');
