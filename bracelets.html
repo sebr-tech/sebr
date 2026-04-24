@@ -343,8 +343,8 @@
 
             <div class="section-label">Couleur du texte</div>
             <div class="color-row">
-                <input type="color" class="color-input" id="inp-text-color" value="#ffffff" oninput="syncColorInput('text')">
-                <input type="text" class="color-hex" id="inp-text-hex" value="#ffffff" oninput="syncColorHex('text')" maxlength="7" placeholder="#ffffff">
+                <input type="color" class="color-input" id="inp-text-color" value="#e3b700" oninput="syncColorInput('text')">
+                <input type="text" class="color-hex" id="inp-text-hex" value="#e3b700" oninput="syncColorHex('text')" maxlength="7" placeholder="#e3b700">
                 <span class="color-label">Texte extrudé</span>
             </div>
 
@@ -818,7 +818,7 @@ function createBracelet(bgColor, textColor, text) {
     const group = new THREE.Group();
 
     const radius = 2.9;
-    const height = 0.52;
+    const height = 1;
     const radialSegments = 96;
 
     const outerGeo = new THREE.CylinderGeometry(radius, radius, height, radialSegments, 1, true);
