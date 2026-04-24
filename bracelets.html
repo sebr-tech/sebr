@@ -72,7 +72,7 @@
             flex: 1; position: relative; display: flex; justify-content: center; align-items: center;
             background: radial-gradient(ellipse at center, #0a1a2f 0%, var(--bg-dark) 80%);
             overflow: hidden;
-            cursor: grab; /* Ajout du curseur pour indiquer l'interactivité */
+            cursor: grab;
         }
         #viewer-section:active { cursor: grabbing; }
 
@@ -336,15 +336,15 @@
 
             <div class="section-label">Couleur du fond</div>
             <div class="color-row">
-                <input type="color" class="color-input" id="inp-bg-color" value="#1e0064" oninput="syncColorInput('bg')">
-                <input type="text" class="color-hex" id="inp-bg-hex" value="#1e0064" oninput="syncColorHex('bg')" maxlength="7" placeholder="#1e0064">
+                <input type="color" class="color-input" id="inp-bg-color" value="#0066cc" oninput="syncColorInput('bg')">
+                <input type="text" class="color-hex" id="inp-bg-hex" value="#0066cc" oninput="syncColorHex('bg')" maxlength="7" placeholder="#000000">
                 <span class="color-label">Couleur principale</span>
             </div>
 
             <div class="section-label">Couleur du texte</div>
             <div class="color-row">
-                <input type="color" class="color-input" id="inp-text-color" value="#e3b700" oninput="syncColorInput('text')">
-                <input type="text" class="color-hex" id="inp-text-hex" value="#e3b700" oninput="syncColorHex('text')" maxlength="7" placeholder="#e3b700">
+                <input type="color" class="color-input" id="inp-text-color" value="#ffffff" oninput="syncColorInput('text')">
+                <input type="text" class="color-hex" id="inp-text-hex" value="#ffffff" oninput="syncColorHex('text')" maxlength="7" placeholder="#ffffff">
                 <span class="color-label">Texte extrudé</span>
             </div>
 
@@ -444,7 +444,6 @@ let currentUser = null;
 let currentUserData = null;
 let selectedBraceletData = null;
 let editingBraceletId = null;
-// Ajout de "controls" pour l'interactivité du viewer
 let mainScene, mainCamera, mainRenderer, mainBracelet, animFrameId, controls;
 let modalScene, modalCamera, modalRenderer, modalBracelet, modalAnimId;
 
@@ -513,9 +512,7 @@ async function loadBracelets() {
 async function loadListes() {
     const select = document.getElementById('inp-liste-liee');
     select.innerHTML = '<option value="">— Aucune liste —</option>';
-    try {
-        const { collectionGroup } = await import("https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js");
-    } catch(e) {}
+    // Placeholder for real logic
 }
 
 // ============================================================
@@ -766,92 +763,151 @@ window.switchTab = function(tab) {
     document.getElementById(`tab-btn-${tab}`).classList.add('active');
     document.getElementById(`panel-${tab}`).classList.add('active');
 };
+
 // ============================================================
-// THREE.JS - BRACELET 3D PRINCIPAL
+// THREE.JS - MOTEUR 3D SILICONE EXTRUDÉ
 // ============================================================
 
-function makeBraceletTexture(bgColor, textColor, text) {
-    const canvas = document.createElement('canvas');
-    canvas.width = 2048;
-    canvas.height = 256;
-    const ctx = canvas.getContext('2d');
+// Génère la texture visuelle ET la carte de relief (bump map)
+function createBraceletTextures(bgColor, textColor, text) {
+    // Canvas pour la couleur (Haute résolution pour éviter l'écrasement)
+    const colorCanvas = document.createElement('canvas');
+    colorCanvas.width = 4096; // Ratio super large adapté à la circonférence
+    colorCanvas.height = 256;
+    const ctx = colorCanvas.getContext('2d');
+
+    // Canvas pour le relief (Bump Map)
+    const bumpCanvas = document.createElement('canvas');
+    bumpCanvas.width = 4096;
+    bumpCanvas.height = 256;
+    const bumpCtx = bumpCanvas.getContext('2d');
 
     const bg = bgColor || '#003057';
     const tx = textColor || '#ffffff';
     const val = (text || 'VILLE 2025').toUpperCase().trim();
 
-    ctx.clearRect(0, 0, canvas.width, canvas.height);
-
+    // Remplissage des fonds
     ctx.fillStyle = bg;
-    ctx.fillRect(0, 0, canvas.width, canvas.height);
+    ctx.fillRect(0, 0, colorCanvas.width, colorCanvas.height);
+    
+    bumpCtx.fillStyle = '#808080'; // Gris moyen = surface plate sans relief
+    bumpCtx.fillRect(0, 0, bumpCanvas.width, bumpCanvas.height);
 
-    ctx.fillStyle = tx;
+    // Paramètres typographiques
+    const fontSize = 130; // Texte plus grand et bien proportionné
+    const fontStr = `900 ${fontSize}px "Arial Black", "Impact", sans-serif`;
+    
+    ctx.font = fontStr;
     ctx.textBaseline = 'middle';
     ctx.textAlign = 'center';
+    
+    bumpCtx.font = fontStr;
+    bumpCtx.textBaseline = 'middle';
+    bumpCtx.textAlign = 'center';
 
-    let fontSize = 112;
-    ctx.font = `900 ${fontSize}px Arial Black, Arial, sans-serif`;
+    // Fonction pour dessiner le texte en double face (devant et derrière le bracelet)
+    const drawText = (context, isBump) => {
+        if (isBump) {
+            context.fillStyle = '#ffffff'; // Blanc = Extrusion vers l'extérieur
+            context.shadowColor = '#ffffff';
+            context.shadowBlur = 8; // Adoucit légèrement les bords de l'extrusion
+        } else {
+            context.fillStyle = tx;
+        }
+        // Face 1
+        context.fillText(val, colorCanvas.width * 0.25, colorCanvas.height / 2);
+        // Face 2
+        context.fillText(val, colorCanvas.width * 0.75, colorCanvas.height / 2);
+    };
 
-    let textWidth = ctx.measureText(val).width;
-    const maxAllowedWidth = (canvas.width / 2) - 120;
-    if (textWidth > maxAllowedWidth) {
-        fontSize = Math.max(52, Math.floor(fontSize * (maxAllowedWidth / textWidth)));
-        ctx.font = `900 ${fontSize}px Arial Black, Arial, sans-serif`;
-    }
+    drawText(ctx, false);
+    drawText(bumpCtx, true);
 
-    ctx.shadowColor = 'rgba(0,0,0,0.18)';
-    ctx.shadowBlur = 4;
-    ctx.shadowOffsetY = 2;
+    const map = new THREE.CanvasTexture(colorCanvas);
+    map.wrapS = THREE.RepeatWrapping;
+    map.wrapT = THREE.ClampToEdgeWrapping;
+    map.anisotropy = 16; // Filtre haute qualité pour un texte ultra net
 
-    ctx.fillText(val, canvas.width * 0.25, canvas.height / 2);
-    ctx.fillText(val, canvas.width * 0.75, canvas.height / 2);
-    const tex = new THREE.CanvasTexture(canvas);
-    tex.wrapS = THREE.RepeatWrapping;
-    tex.wrapT = THREE.ClampToEdgeWrapping;
-    tex.repeat.set(1, 1);
-    tex.needsUpdate = true;
+    const bumpMap = new THREE.CanvasTexture(bumpCanvas);
+    bumpMap.wrapS = THREE.RepeatWrapping;
+    bumpMap.wrapT = THREE.ClampToEdgeWrapping;
+    bumpMap.anisotropy = 16;
 
-    return tex;
+    return { map, bumpMap };
 }
 
 function createBracelet(bgColor, textColor, text) {
     const group = new THREE.Group();
 
-    const radius = 2.9;
-    const height = 0.5;
-    const radialSegments = 96;
+    // Paramètres géométriques pour un bracelet massif
+    const radiusOuter = 3.0;
+    const radiusInner = 2.75;  // Différence = 0.25 (C'est la vraie épaisseur de ton silicone)
+    const height = 0.65;       // C'est la largeur du bracelet
+    const radialSegments = 128; // Très lisse
 
-    const outerGeo = new THREE.CylinderGeometry(radius, radius, height, radialSegments, 1, true);
-    const outerTex = makeBraceletTexture(bgColor, textColor, text);
-    const outerMat = new THREE.MeshStandardMaterial({
-        map: outerTex,
-        roughness: 0.62,
-        metalness: 0.06
+    const textures = createBraceletTextures(bgColor, textColor, text);
+
+    // Matériau Physique pour le silicone
+    const siliconeMaterialOuter = new THREE.MeshPhysicalMaterial({
+        map: textures.map,
+        bumpMap: textures.bumpMap,
+        bumpScale: 0.08,        // L'effet d'extrusion 3D
+        roughness: 0.85,        // Silicone mat...
+        metalness: 0.0,
+        clearcoat: 0.2,         // ...mais qui reflète légèrement la lumière
+        clearcoatRoughness: 0.5
     });
-    const outerMesh = new THREE.Mesh(outerGeo, outerMat);
 
-    const innerGeo = new THREE.CylinderGeometry(radius - 0.2, radius - 0.2, height, radialSegments, 1, true);
-    const innerMat = new THREE.MeshStandardMaterial({
+    const siliconeMaterialInner = new THREE.MeshPhysicalMaterial({
         color: bgColor || '#003057',
-        roughness: 0.86,
-        metalness: 0.02,
-        side: THREE.BackSide
+        roughness: 0.85,
+        metalness: 0.0,
+        clearcoat: 0.2,
+        clearcoatRoughness: 0.5,
+        side: THREE.BackSide    // Pour l'intérieur de l'anneau
     });
-    const innerMesh = new THREE.Mesh(innerGeo, innerMat);
 
+    const siliconeMaterialCaps = new THREE.MeshPhysicalMaterial({
+        color: bgColor || '#003057',
+        roughness: 0.85,
+        metalness: 0.0,
+        clearcoat: 0.2,
+        clearcoatRoughness: 0.5,
+        side: THREE.DoubleSide
+    });
+
+    // Création des différentes parties
+    const outerGeo = new THREE.CylinderGeometry(radiusOuter, radiusOuter, height, radialSegments, 1, true);
+    const outerMesh = new THREE.Mesh(outerGeo, siliconeMaterialOuter);
+
+    const innerGeo = new THREE.CylinderGeometry(radiusInner, radiusInner, height, radialSegments, 1, true);
+    const innerMesh = new THREE.Mesh(innerGeo, siliconeMaterialInner);
+
+    // Bords (caps) en haut et en bas pour fermer la géométrie et donner l'illusion d'une masse solide
+    const topCapGeo = new THREE.RingGeometry(radiusInner, radiusOuter, radialSegments);
+    const topCap = new THREE.Mesh(topCapGeo, siliconeMaterialCaps);
+    topCap.rotation.x = -Math.PI / 2;
+    topCap.position.y = height / 2;
+
+    const bottomCapGeo = new THREE.RingGeometry(radiusInner, radiusOuter, radialSegments);
+    const bottomCap = new THREE.Mesh(bottomCapGeo, siliconeMaterialCaps);
+    bottomCap.rotation.x = Math.PI / 2;
+    bottomCap.position.y = -height / 2;
+
+    // Assemblage
     group.add(outerMesh);
     group.add(innerMesh);
+    group.add(topCap);
+    group.add(bottomCap);
 
-    // MODIFICATION DE L'ORIENTATION : Le bracelet est désormais vertical
-    group.rotation.x = 0.1; // Légère inclinaison pour voir l'épaisseur du haut
-    group.rotation.z = 0.05; // Légère asymétrie
-    group.position.y = 0;
+    group.rotation.x = 0.2; // Légère inclinaison pour mieux voir l'épaisseur du bord supérieur
+    group.rotation.z = 0.05;
 
+    // Sauvegarde des références pour les mises à jour en direct
     group.userData = {
-        outerMesh, innerMesh, texture: outerTex,
-        bgColor: bgColor || '#003057',
-        textColor: textColor || '#ffffff',
-        text: text || 'VILLE 2025'
+        outerMesh, innerMesh, topCap, bottomCap,
+        map: textures.map, bumpMap: textures.bumpMap,
+        bgColor, textColor, text
     };
 
     return group;
@@ -860,31 +916,36 @@ function createBracelet(bgColor, textColor, text) {
 function updateBraceletColors(braceletGroup, bgColor, textColor, text) {
     if (!braceletGroup) return;
     const data = braceletGroup.userData || {};
-    const { outerMesh, innerMesh, texture } = data;
 
-    if (texture) texture.dispose();
-    const newTex = makeBraceletTexture(bgColor, textColor, text);
-    if (outerMesh && outerMesh.material) {
-        outerMesh.material.map = newTex;
-        outerMesh.material.needsUpdate = true;
+    // Nettoyage de la mémoire de l'ancienne carte
+    if (data.map) data.map.dispose();
+    if (data.bumpMap) data.bumpMap.dispose();
+
+    const newTextures = createBraceletTextures(bgColor, textColor, text);
+
+    if (data.outerMesh) {
+        data.outerMesh.material.map = newTextures.map;
+        data.outerMesh.material.bumpMap = newTextures.bumpMap;
+        data.outerMesh.material.needsUpdate = true;
     }
-    if (innerMesh && innerMesh.material) {
-        innerMesh.material.color.set(bgColor || '#003057');
-        innerMesh.material.needsUpdate = true;
+    if (data.innerMesh) {
+        data.innerMesh.material.color.set(bgColor || '#003057');
+        data.innerMesh.material.needsUpdate = true;
     }
-    braceletGroup.userData.texture = newTex;
+    if (data.topCap) {
+        data.topCap.material.color.set(bgColor || '#003057');
+        data.topCap.material.needsUpdate = true;
+    }
+    if (data.bottomCap) {
+        data.bottomCap.material.color.set(bgColor || '#003057');
+        data.bottomCap.material.needsUpdate = true;
+    }
+
+    braceletGroup.userData.map = newTextures.map;
+    braceletGroup.userData.bumpMap = newTextures.bumpMap;
     braceletGroup.userData.bgColor = bgColor;
     braceletGroup.userData.textColor = textColor;
     braceletGroup.userData.text = text;
-}
-
-function applyBraceletPose(mesh) {
-    if (!mesh) return;
-    // MODIFICATION DE L'ORIENTATION DANS LA POSE
-    mesh.rotation.x = 0.1;
-    mesh.rotation.y = 0;
-    mesh.rotation.z = 0.05;
-    mesh.position.y = 0;
 }
 
 function initMainViewer() {
@@ -894,41 +955,43 @@ function initMainViewer() {
     const H = Math.max(section.clientHeight, 1);
 
     mainScene = new THREE.Scene();
-    mainCamera = new THREE.PerspectiveCamera(30, W / H, 0.1, 100);
-    mainCamera.position.set(0, 4, 15); // Caméra légèrement reculée pour bien voir le bracelet debout
+    mainCamera = new THREE.PerspectiveCamera(35, W / H, 0.1, 100);
+    mainCamera.position.set(0, 4, 14); 
     mainCamera.lookAt(0, 0, 0);
+    
     mainRenderer = new THREE.WebGLRenderer({ canvas, antialias: true, alpha: true });
     mainRenderer.setSize(W, H);
     mainRenderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
     mainRenderer.setClearColor(0x000000, 0);
 
-    mainScene.add(new THREE.AmbientLight(0xffffff, 0.8));
+    // Un bump map (relief) a besoin d'un bon éclairage directionnel pour être visible
+    mainScene.add(new THREE.AmbientLight(0xffffff, 0.6)); // Lumière de base
 
-    const sun = new THREE.DirectionalLight(0xffffff, 0.55);
-    sun.position.set(5, 5, 5);
+    const sun = new THREE.DirectionalLight(0xffffff, 1.2);
+    sun.position.set(10, 10, 10);
     mainScene.add(sun);
 
-    const fill = new THREE.DirectionalLight(0xcfe6ff, 0.25);
-    fill.position.set(-4, 2, -2);
+    const fill = new THREE.DirectionalLight(0xaaccff, 0.6); // Lumière d'ambiance bleue/froide
+    fill.position.set(-10, -5, -10);
     mainScene.add(fill);
+
+    const pointLight = new THREE.PointLight(0xffffff, 0.8, 50); // Lumière proche pour faire briller l'extrusion
+    pointLight.position.set(0, 2, 5);
+    mainScene.add(pointLight);
 
     mainBracelet = createBracelet('#003057', '#ffffff', 'REZO POLYTECH');
     mainScene.add(mainBracelet);
 
-    // MODIFICATION : AJOUT DE L'INTERACTIVITÉ AVEC LA SOURIS (OrbitControls)
     controls = new THREE.OrbitControls(mainCamera, mainRenderer.domElement);
-    controls.enableDamping = true; // Rendu fluide (inertie)
+    controls.enableDamping = true; 
     controls.dampingFactor = 0.05;
-    controls.autoRotate = true;    // Rotation automatique
-    controls.autoRotateSpeed = 2.0; // Vitesse de rotation
-    controls.enablePan = false;    // Pas de déplacement sur les côtés pour rester centré
+    controls.autoRotate = true;   
+    controls.autoRotateSpeed = 2.0; 
+    controls.enablePan = false;    
 
     function animate() {
         animFrameId = requestAnimationFrame(animate);
-        
-        // La rotation manuelle a été remplacée par la rotation des controls interactifs
         if (controls) controls.update(); 
-    
         mainRenderer.render(mainScene, mainCamera);
     }
     animate();
@@ -946,8 +1009,10 @@ function loadBraceletIn3D(b) {
     if (!mainScene) return;
 
     if (mainBracelet) {
-        const oldTex = mainBracelet.userData?.texture;
-        if (oldTex) oldTex.dispose();
+        const oldTexMap = mainBracelet.userData?.map;
+        const oldBumpMap = mainBracelet.userData?.bumpMap;
+        if (oldTexMap) oldTexMap.dispose();
+        if (oldBumpMap) oldBumpMap.dispose();
         mainScene.remove(mainBracelet);
     }
 
@@ -1021,26 +1086,28 @@ function initModalViewer(b) {
     const canvas = document.getElementById('modal-bracelet-3d');
     modalScene = new THREE.Scene();
     modalCamera = new THREE.PerspectiveCamera(45, 480/120, 0.1, 100);
-    modalCamera.position.set(0, 0, 7.5); // Reculé pour le voir en entier
+    modalCamera.position.set(0, 0, 7.5); 
 
     modalRenderer = new THREE.WebGLRenderer({ canvas, antialias: true, alpha: true });
     modalRenderer.setSize(canvas.clientWidth || 480, 120);
     modalRenderer.setClearColor(0x070d14, 1);
 
+    // Lumières pour le modal (adaptées à l'extrusion de la bump map)
     const amb = new THREE.AmbientLight(0xffffff, 0.6);
     modalScene.add(amb);
-    const dir = new THREE.DirectionalLight(0xffffff, 1);
-    dir.position.set(3, 3, 3);
+    const dir = new THREE.DirectionalLight(0xffffff, 1.2);
+    dir.position.set(5, 5, 5);
     modalScene.add(dir);
+    const dir2 = new THREE.DirectionalLight(0xaaccff, 0.6);
+    dir2.position.set(-5, -5, -5);
+    modalScene.add(dir2);
 
-    // Orientation verticale corrigée dans createBracelet
     modalBracelet = createBracelet(b.couleurFond || '#003057', b.couleurTexte || '#ffffff', b.texte || 'BRACELET');
     modalBracelet.scale.set(0.72, 0.72, 0.72);
     modalScene.add(modalBracelet);
     
     function animateModal() {
         modalAnimId = requestAnimationFrame(animateModal);
-        // Rotation automatique sur l'axe Y standard puisque le bracelet est maintenant debout
         modalBracelet.rotation.y -= 0.018; 
         modalRenderer.render(modalScene, modalCamera);
     }
@@ -1061,7 +1128,6 @@ document.addEventListener('DOMContentLoaded', () => {
     loadBracelets();
     updatePreview();
 });
-// Export des fonctions globales nécessaires
 window.loadBracelets = loadBracelets;
 </script>
 
