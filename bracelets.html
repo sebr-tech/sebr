@@ -728,48 +728,47 @@ async function loadBracelets() {
 window.loadListes = async function loadListes() {
     const ville = document.getElementById('inp-ville').value;
     const annee = document.getElementById('inp-annee-form').value;
-    const select = document.getElementById('inp-liste-liee');
-    
-    select.innerHTML = '<option value="">— Aucune liste —</option>';
-    
+    const selectListe = document.getElementById('inp-liste-liee');
+
+    // Réinitialisation du select
+    selectListe.innerHTML = '<option value="">— Aucune liste —</option>';
+
     if (!ville || !annee) return;
 
-    const entitesFixes = ['BDE', 'BDP'];
-    entitesFixes.forEach(entite => {
-        const opt = document.createElement('option');
-        opt.value = entite;
-        opt.textContent = entite;
-        select.appendChild(opt);
-    });
-
-    const sousCollections = ['listes_bde', 'listes_bdp', 'fakelistes'];
-    const basePath = `ecoles/${ville}/archives/${annee}`;
-    
     try {
-        const fetchPromises = sousCollections.map(subCol => 
-            getDocs(collection(db, `${basePath}/${subCol}`))
-        );
-        
-        const results = await Promise.all(fetchPromises);
-        
-        results.forEach((snap, index) => {
-            if (!snap.empty) {
-                const label = sousCollections[index].replace('listes_', '').toUpperCase();
-                const group = document.createElement('optgroup');
-                group.label = `--- LISTES ${label} ---`;
-                
-                snap.forEach(docSnap => {
-                    const data = docSnap.data();
+        // On cible le document de l'année (ex: "2025-2026")
+        const docRef = doc(db, "annees", annee); 
+        const docSnap = await getDoc(docRef);
+
+        if (docSnap.exists()) {
+            const data = docSnap.data();
+            // On vérifie que l'array existe
+            const ttesLesListes = data.listes_bde || [];
+
+            // Filtrer les listes par ville (en supposant que chaque objet a un champ .ville)
+            const listesFiltrees = ttesLesListes.filter(l => 
+                l.ville.toLowerCase() === ville.toLowerCase()
+            );
+
+            if (listesFiltrees.length > 0) {
+                listesFiltrees.forEach(liste => {
                     const opt = document.createElement('option');
-                    opt.value = data.nom || docSnap.id; 
-                    opt.textContent = data.nom || docSnap.id;
-                    group.appendChild(opt);
+                    // On utilise le nom de la liste comme valeur et texte
+                    opt.value = liste.nom; 
+                    opt.textContent = liste.nom;
+                    selectListe.appendChild(opt);
                 });
-                select.appendChild(group);
+            } else {
+                const opt = document.createElement('option');
+                opt.textContent = "Aucune liste trouvée pour cette ville";
+                opt.disabled = true;
+                selectListe.appendChild(opt);
             }
-        });
-    } catch (e) {
-        console.error("Erreur lors du chargement des listes :", e);
+        } else {
+            console.warn("Le document de l'année n'existe pas dans Firestore.");
+        }
+    } catch (error) {
+        console.error("Erreur lors du chargement des listes :", error);
     }
 }
 
