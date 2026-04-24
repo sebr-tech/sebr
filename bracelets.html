@@ -771,11 +771,11 @@ window.loadListes = async function loadListes() {
     const nomBdpActuel = extraireNom(data.bdp_actuel, 'BDP actuel');
 
     if (nomBdeActuel) {
-      ajouterOption(groupeActuels, nomBdeActuel, `${nomBdeActuel} (BDE actuel)`);
+      ajouterOption(groupeActuels, nomBdeActuel, `${nomBdeActuel}`);
     }
 
     if (nomBdpActuel) {
-      ajouterOption(groupeActuels, nomBdpActuel, `${nomBdpActuel} (BDP actuel)`);
+      ajouterOption(groupeActuels, nomBdpActuel, `${nomBdpActuel}`);
     }
 
     if (groupeActuels.children.length > 0) {
