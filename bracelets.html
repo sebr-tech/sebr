@@ -728,47 +728,56 @@ async function loadBracelets() {
 window.loadListes = async function loadListes() {
     const ville = document.getElementById('inp-ville').value;
     const annee = document.getElementById('inp-annee-form').value;
-    const selectListe = document.getElementById('inp-liste-liee');
-
-    // Réinitialisation du select
-    selectListe.innerHTML = '<option value="">— Aucune liste —</option>';
-
+    const select = document.getElementById('inp-liste-liee');
+    
+    select.innerHTML = '<option value="">— Aucune liste —</option>';
+    
     if (!ville || !annee) return;
 
+    // La structure Firestore est :
+    // ecoles/{ville}/archives/{annee}  = document avec champs arrays :
+    //   listes_bde: [ {nom, classement, couleur, ...}, ... ]
+    //   listes_bdp: [ {nom, ...}, ... ]
+    //   fakelistes: [ {nom, ...}, ... ]
+    // On fait un getDoc() sur ce document et on lit les arrays directement.
     try {
-        // On cible le document de l'année (ex: "2025-2026")
-        const docRef = doc(db, "annees", annee); 
-        const docSnap = await getDoc(docRef);
+        const archiveRef = doc(db, `ecoles/${ville}/archives/${annee}`);
+        const archiveSnap = await getDoc(archiveRef);
 
-        if (docSnap.exists()) {
-            const data = docSnap.data();
-            // On vérifie que l'array existe
-            const ttesLesListes = data.listes_bde || [];
-
-            // Filtrer les listes par ville (en supposant que chaque objet a un champ .ville)
-            const listesFiltrees = ttesLesListes.filter(l => 
-                l.ville.toLowerCase() === ville.toLowerCase()
-            );
-
-            if (listesFiltrees.length > 0) {
-                listesFiltrees.forEach(liste => {
-                    const opt = document.createElement('option');
-                    // On utilise le nom de la liste comme valeur et texte
-                    opt.value = liste.nom; 
-                    opt.textContent = liste.nom;
-                    selectListe.appendChild(opt);
-                });
-            } else {
-                const opt = document.createElement('option');
-                opt.textContent = "Aucune liste trouvée pour cette ville";
-                opt.disabled = true;
-                selectListe.appendChild(opt);
-            }
-        } else {
-            console.warn("Le document de l'année n'existe pas dans Firestore.");
+        if (!archiveSnap.exists()) {
+            console.warn(`[loadListes] Document ecoles/${ville}/archives/${annee} introuvable.`);
+            return;
         }
-    } catch (error) {
-        console.error("Erreur lors du chargement des listes :", error);
+
+        const data = archiveSnap.data();
+
+        const groupes = [
+            { key: 'listes_bde', label: 'BDE' },
+            { key: 'listes_bdp', label: 'BDP' },
+            { key: 'fakelistes', label: 'FAKE' },
+        ];
+
+        groupes.forEach(({ key, label }) => {
+            const listes = data[key];
+            if (!Array.isArray(listes) || listes.length === 0) return;
+
+            const group = document.createElement('optgroup');
+            group.label = `— ${label} —`;
+
+            listes.forEach(liste => {
+                const nom = (typeof liste === 'object') ? (liste.nom || liste.name) : String(liste);
+                if (!nom) return;
+                const opt = document.createElement('option');
+                opt.value = nom;
+                opt.textContent = nom;
+                group.appendChild(opt);
+            });
+
+            select.appendChild(group);
+        });
+
+    } catch (e) {
+        console.error('[loadListes] Erreur :', e);
     }
 }
 
