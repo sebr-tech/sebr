@@ -726,58 +726,69 @@ async function loadBracelets() {
 // FIX: exposé sur window car appelé depuis onchange inline dans le HTML
 // (les fonctions dans type="module" ne sont pas globales par défaut)
 window.loadListes = async function loadListes() {
-    const ville = document.getElementById('inp-ville').value;
-    const annee = document.getElementById('inp-annee-form').value;
-    const select = document.getElementById('inp-liste-liee');
-    
-    select.innerHTML = '<option value="">— Aucune liste —</option>';
-    
-    if (!ville || !annee) return;
+    const villeSelect = document.getElementById('inp-ville');
+    const anneeSelect = document.getElementById('inp-annee-form');
+    const selectListe = document.getElementById('inp-liste-liee');
 
-    // La structure Firestore est :
-    // ecoles/{ville}/archives/{annee}  = document avec champs arrays :
-    //   listes_bde: [ {nom, classement, couleur, ...}, ... ]
-    //   listes_bdp: [ {nom, ...}, ... ]
-    //   fakelistes: [ {nom, ...}, ... ]
-    // On fait un getDoc() sur ce document et on lit les arrays directement.
+    const villeCible = villeSelect.value.toLowerCase().trim();
+    const anneeCible = anneeSelect.value;
+
+    // Reset du menu
+    selectListe.innerHTML = '<option value="">— Aucune liste —</option>';
+
+    if (!villeCible || !anneeCible) return;
+
     try {
-        const archiveRef = doc(db, `ecoles/${ville}/archives/${annee}`);
-        const archiveSnap = await getDoc(archiveRef);
+        const docRef = doc(db, "annees", anneeCible);
+        const docSnap = await getDoc(docRef);
 
-        if (!archiveSnap.exists()) {
-            console.warn(`[loadListes] Document ecoles/${ville}/archives/${annee} introuvable.`);
-            return;
-        }
+        if (docSnap.exists()) {
+            const data = docSnap.data();
+            let toutesLesListes = [];
 
-        const data = archiveSnap.data();
+            // 1. On récupère les BDE/BDP actuels (champs simples)
+            if (data.bde_actuel) toutesLesListes.push({ nom: data.bde_actuel, ville: data.ville, type: 'BDE Actuel' });
+            if (data.bdp_actuel) toutesLesListes.push({ nom: data.bdp_actuel, ville: data.ville, type: 'BDP Actuel' });
 
-        const groupes = [
-            { key: 'listes_bde', label: 'BDE' },
-            { key: 'listes_bdp', label: 'BDP' },
-            { key: 'fakelistes', label: 'FAKE' },
-        ];
+            // 2. On fusionne les 3 Tableaux (Arrays) s'ils existent
+            const sources = [
+                { array: data.listes_bde, type: 'BDE' },
+                { array: data.listes_bdp, type: 'BDP' },
+                { array: data.fakelistes, type: 'Fake' }
+            ];
 
-        groupes.forEach(({ key, label }) => {
-            const listes = data[key];
-            if (!Array.isArray(listes) || listes.length === 0) return;
-
-            const group = document.createElement('optgroup');
-            group.label = `— ${label} —`;
-
-            listes.forEach(liste => {
-                const nom = (typeof liste === 'object') ? (liste.nom || liste.name) : String(liste);
-                if (!nom) return;
-                const opt = document.createElement('option');
-                opt.value = nom;
-                opt.textContent = nom;
-                group.appendChild(opt);
+            sources.forEach(source => {
+                if (Array.isArray(source.array)) {
+                    source.array.forEach(item => {
+                        toutesLesListes.push({
+                            nom: item.nom,
+                            ville: item.ville,
+                            type: source.type
+                        });
+                    });
+                }
             });
 
-            select.appendChild(group);
-        });
+            // 3. On filtre par ville (comparaison propre)
+            const listesFiltrees = toutesLesListes.filter(l => {
+                if (!l.ville || !l.nom) return false;
+                return l.ville.toLowerCase().trim() === villeCible;
+            });
 
-    } catch (e) {
-        console.error('[loadListes] Erreur :', e);
+            // 4. On remplit le Select
+            if (listesFiltrees.length > 0) {
+                listesFiltrees.forEach(liste => {
+                    const opt = document.createElement('option');
+                    opt.value = liste.nom;
+                    opt.textContent = `${liste.nom} (${liste.type})`;
+                    selectListe.appendChild(opt);
+                });
+            } else {
+                console.log("Aucune liste trouvée pour la ville :", villeCible);
+            }
+        }
+    } catch (error) {
+        console.error("Erreur Firestore:", error);
     }
 }
 
