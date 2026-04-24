@@ -466,6 +466,10 @@
             <div class="modal-linked-label">Liste liée</div>
             <div class="modal-linked-value" id="modal-linked-value">—</div>
         </div>
+        <div id="modal-admin-actions" class="admin-actions" style="display:none; margin-bottom: 12px;">
+            <button id="modal-btn-edit" class="btn-submit" type="button">Modifier</button>
+            <button id="modal-btn-delete" class="btn-submit proposal" type="button" style="background:#ff5c5c;">Supprimer</button>
+        </div>
         <button id="modal-close" onclick="closeModal()">Fermer</button>
     </div>
 </div>
@@ -1352,33 +1356,34 @@ function loadBraceletIn3D(b) {
 // ============================================================
 window.openModal = function(b) {
     document.getElementById('modal-title').textContent = (b.texte || 'Bracelet').toUpperCase();
-    document.getElementById('modal-meta').textContent = `${b.ville || '?'} · ${b.annee || '?'}`;
+    document.getElementById('modal-meta').textContent = `${b.ville || ''} · ${b.annee || ''}`;
 
     const grid = document.getElementById('modal-info-grid');
     grid.innerHTML = `
         <div class="modal-info-item">
             <div class="modal-info-label">Couleur fond</div>
             <div class="modal-info-value" style="display:flex;align-items:center;gap:8px;">
-                <span style="width:18px;height:18px;border-radius:3px;background:${escHtml(b.couleurFond||'#000')};display:inline-block;border:1px solid #333;"></span>
-                ${escHtml(b.couleurFond || '—')}
+                <span style="width:18px;height:18px;border-radius:3px;background:${escHtml(b.couleurFond || '#000')};display:inline-block;border:1px solid #333;"></span>
+                ${escHtml(b.couleurFond || '')}
             </div>
         </div>
         <div class="modal-info-item">
             <div class="modal-info-label">Couleur texte</div>
             <div class="modal-info-value" style="display:flex;align-items:center;gap:8px;">
-                <span style="width:18px;height:18px;border-radius:3px;background:${escHtml(b.couleurTexte||'#fff')};display:inline-block;border:1px solid #333;"></span>
-                ${escHtml(b.couleurTexte || '—')}
+                <span style="width:18px;height:18px;border-radius:3px;background:${escHtml(b.couleurTexte || '#fff')};display:inline-block;border:1px solid #333;"></span>
+                ${escHtml(b.couleurTexte || '')}
             </div>
         </div>
         <div class="modal-info-item">
             <div class="modal-info-label">Ville</div>
-            <div class="modal-info-value">${escHtml(b.ville || '—')}</div>
+            <div class="modal-info-value">${escHtml(b.ville || '')}</div>
         </div>
         <div class="modal-info-item">
             <div class="modal-info-label">Année</div>
-            <div class="modal-info-value">${escHtml(b.annee || '—')}</div>
+            <div class="modal-info-value">${escHtml(b.annee || '')}</div>
         </div>
     `;
+
     const linkedEl = document.getElementById('modal-linked');
     const linkedVal = document.getElementById('modal-linked-value');
     if (b.listeLiee) {
@@ -1386,6 +1391,31 @@ window.openModal = function(b) {
         linkedVal.textContent = b.listeLiee;
     } else {
         linkedEl.style.display = 'none';
+    }
+
+    const canAdmin = currentUserData && (currentUserData.role === 'admin' || currentUserData.role === 'editor');
+    const adminBox = document.getElementById('modal-admin-actions');
+    const editBtn = document.getElementById('modal-btn-edit');
+    const deleteBtn = document.getElementById('modal-btn-delete');
+
+    if (canAdmin) {
+        adminBox.style.display = 'flex';
+
+        editBtn.onclick = () => {
+            closeModal();
+            openEditForm(b);
+        };
+
+        deleteBtn.onclick = async () => {
+            if (!confirm(`Supprimer ${b.texte || 'ce bracelet'} ?`)) return;
+            await deleteDoc(doc(db, "bracelets", b.id));
+            closeModal();
+            await loadBracelets();
+        };
+    } else {
+        adminBox.style.display = 'none';
+        editBtn.onclick = null;
+        deleteBtn.onclick = null;
     }
 
     initModalViewer(b);
