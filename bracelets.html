@@ -510,9 +510,39 @@ async function loadBracelets() {
 }
 
 async function loadListes() {
+    const ville = document.getElementById('inp-ville').value;
+    const annee = document.getElementById('inp-annee').value;
     const select = document.getElementById('inp-liste-liee');
+    
+    // Réinitialisation du menu déroulant
     select.innerHTML = '<option value="">— Aucune liste —</option>';
-    // Placeholder for real logic
+    
+    // On ne cherche que si la ville et l'année sont remplies
+    if (!ville || !annee) return;
+
+    try {
+        // On récupère les listes correspondant à la ville et l'année choisies
+        const q = query(collection(db, "listes"), 
+                        where("ville", "==", ville), 
+                        where("annee", "==", annee));
+        
+        const snap = await getDocs(q);
+        
+        if (snap.empty) {
+            console.log("Aucune liste trouvée pour cette sélection.");
+            return;
+        }
+
+        snap.forEach(doc => {
+            const data = doc.data();
+            const opt = document.createElement('option');
+            opt.value = data.nom; // Utilise le nom de la liste comme valeur
+            opt.textContent = data.nom;
+            select.appendChild(opt);
+        });
+    } catch(e) {
+        console.error("Erreur lors du chargement des listes :", e);
+    }
 }
 
 // ============================================================
