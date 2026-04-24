@@ -308,15 +308,7 @@ function applyUserModeUI() {
     const btnAdd  = document.getElementById('btn-add-item');
 
     if (btnSave) btnSave.innerText = "📤 Proposer ces modifications";
-    if (btnAdd) btnAdd.innerText = "📤 Soumettre une proposition";
-
-    if (!document.getElementById('proposal-counter')) {
-        const counter = document.createElement('div');
-        counter.id = 'proposal-counter';
-        counter.style.cssText = 'text-align:center; font-size:0.85em; font-weight:bold; margin-top:10px; padding:8px; background:#0d1520; border-radius:6px;';
-        counter.textContent = `${MAX_PROPOSALS} proposition(s) restante(s)`;
-        document.getElementById('status')?.insertAdjacentElement('beforebegin', counter);
-    }
+    if (btnAdd) btnAdd.innerText = "📤 Soumettre une proposition"
 
     const user = auth.currentUser;
     if (user) {
