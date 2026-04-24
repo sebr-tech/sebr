@@ -336,15 +336,15 @@
 
             <div class="section-label">Couleur du fond</div>
             <div class="color-row">
-                <input type="color" class="color-input" id="inp-bg-color" value="#0066cc" oninput="syncColorInput('bg')">
-                <input type="text" class="color-hex" id="inp-bg-hex" value="#0066cc" oninput="syncColorHex('bg')" maxlength="7" placeholder="#000000">
+                <input type="color" class="color-input" id="inp-bg-color" value="#1e0064" oninput="syncColorInput('bg')">
+                <input type="text" class="color-hex" id="inp-bg-hex" value="#1e0064" oninput="syncColorHex('bg')" maxlength="7" placeholder="#1e0064">
                 <span class="color-label">Couleur principale</span>
             </div>
 
             <div class="section-label">Couleur du texte</div>
             <div class="color-row">
-                <input type="color" class="color-input" id="inp-text-color" value="#ffffff" oninput="syncColorInput('text')">
-                <input type="text" class="color-hex" id="inp-text-hex" value="#ffffff" oninput="syncColorHex('text')" maxlength="7" placeholder="#ffffff">
+                <input type="color" class="color-input" id="inp-text-color" value="#e3b800" oninput="syncColorInput('text')">
+                <input type="text" class="color-hex" id="inp-text-hex" value="#e3b800" oninput="syncColorHex('text')" maxlength="7" placeholder="#e3b800">
                 <span class="color-label">Texte extrudé</span>
             </div>
 
@@ -840,8 +840,8 @@ function createBracelet(bgColor, textColor, text) {
     const group = new THREE.Group();
 
     // Paramètres géométriques pour un bracelet massif
-    const radiusOuter = 3.0;
-    const radiusInner = 2.75;  // Différence = 0.25 (C'est la vraie épaisseur de ton silicone)
+    const radiusOuter = 3.5;
+    const radiusInner = 3.3;  // Différence = 0.25 (C'est la vraie épaisseur de ton silicone)
     const height = 0.65;       // C'est la largeur du bracelet
     const radialSegments = 128; // Très lisse
 
