@@ -69,67 +69,39 @@
 
         /* ===== VIEWER 3D ===== */
         #viewer-section {
-            flex: 1;
-            position: relative;
-            display: flex;
-            justify-content: center;
-            align-items: center;
+            flex: 1; position: relative; display: flex; justify-content: center; align-items: center;
             background: radial-gradient(ellipse at center, #0a1a2f 0%, var(--bg-dark) 80%);
             overflow: hidden;
+            cursor: grab; /* Ajout du curseur pour indiquer l'interactivité */
         }
+        #viewer-section:active { cursor: grabbing; }
 
         #viewer-section::before {
-            content: '';
-            position: absolute;
-            inset: 0;
+            content: ''; position: absolute; inset: 0;
             background: 
                 radial-gradient(circle at 20% 80%, rgba(0,158,227,0.06) 0%, transparent 50%),
                 radial-gradient(circle at 80% 20%, rgba(0,48,87,0.15) 0%, transparent 50%);
             pointer-events: none;
         }
 
-        #bracelet-canvas {
-            width: 100%;
-            height: 100%;
-            display: block;
-        }
+        #bracelet-canvas { width: 100%; height: 100%; display: block; }
 
         #viewer-overlay {
-            position: absolute;
-            bottom: 30px;
-            left: 50%;
-            transform: translateX(-50%);
-            text-align: center;
-            pointer-events: none;
+            position: absolute; bottom: 30px; left: 50%; transform: translateX(-50%);
+            text-align: center; pointer-events: none;
         }
 
         #viewer-bracelet-name {
-            font-size: 1.4em;
-            font-weight: 800;
-            letter-spacing: 3px;
-            text-transform: uppercase;
-            color: white;
-            text-shadow: 0 0 20px rgba(0,158,227,0.8);
-            margin-bottom: 5px;
-            opacity: 0;
-            transition: opacity 0.4s;
+            font-size: 1.4em; font-weight: 800; letter-spacing: 3px; text-transform: uppercase;
+            color: white; text-shadow: 0 0 20px rgba(0,158,227,0.8); margin-bottom: 5px;
+            opacity: 0; transition: opacity 0.4s;
         }
 
-        #viewer-bracelet-info {
-            font-size: 0.85em;
-            color: #aaa;
-            letter-spacing: 1px;
-        }
+        #viewer-bracelet-info { font-size: 0.85em; color: #aaa; letter-spacing: 1px; }
 
         #viewer-hint {
-            position: absolute;
-            top: 20px;
-            left: 50%;
-            transform: translateX(-50%);
-            font-size: 0.75em;
-            color: #444;
-            letter-spacing: 2px;
-            text-transform: uppercase;
+            position: absolute; top: 20px; left: 50%; transform: translateX(-50%);
+            font-size: 0.75em; color: #444; letter-spacing: 2px; text-transform: uppercase;
             animation: pulseHint 3s infinite;
         }
 
@@ -139,42 +111,17 @@
 
         /* ===== SIDEBAR ===== */
         #sidebar-section {
-            width: var(--sidebar-width);
-            min-width: 340px;
-            background: #0b1118;
-            border-left: 1px solid #1a2535;
-            display: flex;
-            flex-direction: column;
-            overflow: hidden;
+            width: var(--sidebar-width); min-width: 340px; background: #0b1118;
+            border-left: 1px solid #1a2535; display: flex; flex-direction: column; overflow: hidden;
         }
 
-        .sidebar-tabs {
-            display: flex;
-            border-bottom: 1px solid #1a2535;
-            flex-shrink: 0;
-        }
-
+        .sidebar-tabs { display: flex; border-bottom: 1px solid #1a2535; flex-shrink: 0; }
         .sidebar-tab {
-            flex: 1;
-            padding: 16px 10px;
-            text-align: center;
-            cursor: pointer;
-            font-size: 0.85em;
-            font-weight: 700;
-            letter-spacing: 1px;
-            text-transform: uppercase;
-            color: #555;
-            border-bottom: 3px solid transparent;
-            transition: all 0.2s;
-            user-select: none;
+            flex: 1; padding: 16px 10px; text-align: center; cursor: pointer; font-size: 0.85em;
+            font-weight: 700; letter-spacing: 1px; text-transform: uppercase; color: #555;
+            border-bottom: 3px solid transparent; transition: all 0.2s; user-select: none;
         }
-
-        .sidebar-tab.active {
-            color: var(--poly-cyan);
-            border-bottom-color: var(--poly-cyan);
-            background: rgba(0,158,227,0.05);
-        }
-
+        .sidebar-tab.active { color: var(--poly-cyan); border-bottom-color: var(--poly-cyan); background: rgba(0,158,227,0.05); }
         .sidebar-tab:hover:not(.active) { color: #aaa; background: rgba(255,255,255,0.02); }
 
         .tab-panel { display: none; flex: 1; flex-direction: column; overflow-y: auto; padding: 20px; }
@@ -182,196 +129,98 @@
 
         /* ===== RECHERCHER ===== */
         .filter-row { display: flex; gap: 8px; margin-bottom: 12px; flex-wrap: wrap; }
-
         .filter-select, .filter-input {
-            background: #161f2b; border: 1px solid #2a3544; color: white;
-            padding: 8px 10px; border-radius: 5px; font-size: 0.85em;
-            flex: 1; min-width: 100px; outline: none; transition: border-color 0.2s;
+            background: #161f2b; border: 1px solid #2a3544; color: white; padding: 8px 10px;
+            border-radius: 5px; font-size: 0.85em; flex: 1; min-width: 100px; outline: none; transition: border-color 0.2s;
         }
         .filter-select:focus, .filter-input:focus { border-color: var(--poly-cyan); }
 
-        #bracelets-grid {
-            display: flex;
-            flex-direction: column;
-            gap: 10px;
-            flex: 1;
-        }
+        #bracelets-grid { display: flex; flex-direction: column; gap: 10px; flex: 1; }
 
         .bracelet-card {
-            background: #161f2b;
-            border: 1px solid #222;
-            border-radius: 10px;
-            padding: 14px;
-            cursor: pointer;
-            transition: all 0.2s;
-            display: flex;
-            align-items: center;
-            gap: 12px;
+            background: #161f2b; border: 1px solid #222; border-radius: 10px; padding: 14px;
+            cursor: pointer; transition: all 0.2s; display: flex; align-items: center; gap: 12px;
             animation: slideUpFade 0.3s ease-out backwards;
         }
-
-        .bracelet-card:hover {
-            border-color: var(--poly-cyan);
-            transform: translateX(3px);
-            box-shadow: -3px 0 10px rgba(0,158,227,0.15);
-        }
-
-        .bracelet-card.selected {
-            border-color: var(--poly-cyan);
-            background: rgba(0,158,227,0.08);
-        }
+        .bracelet-card:hover { border-color: var(--poly-cyan); transform: translateX(3px); box-shadow: -3px 0 10px rgba(0,158,227,0.15); }
+        .bracelet-card.selected { border-color: var(--poly-cyan); background: rgba(0,158,227,0.08); }
 
         .bracelet-preview-mini {
-            width: 54px;
-            height: 26px;
-            border-radius: 30px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 7px;
-            font-weight: 900;
-            letter-spacing: 1px;
-            text-transform: uppercase;
-            flex-shrink: 0;
-            border: 2px solid rgba(255,255,255,0.1);
-            overflow: hidden;
-            position: relative;
+            width: 54px; height: 26px; border-radius: 30px; display: flex; align-items: center; justify-content: center;
+            font-size: 7px; font-weight: 900; letter-spacing: 1px; text-transform: uppercase;
+            flex-shrink: 0; border: 2px solid rgba(255,255,255,0.1); overflow: hidden; position: relative;
         }
-
         .bracelet-card-info { flex: 1; }
         .bracelet-card-name { font-weight: 700; font-size: 0.9em; margin-bottom: 2px; }
         .bracelet-card-meta { font-size: 0.75em; color: #667; }
-
         .bracelet-card-actions { display: flex; gap: 6px; flex-shrink: 0; }
         .btn-tiny {
-            background: transparent; border: 1px solid #333; color: #aaa;
-            padding: 4px 8px; border-radius: 4px; cursor: pointer; font-size: 0.75em; transition: 0.2s;
+            background: transparent; border: 1px solid #333; color: #aaa; padding: 4px 8px;
+            border-radius: 4px; cursor: pointer; font-size: 0.75em; transition: 0.2s;
         }
         .btn-tiny:hover { border-color: var(--poly-cyan); color: var(--poly-cyan); }
         .btn-tiny.danger:hover { border-color: var(--danger); color: var(--danger); }
 
         /* ===== AJOUTER / PERSONNALISER ===== */
-        .section-label {
-            font-size: 0.7em;
-            letter-spacing: 2px;
-            text-transform: uppercase;
-            color: #556;
-            margin-bottom: 8px;
-            margin-top: 16px;
-        }
+        .section-label { font-size: 0.7em; letter-spacing: 2px; text-transform: uppercase; color: #556; margin-bottom: 8px; margin-top: 16px; }
         .section-label:first-child { margin-top: 0; }
-
         .form-field {
-            width: 100%; padding: 10px 12px;
-            background: #161f2b; border: 1px solid #2a3544; color: white;
-            border-radius: 6px; font-size: 0.9em; outline: none;
-            transition: border-color 0.2s; margin-bottom: 10px;
+            width: 100%; padding: 10px 12px; background: #161f2b; border: 1px solid #2a3544; color: white;
+            border-radius: 6px; font-size: 0.9em; outline: none; transition: border-color 0.2s; margin-bottom: 10px;
         }
         .form-field:focus { border-color: var(--poly-cyan); }
-
         .color-row { display: flex; gap: 10px; align-items: center; margin-bottom: 10px; }
         .color-label { font-size: 0.85em; color: #aaa; flex: 1; }
-        .color-input {
-            width: 44px; height: 36px; padding: 2px; border: 1px solid #333;
-            border-radius: 5px; cursor: pointer; background: #0b1118;
-        }
-        .color-hex {
-            width: 90px; background: #161f2b; border: 1px solid #2a3544; color: white;
-            padding: 8px; border-radius: 5px; font-size: 0.8em; font-family: monospace; outline: none;
-        }
+        .color-input { width: 44px; height: 36px; padding: 2px; border: 1px solid #333; border-radius: 5px; cursor: pointer; background: #0b1118; }
+        .color-hex { width: 90px; background: #161f2b; border: 1px solid #2a3544; color: white; padding: 8px; border-radius: 5px; font-size: 0.8em; font-family: monospace; outline: none; }
         .color-hex:focus { border-color: var(--poly-cyan); }
 
-        /* Aperçu bracelet dans le formulaire */
         #preview-wrap {
-            background: #070d14;
-            border-radius: 12px;
-            padding: 20px;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            margin-bottom: 16px;
-            border: 1px solid #1a2535;
-            min-height: 80px;
+            background: #070d14; border-radius: 12px; padding: 20px; display: flex; justify-content: center;
+            align-items: center; margin-bottom: 16px; border: 1px solid #1a2535; min-height: 80px;
         }
-
         #form-bracelet-preview {
-            height: 36px;
-            border-radius: 40px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 10px;
-            font-weight: 900;
-            letter-spacing: 2px;
-            text-transform: uppercase;
-            padding: 0 20px;
-            min-width: 160px;
-            border: 3px solid rgba(255,255,255,0.08);
-            box-shadow: inset 0 2px 4px rgba(0,0,0,0.4), 0 4px 15px rgba(0,0,0,0.6);
-            transition: all 0.2s;
+            height: 36px; border-radius: 40px; display: flex; align-items: center; justify-content: center; font-size: 10px;
+            font-weight: 900; letter-spacing: 2px; text-transform: uppercase; padding: 0 20px; min-width: 160px;
+            border: 3px solid rgba(255,255,255,0.08); box-shadow: inset 0 2px 4px rgba(0,0,0,0.4), 0 4px 15px rgba(0,0,0,0.6); transition: all 0.2s;
         }
-
         .btn-submit {
-            width: 100%; padding: 12px;
-            background: var(--poly-cyan); border: none;
-            border-radius: 6px; color: white; font-size: 0.9em; font-weight: 700;
-            cursor: pointer; transition: 0.2s; margin-top: 8px;
+            width: 100%; padding: 12px; background: var(--poly-cyan); border: none; border-radius: 6px; color: white;
+            font-size: 0.9em; font-weight: 700; cursor: pointer; transition: 0.2s; margin-top: 8px;
         }
         .btn-submit:hover { filter: brightness(1.1); transform: translateY(-1px); }
         .btn-submit:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
         .btn-submit.proposal { background: #f09433; }
 
-        #add-feedback {
-            font-size: 0.82em; text-align: center; margin-top: 8px;
-            min-height: 18px; color: var(--poly-cyan);
-        }
+        #add-feedback { font-size: 0.82em; text-align: center; margin-top: 8px; min-height: 18px; color: var(--poly-cyan); }
         #add-feedback.err { color: var(--danger); }
-
         .no-results { text-align: center; padding: 40px 20px; color: #444; font-size: 0.9em; }
-
-        /* Admin actions */
-        .admin-actions {
-            display: none;
-            gap: 6px;
-            margin-top: 8px;
-        }
+        .admin-actions { display: none; gap: 6px; margin-top: 8px; }
         .admin-actions.visible { display: flex; }
 
         /* ===== MODAL BRACELET ===== */
         #modal-overlay {
-            position: fixed; inset: 0; background: rgba(0,0,0,0.85); z-index: 200;
-            display: none; justify-content: center; align-items: center; padding: 20px;
+            position: fixed; inset: 0; background: rgba(0,0,0,0.85); z-index: 200; display: none;
+            justify-content: center; align-items: center; padding: 20px;
         }
         #modal-overlay.open { display: flex; }
-
         #modal-box {
-            background: #0b1118; border: 1px solid #2a3544; border-radius: 14px;
-            padding: 30px; max-width: 480px; width: 100%;
-            animation: slideUpFade 0.3s ease-out;
-            border-top: 3px solid var(--poly-cyan);
+            background: #0b1118; border: 1px solid #2a3544; border-radius: 14px; padding: 30px;
+            max-width: 480px; width: 100%; animation: slideUpFade 0.3s ease-out; border-top: 3px solid var(--poly-cyan);
         }
-
         #modal-title { font-size: 1.3em; font-weight: 800; letter-spacing: 2px; margin-bottom: 6px; text-transform: uppercase; }
         #modal-meta { color: #667; font-size: 0.85em; margin-bottom: 20px; }
-
-        #modal-bracelet-3d {
-            width: 100%; height: 120px;
-            background: #070d14; border-radius: 10px;
-            margin-bottom: 20px; overflow: hidden;
-        }
-
+        #modal-bracelet-3d { width: 100%; height: 120px; background: #070d14; border-radius: 10px; margin-bottom: 20px; overflow: hidden; }
         .modal-info-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 20px; }
         .modal-info-item { background: #161f2b; padding: 10px 14px; border-radius: 8px; }
         .modal-info-label { font-size: 0.7em; letter-spacing: 1px; color: #556; text-transform: uppercase; margin-bottom: 3px; }
         .modal-info-value { font-weight: 700; font-size: 0.95em; }
-
         .modal-linked { background: #161f2b; padding: 12px 14px; border-radius: 8px; margin-bottom: 20px; border-left: 3px solid var(--poly-cyan); }
         .modal-linked-label { font-size: 0.7em; letter-spacing: 1px; color: #556; text-transform: uppercase; margin-bottom: 5px; }
         .modal-linked-value { font-size: 0.9em; color: var(--poly-cyan); font-weight: 700; }
-
         #modal-close {
-            width: 100%; padding: 10px; background: transparent; border: 1px solid #333;
-            color: #aaa; border-radius: 6px; cursor: pointer; font-size: 0.85em; transition: 0.2s;
+            width: 100%; padding: 10px; background: transparent; border: 1px solid #333; color: #aaa;
+            border-radius: 6px; cursor: pointer; font-size: 0.85em; transition: 0.2s;
         }
         #modal-close:hover { border-color: white; color: white; }
 
@@ -383,7 +232,6 @@
             #sidebar-section { width: 100%; min-width: 0; border-left: none; border-top: 1px solid #1a2535; height: auto; overflow: visible; }
             .tab-panel { max-height: 70vh; }
         }
-
         @media (max-width: 600px) {
             header { flex-wrap: wrap; padding: 12px 15px; }
             .header-left, .header-right { width: 100%; justify-content: center; }
@@ -392,18 +240,14 @@
         }
 
         .site-footer {
-            text-align: center; padding: 12px; font-size: 0.8em; color: #555;
-            background: #050a0f; border-top: 1px solid #111; flex-shrink: 0;
+            text-align: center; padding: 12px; font-size: 0.8em; color: #555; background: #050a0f; border-top: 1px solid #111; flex-shrink: 0;
         }
         .site-footer a { color: var(--poly-cyan); text-decoration: none; }
-
-        /* Loading */
         #loading-bracelets { color: #aaa; text-align: center; padding: 30px; font-size: 0.85em; animation: pulseHint 1.5s infinite; }
     </style>
 </head>
 <body>
 
-<!-- HEADER -->
 <header>
     <div class="header-left">
         <div class="logo-title">
@@ -422,12 +266,10 @@
     </div>
 </header>
 
-<!-- MAIN -->
 <div id="main-container">
 
-    <!-- VIEWER 3D -->
     <div id="viewer-section">
-        <div id="viewer-hint">↗ Sélectionnez un bracelet</div>
+        <div id="viewer-hint">↗ Sélectionnez un bracelet pour l'inspecter en 3D</div>
         <canvas id="bracelet-canvas"></canvas>
         <div id="viewer-overlay">
             <div id="viewer-bracelet-name"></div>
@@ -435,14 +277,12 @@
         </div>
     </div>
 
-    <!-- SIDEBAR -->
     <div id="sidebar-section">
         <div class="sidebar-tabs">
             <div class="sidebar-tab active" id="tab-btn-search" onclick="switchTab('search')">🔍 Rechercher</div>
             <div class="sidebar-tab" id="tab-btn-add" onclick="switchTab('add')">➕ Ajouter</div>
         </div>
 
-        <!-- ONGLET RECHERCHER -->
         <div class="tab-panel active" id="panel-search">
             <div class="filter-row">
                 <select class="filter-select" id="filter-ville" onchange="applyFilters()">
@@ -481,7 +321,6 @@
             <div id="no-results" class="no-results" style="display:none;">Aucun bracelet trouvé.</div>
         </div>
 
-        <!-- ONGLET AJOUTER -->
         <div class="tab-panel" id="panel-add">
             <div id="add-role-notice" style="display:none; background:rgba(0,158,227,0.08); border:1px solid rgba(0,158,227,0.25); border-radius:6px; padding:10px 14px; font-size:0.8em; color:#aaa; margin-bottom:16px; line-height:1.5;">
                 En tant qu'<strong style="color:var(--poly-cyan)">utilisateur</strong>, votre bracelet sera soumis en proposition et devra être approuvé par un éditeur.
@@ -490,13 +329,11 @@
                 🔒 Connectez-vous pour ajouter un bracelet.
             </div>
 
-            <!-- Aperçu -->
             <div class="section-label">Aperçu en direct</div>
             <div id="preview-wrap">
                 <div id="form-bracelet-preview">SEBR.tech Le Site du Rezo</div>
             </div>
 
-            <!-- Couleurs -->
             <div class="section-label">Couleur du fond</div>
             <div class="color-row">
                 <input type="color" class="color-input" id="inp-bg-color" value="#0066cc" oninput="syncColorInput('bg')">
@@ -511,7 +348,6 @@
                 <span class="color-label">Texte extrudé</span>
             </div>
 
-            <!-- Infos -->
             <div class="section-label">Texte du bracelet</div>
             <input type="text" class="form-field" id="inp-texte" placeholder="Ex: SEBR.tech Le site du Rezo" maxlength="30" oninput="updatePreview()">
 
@@ -559,7 +395,6 @@
     </div>
 </div>
 
-<!-- MODAL DÉTAIL BRACELET -->
 <div id="modal-overlay" onclick="closeModal(event)">
     <div id="modal-box">
         <div id="modal-title">—</div>
@@ -578,7 +413,6 @@
     &copy; 2026 SEBR.tech — le site du Rezo | <a href="mentions-legales.html">Mentions Légales</a>
 </footer>
 
-<!-- THREE.JS -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
 <script src="https://unpkg.com/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
 <script type="module">
@@ -610,7 +444,8 @@ let currentUser = null;
 let currentUserData = null;
 let selectedBraceletData = null;
 let editingBraceletId = null;
-let mainScene, mainCamera, mainRenderer, mainBracelet, animFrameId;
+// Ajout de "controls" pour l'interactivité du viewer
+let mainScene, mainCamera, mainRenderer, mainBracelet, animFrameId, controls;
 let modalScene, modalCamera, modalRenderer, modalBracelet, modalAnimId;
 
 // ============================================================
@@ -639,7 +474,6 @@ onAuthStateChanged(auth, async (user) => {
                     document.getElementById('add-role-notice').style.display = 'none';
                     document.getElementById('add-login-notice').style.display = 'none';
                 } else {
-                    // user: peut proposer
                     document.getElementById('btn-propose').style.display = 'block';
                     document.getElementById('add-role-notice').style.display = 'block';
                     document.getElementById('add-login-notice').style.display = 'none';
@@ -656,8 +490,7 @@ onAuthStateChanged(auth, async (user) => {
         document.getElementById('btn-propose').style.display = 'none';
         document.getElementById('admin-actions').classList.remove('visible');
     }
-
-    loadListes(); // on charge les listes pour le select
+    loadListes();
 });
 
 // ============================================================
@@ -681,9 +514,7 @@ async function loadListes() {
     const select = document.getElementById('inp-liste-liee');
     select.innerHTML = '<option value="">— Aucune liste —</option>';
     try {
-        // Chercher dans toutes les archives
         const { collectionGroup } = await import("https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js");
-        // Fallback: on list avec des requêtes statiques si collectionGroup non disponible
     } catch(e) {}
 }
 
@@ -702,13 +533,11 @@ window.applyFilters = function() {
         if (annee && b.annee !== annee) return false;
         if (texte && !(b.texte || '').toLowerCase().includes(texte) && !(b.ville || '').toLowerCase().includes(texte)) return false;
         if (useColor) {
-            // Filtre couleur approximatif (± 30 en hex)
             const dist = colorDist(colorVal, b.couleurFond || '#000000');
             if (dist > 80) return false;
         }
         return true;
     });
-
     renderBracelets();
 };
 
@@ -741,7 +570,6 @@ function renderBracelets() {
     noRes.style.display = 'none';
 
     const canAdmin = currentUserData && (currentUserData.role === 'admin' || currentUserData.role === 'editor');
-
     filteredBracelets.forEach((b, i) => {
         const card = document.createElement('div');
         card.className = 'bracelet-card';
@@ -791,7 +619,6 @@ function renderBracelets() {
         card.appendChild(preview);
         card.appendChild(info);
         card.appendChild(actions);
-
         card.onclick = () => {
             document.querySelectorAll('.bracelet-card').forEach(c => c.classList.remove('selected'));
             card.classList.add('selected');
@@ -822,7 +649,6 @@ window.syncColorHex = function(type) {
         updatePreview();
     }
 };
-
 window.updatePreview = function() {
     const bg = document.getElementById('inp-bg-color').value;
     const txt = document.getElementById('inp-text-color').value;
@@ -833,7 +659,6 @@ window.updatePreview = function() {
     prev.style.color = txt;
     prev.textContent = texte.toUpperCase();
 
-    // Mettre à jour le 3D principal si on est en mode édition
     if (mainBracelet) {
         updateBraceletColors(mainBracelet, bg, txt, texte);
     }
@@ -862,10 +687,8 @@ window.submitBracelet = async function(isProposal) {
     const btn = isProposal ? document.getElementById('btn-propose') : document.getElementById('btn-save');
     btn.disabled = true;
     setFeedback('Enregistrement...');
-
     try {
         if (isProposal) {
-            // Proposal pour les users
             await addDoc(collection(db, "proposals"), {
                 type: editingBraceletId ? 'bracelet_edit' : 'bracelet_add',
                 ecole: data.ville,
@@ -878,7 +701,6 @@ window.submitBracelet = async function(isProposal) {
             });
             setFeedback('✅ Proposition soumise ! En attente d\'approbation.');
         } else {
-            // Direct pour admin/editor
             if (editingBraceletId) {
                 await setDoc(doc(db, "bracelets", editingBraceletId), {
                     ...data, updatedAt: serverTimestamp(), updatedBy: currentUser.email
@@ -901,7 +723,6 @@ window.submitBracelet = async function(isProposal) {
         btn.disabled = false;
     }
 };
-
 function setFeedback(msg, isErr = false) {
     const el = document.getElementById('add-feedback');
     el.textContent = msg;
@@ -945,10 +766,8 @@ window.switchTab = function(tab) {
     document.getElementById(`tab-btn-${tab}`).classList.add('active');
     document.getElementById(`panel-${tab}`).classList.add('active');
 };
-
 // ============================================================
 // THREE.JS - BRACELET 3D PRINCIPAL
-// Inspiré du viewer cylindre de référence
 // ============================================================
 
 function makeBraceletTexture(bgColor, textColor, text) {
@@ -975,7 +794,6 @@ function makeBraceletTexture(bgColor, textColor, text) {
 
     let textWidth = ctx.measureText(val).width;
     const maxAllowedWidth = (canvas.width / 2) - 120;
-
     if (textWidth > maxAllowedWidth) {
         fontSize = Math.max(52, Math.floor(fontSize * (maxAllowedWidth / textWidth)));
         ctx.font = `900 ${fontSize}px Arial Black, Arial, sans-serif`;
@@ -987,7 +805,6 @@ function makeBraceletTexture(bgColor, textColor, text) {
 
     ctx.fillText(val, canvas.width * 0.25, canvas.height / 2);
     ctx.fillText(val, canvas.width * 0.75, canvas.height / 2);
-
     const tex = new THREE.CanvasTexture(canvas);
     tex.wrapS = THREE.RepeatWrapping;
     tex.wrapT = THREE.ClampToEdgeWrapping;
@@ -1025,15 +842,13 @@ function createBracelet(bgColor, textColor, text) {
     group.add(outerMesh);
     group.add(innerMesh);
 
-    // Bracelet à plat, légèrement incliné vers la caméra
-    group.rotation.x = Math.PI / 2;      // le cylindre "couche"
-    group.rotation.z = Math.PI * 0.12;   // petite inclinaison
+    // MODIFICATION DE L'ORIENTATION : Le bracelet est désormais vertical
+    group.rotation.x = 0.1; // Légère inclinaison pour voir l'épaisseur du haut
+    group.rotation.z = 0.05; // Légère asymétrie
     group.position.y = 0;
 
     group.userData = {
-        outerMesh,
-        innerMesh,
-        texture: outerTex,
+        outerMesh, innerMesh, texture: outerTex,
         bgColor: bgColor || '#003057',
         textColor: textColor || '#ffffff',
         text: text || 'VILLE 2025'
@@ -1044,24 +859,19 @@ function createBracelet(bgColor, textColor, text) {
 
 function updateBraceletColors(braceletGroup, bgColor, textColor, text) {
     if (!braceletGroup) return;
-
     const data = braceletGroup.userData || {};
     const { outerMesh, innerMesh, texture } = data;
 
     if (texture) texture.dispose();
-
     const newTex = makeBraceletTexture(bgColor, textColor, text);
-
     if (outerMesh && outerMesh.material) {
         outerMesh.material.map = newTex;
         outerMesh.material.needsUpdate = true;
     }
-
     if (innerMesh && innerMesh.material) {
         innerMesh.material.color.set(bgColor || '#003057');
         innerMesh.material.needsUpdate = true;
     }
-
     braceletGroup.userData.texture = newTex;
     braceletGroup.userData.bgColor = bgColor;
     braceletGroup.userData.textColor = textColor;
@@ -1070,11 +880,13 @@ function updateBraceletColors(braceletGroup, bgColor, textColor, text) {
 
 function applyBraceletPose(mesh) {
     if (!mesh) return;
-    mesh.rotation.x = Math.PI / 2;
+    // MODIFICATION DE L'ORIENTATION DANS LA POSE
+    mesh.rotation.x = 0.1;
     mesh.rotation.y = 0;
-    mesh.rotation.z = Math.PI * 0.12;
+    mesh.rotation.z = 0.05;
     mesh.position.y = 0;
 }
+
 function initMainViewer() {
     const canvas = document.getElementById('bracelet-canvas');
     const section = document.getElementById('viewer-section');
@@ -1082,16 +894,10 @@ function initMainViewer() {
     const H = Math.max(section.clientHeight, 1);
 
     mainScene = new THREE.Scene();
-
     mainCamera = new THREE.PerspectiveCamera(30, W / H, 0.1, 100);
-    mainCamera.position.set(0, 4, 12);
+    mainCamera.position.set(0, 4, 15); // Caméra légèrement reculée pour bien voir le bracelet debout
     mainCamera.lookAt(0, 0, 0);
-
-    mainRenderer = new THREE.WebGLRenderer({
-        canvas,
-        antialias: true,
-        alpha: true
-    });
+    mainRenderer = new THREE.WebGLRenderer({ canvas, antialias: true, alpha: true });
     mainRenderer.setSize(W, H);
     mainRenderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
     mainRenderer.setClearColor(0x000000, 0);
@@ -1109,20 +915,24 @@ function initMainViewer() {
     mainBracelet = createBracelet('#003057', '#ffffff', 'REZO POLYTECH');
     mainScene.add(mainBracelet);
 
-    let t = 0;
+    // MODIFICATION : AJOUT DE L'INTERACTIVITÉ AVEC LA SOURIS (OrbitControls)
+    controls = new THREE.OrbitControls(mainCamera, mainRenderer.domElement);
+    controls.enableDamping = true; // Rendu fluide (inertie)
+    controls.dampingFactor = 0.05;
+    controls.autoRotate = true;    // Rotation automatique
+    controls.autoRotateSpeed = 2.0; // Vitesse de rotation
+    controls.enablePan = false;    // Pas de déplacement sur les côtés pour rester centré
+
     function animate() {
         animFrameId = requestAnimationFrame(animate);
-        t += 0.01;
-    
-        if (mainBracelet) {
-            // on fait tourner à plat autour de l’axe vertical de la scène
-            mainBracelet.rotation.y = Math.sin(t * 0.6) * 0.35;
-        }
+        
+        // La rotation manuelle a été remplacée par la rotation des controls interactifs
+        if (controls) controls.update(); 
     
         mainRenderer.render(mainScene, mainCamera);
     }
     animate();
-
+    
     window.addEventListener('resize', () => {
         const W2 = Math.max(section.clientWidth, 1);
         const H2 = Math.max(section.clientHeight, 1);
@@ -1166,7 +976,6 @@ window.openModal = function(b) {
     document.getElementById('modal-title').textContent = (b.texte || 'Bracelet').toUpperCase();
     document.getElementById('modal-meta').textContent = `${b.ville || '?'} · ${b.annee || '?'}`;
 
-    // Info grid
     const grid = document.getElementById('modal-info-grid');
     grid.innerHTML = `
         <div class="modal-info-item">
@@ -1192,7 +1001,6 @@ window.openModal = function(b) {
             <div class="modal-info-value">${escHtml(b.annee || '—')}</div>
         </div>
     `;
-
     const linkedEl = document.getElementById('modal-linked');
     const linkedVal = document.getElementById('modal-linked-value');
     if (b.listeLiee) {
@@ -1202,9 +1010,7 @@ window.openModal = function(b) {
         linkedEl.style.display = 'none';
     }
 
-    // Mini 3D dans la modal
     initModalViewer(b);
-
     document.getElementById('modal-overlay').classList.add('open');
 };
 
@@ -1215,7 +1021,7 @@ function initModalViewer(b) {
     const canvas = document.getElementById('modal-bracelet-3d');
     modalScene = new THREE.Scene();
     modalCamera = new THREE.PerspectiveCamera(45, 480/120, 0.1, 100);
-    modalCamera.position.set(0, 0, 5.5);
+    modalCamera.position.set(0, 0, 7.5); // Reculé pour le voir en entier
 
     modalRenderer = new THREE.WebGLRenderer({ canvas, antialias: true, alpha: true });
     modalRenderer.setSize(canvas.clientWidth || 480, 120);
@@ -1227,13 +1033,15 @@ function initModalViewer(b) {
     dir.position.set(3, 3, 3);
     modalScene.add(dir);
 
+    // Orientation verticale corrigée dans createBracelet
     modalBracelet = createBracelet(b.couleurFond || '#003057', b.couleurTexte || '#ffffff', b.texte || 'BRACELET');
     modalBracelet.scale.set(0.72, 0.72, 0.72);
     modalScene.add(modalBracelet);
-
+    
     function animateModal() {
         modalAnimId = requestAnimationFrame(animateModal);
-        modalBracelet.rotation.y += 0.018;
+        // Rotation automatique sur l'axe Y standard puisque le bracelet est maintenant debout
+        modalBracelet.rotation.y -= 0.018; 
         modalRenderer.render(modalScene, modalCamera);
     }
     animateModal();
@@ -1253,7 +1061,6 @@ document.addEventListener('DOMContentLoaded', () => {
     loadBracelets();
     updatePreview();
 });
-
 // Export des fonctions globales nécessaires
 window.loadBracelets = loadBracelets;
 </script>
