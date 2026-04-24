@@ -373,15 +373,16 @@
             </select>
 
             <div class="section-label">Année</div>
-            <select class="form-field" id="inp-annee">
+            <select class="form-field" id="inp-ville" onchange="loadListes()">
                 <option value="">— Sélectionner —</option>
+                <option value="2026-2027">2026-2027</option>
                 <option value="2025-2026">2025-2026</option>
                 <option value="2024-2025">2024-2025</option>
                 <option value="2023-2024">2023-2024</option>
             </select>
 
             <div class="section-label">Lier à une liste <span style="color:#556">(optionnel)</span></div>
-            <select class="form-field" id="inp-liste-liee">
+            <select class="form-field" id="inp-annee" onchange="loadListes()">
                 <option value="">— Aucune liste —</option>
             </select>
 
@@ -423,6 +424,31 @@ import {
 } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
 
+async function aAtteintLimiteQuotidienne() {
+    if (!currentUser) return true;
+
+    // Définir le début de la journée actuelle (00:00:00)
+    const debutJournee = new Date();
+    debutJournee.setHours(0, 0, 0, 0);
+
+    // On compte les bracelets ET les propositions créés par cet utilisateur aujourd'hui
+    // Note : Cela suppose que vous enregistrez le champ 'auteur' (email) et 'dateCreation'
+    const qBracelets = query(collection(db, "bracelets"), 
+                        where("auteur", "==", currentUser.email), 
+                        where("createdAt", ">=", debutJournee));
+    
+    const qPropositions = query(collection(db, "propositions"), 
+                        where("auteur", "==", currentUser.email), 
+                        where("createdAt", ">=", debutJournee));
+
+    const [snapB, snapP] = await Promise.all([getDocs(qBracelets), getDocs(qPropositions)]);
+    
+    const totalAujourdhui = snapB.size + snapP.size;
+    const LIMITE = 5; // Modifiez ce chiffre selon vos besoins
+
+    return totalAujourdhui >= LIMITE;
+}
+    
 const firebaseConfig = {
     apiKey: "AIzaSyB1_SgV4E80Qxs2vQ-_jIGexv6YYqaiARs",
     authDomain: "sebr-dea8d.firebaseapp.com",
@@ -514,33 +540,51 @@ async function loadListes() {
     const annee = document.getElementById('inp-annee').value;
     const select = document.getElementById('inp-liste-liee');
     
-    // Réinitialisation du menu déroulant
+    // On réinitialise le menu
     select.innerHTML = '<option value="">— Aucune liste —</option>';
     
-    // On ne cherche que si la ville et l'année sont remplies
+    // Si la ville ou l'année n'est pas sélectionnée, on s'arrête
     if (!ville || !annee) return;
 
-    try {
-        // On récupère les listes correspondant à la ville et l'année choisies
-        const q = query(collection(db, "listes"), 
-                        where("ville", "==", ville), 
-                        where("annee", "==", annee));
-        
-        const snap = await getDocs(q);
-        
-        if (snap.empty) {
-            console.log("Aucune liste trouvée pour cette sélection.");
-            return;
-        }
+    // 1. Ajouter les options fixes BDE et BDP
+    const entitesFixes = ['BDE', 'BDP'];
+    entitesFixes.forEach(entite => {
+        const opt = document.createElement('option');
+        opt.value = entite;
+        opt.textContent = entite;
+        select.appendChild(opt);
+    });
 
-        snap.forEach(doc => {
-            const data = doc.data();
-            const opt = document.createElement('option');
-            opt.value = data.nom; // Utilise le nom de la liste comme valeur
-            opt.textContent = data.nom;
-            select.appendChild(opt);
+    // 2. Charger les listes depuis les 3 sous-collections
+    const sousCollections = ['listes_bde', 'listes_bdp', 'fakelistes'];
+    const basePath = `ecoles/${ville}/archives/${annee}`;
+    
+    try {
+        const fetchPromises = sousCollections.map(subCol => 
+            getDocs(collection(db, `${basePath}/${subCol}`))
+        );
+        
+        const results = await Promise.all(fetchPromises);
+        
+        results.forEach((snap, index) => {
+            if (!snap.empty) {
+                // On crée un groupe visuel pour séparer BDE, BDP et Fakes
+                const label = sousCollections[index].replace('listes_', '').toUpperCase();
+                const group = document.createElement('optgroup');
+                group.label = `--- LISTES ${label} ---`;
+                
+                snap.forEach(doc => {
+                    const data = doc.data();
+                    const opt = document.createElement('option');
+                    // On utilise le champ "nom" du document, ou son ID s'il n'y a pas de champ nom
+                    opt.value = data.nom || doc.id; 
+                    opt.textContent = data.nom || doc.id;
+                    group.appendChild(opt);
+                });
+                select.appendChild(group);
+            }
         });
-    } catch(e) {
+    } catch (e) {
         console.error("Erreur lors du chargement des listes :", e);
     }
 }
@@ -695,8 +739,22 @@ window.updatePreview = function() {
 // SUBMIT BRACELET
 // ============================================================
 window.submitBracelet = async function(isProposal) {
-    if (!currentUser) { alert('Connectez-vous d\'abord.'); return; }
+        if (!currentUser) { alert('Connectez-vous d\'abord.'); return; }
+    const feedback = document.getElementById('add-feedback');
+    feedback.textContent = "Vérification...";
+    feedback.className = "";
 
+    // 1. Vérification de la limite anti-spam
+    try {
+        const limiteAtteinte = await aAtteintLimiteQuotidienne();
+        if (limiteAtteinte) {
+            feedback.textContent = "🚫 Limite quotidienne atteinte (max 5). Revenez demain !";
+            feedback.className = "err";
+            return; // On arrête tout ici
+        }
+    } catch (e) {
+        console.error("Erreur vérification limite:", e);
+    }
     const data = {
         texte: document.getElementById('inp-texte').value.trim(),
         ville: document.getElementById('inp-ville').value,
