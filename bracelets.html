@@ -778,42 +778,70 @@ function createBraceletTextures(bgColor, textColor, text) {
     bumpCanvas.width = 4096; bumpCanvas.height = 256;
     const bCtx = bumpCanvas.getContext('2d');
 
+    // 1. Fond
     ctx.fillStyle = bgColor || '#003057';
-    ctx.fillRect(0,0, canvas.width, canvas.height);
-    bCtx.fillStyle = '#808080';
-    bCtx.fillRect(0,0, bumpCanvas.width, bumpCanvas.height);
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+    bCtx.fillStyle = '#808080'; // Gris neutre pour le relief
+    bCtx.fillRect(0, 0, bumpCanvas.width, bumpCanvas.height);
 
     const val = (text || '').toUpperCase();
     
-    // LOGIQUE DE CALCUL DE LA TAILLE DE POLICE
-    let fontSize = 135; // Taille par défaut
-    ctx.font = `900 ${fontSize}px "Arial Black", sans-serif`;
+    // 2. Calcul de la taille de la police (Auto-scale)
+    let fontSize = 135; 
+    ctx.font = `900 ${fontSize}px "Arial Black", "Segoe UI Emoji", sans-serif`;
     
-    const maxWidth = canvas.width * 0.42; // Espace max autorisé pour le texte sur une face
+    const maxWidth = canvas.width * 0.42; 
     let textWidth = ctx.measureText(val).width;
 
     if (textWidth > maxWidth) {
         fontSize = Math.floor(fontSize * (maxWidth / textWidth));
-        if (fontSize < 35) fontSize = 35; // Taille minimum de sécurité
+        if (fontSize < 35) fontSize = 35;
     }
 
-    const finalFont = `900 ${fontSize}px "Arial Black", sans-serif`;
-    [ctx, bCtx].forEach(c => {
-        c.font = finalFont;
-        c.textAlign = 'center';
-        c.textBaseline = 'middle';
-    });
+    const finalFont = `900 ${fontSize}px "Arial Black", "Segoe UI Emoji", sans-serif`;
 
-    ctx.fillStyle = textColor || '#ffffff';
-    bCtx.fillStyle = '#ffffff';
-    bCtx.shadowBlur = 6; bCtx.shadowColor = 'white';
+    // 3. FONCTION INTERNE POUR DESSINER ET TEINTER (Texte + Emojis)
+    const drawTintedText = (targetCtx, color, x, y) => {
+        // On crée un canvas temporaire pour dessiner le texte/emoji en noir d'abord
+        const tempCanvas = document.createElement('canvas');
+        tempCanvas.width = canvas.width;
+        tempCanvas.height = canvas.height;
+        const tCtx = tempCanvas.getContext('2d');
 
+        tCtx.font = finalFont;
+        tCtx.textAlign = 'center';
+        tCtx.textBaseline = 'middle';
+        tCtx.fillStyle = '#000000';
+        tCtx.fillText(val, x, y);
+
+        // On utilise la composition pour remplir la forme du texte/emoji avec la couleur voulue
+        tCtx.globalCompositeOperation = 'source-in';
+        tCtx.fillStyle = color;
+        tCtx.fillRect(0, 0, tempCanvas.width, tempCanvas.height);
+
+        // On recopie le résultat sur le canvas principal
+        targetCtx.drawImage(tempCanvas, 0, 0);
+    };
+
+    // 4. Dessin sur les deux faces (Texture couleur + Texture relief)
     [0.25, 0.75].forEach(pos => {
-        ctx.fillText(val, canvas.width * pos, canvas.height/2);
-        bCtx.fillText(val, bumpCanvas.width * pos, bumpCanvas.height/2);
+        const x = canvas.width * pos;
+        const y = canvas.height / 2;
+
+        // Dessin de la couleur (textColor)
+        drawTintedText(ctx, textColor || '#ffffff', x, y);
+
+        // Dessin du relief (Blanc pour que ça ressorte)
+        // On ajoute un petit flou pour adoucir les bords de l'extrusion 3D
+        bCtx.shadowBlur = 4;
+        bCtx.shadowColor = 'white';
+        drawTintedText(bCtx, '#ffffff', x, y);
     });
 
-    return { map: new THREE.CanvasTexture(canvas), bump: new THREE.CanvasTexture(bumpCanvas) };
+    return { 
+        map: new THREE.CanvasTexture(canvas), 
+        bump: new THREE.CanvasTexture(bumpCanvas) 
+    };
 }
 
 function createBracelet(bgColor, textColor, text) {
