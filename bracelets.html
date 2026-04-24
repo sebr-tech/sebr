@@ -726,88 +726,90 @@ async function loadBracelets() {
 // FIX: exposé sur window car appelé depuis onchange inline dans le HTML
 // (les fonctions dans type="module" ne sont pas globales par défaut)
 window.loadListes = async function loadListes() {
-  const villeSelect  = document.getElementById('inp-ville');
-  const anneeSelect  = document.getElementById('inp-annee-form');
-  const selectListe  = document.getElementById('inp-liste-liee');
+  const ville = document.getElementById('inp-ville')?.value?.trim();
+  const annee = document.getElementById('inp-annee-form')?.value;
+  const select = document.getElementById('inp-liste-liee');
 
-  const ville = villeSelect?.value?.trim();
-  const annee = anneeSelect?.value;
-
-  selectListe.innerHTML = '<option value="">Aucune liste</option>';
+  select.innerHTML = '<option value="">Aucune liste</option>';
 
   if (!ville || !annee) return;
 
   try {
-    // 1) Doc local
-    const archiveRef  = doc(db, "ecoles", ville, "archives", annee);
+    const archiveRef = doc(db, "ecoles", ville, "archives", annee);
     const archiveSnap = await getDoc(archiveRef);
-    const dataLocal   = archiveSnap.exists() ? archiveSnap.data() : {};
-    console.log("loadListes dataLocal =", dataLocal);
 
-    // 2) Doc global
-    const globalRef   = doc(db, "annees", annee);
-    const globalSnap  = await getDoc(globalRef);
-    const dataGlobal  = globalSnap.exists() ? globalSnap.data() : {};
-    console.log("loadListes dataGlobal =", dataGlobal);
-
-    // ========= BDE/BDP actuels (global) =========
-    const bdeActuel = dataGlobal.bde_actuel; // à adapter selon le log
-    const bdpActuel = dataGlobal.bdp_actuel;
-
-    if (bdeActuel || bdpActuel) {
-      const groupActuel = document.createElement('optgroup');
-      groupActuel.label = "Actuel";
-
-      if (bdeActuel) {
-        const opt = document.createElement('option');
-        opt.value = bdeActuel;
-        opt.textContent = `${bdeActuel} (BDE actuel)`;
-        groupActuel.appendChild(opt);
-      }
-      if (bdpActuel) {
-        const opt = document.createElement('option');
-        opt.value = bdpActuel;
-        opt.textContent = `${bdpActuel} (BDP actuel)`;
-        groupActuel.appendChild(opt);
-      }
-
-      selectListe.appendChild(groupActuel);
+    if (!archiveSnap.exists()) {
+      console.warn(`loadListes: document introuvable pour ${ville} / ${annee}`);
+      return;
     }
 
-    const pushGroup = (array, label) => {
-      if (!Array.isArray(array) || array.length === 0) return;
+    const data = archiveSnap.data();
+    console.log("loadListes dataLocal =", data);
+
+    const ajouterOption = (group, value, label) => {
+      if (!value) return;
+      const opt = document.createElement('option');
+      opt.value = value;
+      opt.textContent = label || value;
+      group.appendChild(opt);
+    };
+
+    const extraireNom = (item, fallback) => {
+      if (!item) return null;
+      if (typeof item === 'string') return item.trim();
+      if (typeof item === 'object') {
+        return (item.nom || item.name || fallback || "").trim();
+      }
+      return null;
+    };
+
+    // 1) ACTUELS
+    const groupeActuels = document.createElement('optgroup');
+    groupeActuels.label = 'Actuels';
+
+    const nomBdeActuel = extraireNom(data.bde_actuel, 'BDE actuel');
+    const nomBdpActuel = extraireNom(data.bdp_actuel, 'BDP actuel');
+
+    if (nomBdeActuel) {
+      ajouterOption(groupeActuels, nomBdeActuel, `${nomBdeActuel} (BDE actuel)`);
+    }
+
+    if (nomBdpActuel) {
+      ajouterOption(groupeActuels, nomBdpActuel, `${nomBdpActuel} (BDP actuel)`);
+    }
+
+    if (groupeActuels.children.length > 0) {
+      select.appendChild(groupeActuels);
+    }
+
+    // 2) LISTES
+    const groupes = [
+      { key: 'listes_bde', label: 'Listes BDE' },
+      { key: 'listes_bdp', label: 'Listes BDP' },
+      { key: 'fakelistes', label: 'Fakelistes' }
+    ];
+
+    groupes.forEach(({ key, label }) => {
+      const listes = data[key];
+      if (!Array.isArray(listes) || listes.length === 0) return;
+
       const group = document.createElement('optgroup');
       group.label = label;
 
-      array.forEach(item => {
-        if (!item) return;
-        const nom = typeof item === 'string'
-          ? item
-          : (item.nom || item.name || null);
+      listes.forEach(item => {
+        const nom = extraireNom(item);
         if (!nom) return;
-
-        const opt = document.createElement('option');
-        opt.value = nom;
-        opt.textContent = nom;
-        group.appendChild(opt);
+        ajouterOption(group, nom, nom);
       });
 
       if (group.children.length > 0) {
-        selectListe.appendChild(group);
+        select.appendChild(group);
       }
-    };
+    });
 
-    // ========= Local : ecoles/{ville}/archives/{annee} =========
-    pushGroup(dataLocal.listesbde,  `BDE (${ville})`);
-    pushGroup(dataLocal.listesbdp,  `BDP (${ville})`);
-    pushGroup(dataLocal.fakelistes, `Fake (${ville})`);
-
-    // ========= Global : annees/{annee} =========
-    pushGroup(dataGlobal.bde_listes,  "BDE (global)");
-    pushGroup(dataGlobal.bdp_listes,  "BDP (global)");
-    pushGroup(dataGlobal.fakelistes,  "Fake (global)");
-
-    console.log("loadListes options =", selectListe);
+    if (select.children.length === 1) {
+      console.log("Aucune liste disponible pour", ville, annee);
+    }
 
   } catch (e) {
     console.error("loadListes: Erreur :", e);
