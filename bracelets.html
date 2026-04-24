@@ -739,36 +739,38 @@ window.loadListes = async function loadListes() {
   if (!ville || !annee) return;
 
   try {
-    // 1) DOC LOCAL : ecoles/{ville}/archives/{annee}
+    // 1) Doc local : ecoles/{ville}/archives/{annee}
     const archiveRef  = doc(db, "ecoles", ville, "archives", annee);
     const archiveSnap = await getDoc(archiveRef);
+    const dataLocal   = archiveSnap.exists() ? archiveSnap.data() : {};
 
-    const dataLocal = archiveSnap.exists() ? archiveSnap.data() : {};
-
-    // 2) DOC GLOBAL : annees/{annee}
-    const globalRef  = doc(db, "annees", annee);
-    const globalSnap = await getDoc(globalRef);
-
-    const dataGlobal = globalSnap.exists() ? globalSnap.data() : {};
+    // 2) Doc global : annees/{annee}
+    const globalRef   = doc(db, "annees", annee);
+    const globalSnap  = await getDoc(globalRef);
+    const dataGlobal  = globalSnap.exists() ? globalSnap.data() : {};
 
     // ─────────────────────────────────────────
     // A. BDE / BDP ACTUELS (doc global)
     // ─────────────────────────────────────────
-    if (dataGlobal.bde_actuel || dataGlobal.bdp_actuel) {
+    // adapte ces noms aux champs réels de ton doc annees/{annee}
+    const bdeActuel = dataGlobal.bde_actuel;  // ex: "Potechmon"
+    const bdpActuel = dataGlobal.bdp_actuel;  // ex: "Polynight"
+
+    if (bdeActuel || bdpActuel) {
       const groupActuel = document.createElement('optgroup');
       groupActuel.label = "Actuel";
 
-      if (dataGlobal.bde_actuel) {
+      if (bdeActuel) {
         const opt = document.createElement('option');
-        opt.value = dataGlobal.bde_actuel;
-        opt.textContent = `${dataGlobal.bde_actuel} (BDE actuel)`;
+        opt.value = bdeActuel;
+        opt.textContent = `${bdeActuel} (BDE actuel)`;
         groupActuel.appendChild(opt);
       }
 
-      if (dataGlobal.bdp_actuel) {
+      if (bdpActuel) {
         const opt = document.createElement('option');
-        opt.value = dataGlobal.bdp_actuel;
-        opt.textContent = `${dataGlobal.bdp_actuel} (BDP actuel)`;
+        opt.value = bdpActuel;
+        opt.textContent = `${bdpActuel} (BDP actuel)`;
         groupActuel.appendChild(opt);
       }
 
@@ -777,8 +779,10 @@ window.loadListes = async function loadListes() {
       }
     }
 
-    // Prépare une fonction utilitaire pour lire un array proprement
-    const pushGroupFromArray = (sourceArray, label, filterVille = null) => {
+    // ─────────────────────────────────────────
+    // Utilitaire pour pousser un optgroup
+    // ─────────────────────────────────────────
+    const pushGroupFromArray = (sourceArray, label) => {
       if (!Array.isArray(sourceArray) || sourceArray.length === 0) return;
 
       const group = document.createElement('optgroup');
@@ -787,11 +791,12 @@ window.loadListes = async function loadListes() {
       sourceArray.forEach(item => {
         if (!item) return;
 
-        const nom   = item.nom || item.name || null;
-        const vItem = (item.ville || "").toLowerCase().trim();
+        // item peut être une string ou un objet { nom, ... }
+        const nom = typeof item === 'string'
+          ? item
+          : (item.nom || item.name || null);
 
         if (!nom) return;
-        if (filterVille && vItem && vItem !== filterVille.toLowerCase().trim()) return;
 
         const opt = document.createElement('option');
         opt.value = nom;
@@ -805,27 +810,29 @@ window.loadListes = async function loadListes() {
     };
 
     // ─────────────────────────────────────────
-    // B. LISTES PAR ÉCOLE/ANNÉE (doc local)
-    //    ecoles/{ville}/archives/{annee}
+    // B. LISTES LOCALES (ecoles/{ville}/archives/{annee})
+    //    Noms de champs : listesbde, listesbdp, fakelistes
     // ─────────────────────────────────────────
-    pushGroupFromArray(dataLocal.listesbde,  "BDE (" + ville + ")");
-    pushGroupFromArray(dataLocal.listesbdp,  "BDP (" + ville + ")");
-    pushGroupFromArray(dataLocal.fakelistes, "Fake (" + ville + ")");
+    pushGroupFromArray(dataLocal.listesbde,   `BDE (${ville})`);
+    pushGroupFromArray(dataLocal.listesbdp,   `BDP (${ville})`);
+    pushGroupFromArray(dataLocal.fakelistes,  `Fake (${ville})`);
 
     // ─────────────────────────────────────────
-    // C. LISTES GLOBALES (doc global annees/{annee})
-    //    filtrées par ville si le champ existe
+    // C. LISTES GLOBALES (annees/{annee})
+    //    Noms de champs : bde_listes, bdp_listes, fakelistes
     // ─────────────────────────────────────────
-    pushGroupFromArray(dataGlobal.listes_bde,  "BDE (global)", ville);
-    pushGroupFromArray(dataGlobal.listes_bdp,  "BDP (global)", ville);
-    pushGroupFromArray(dataGlobal.fakelistes, "Fake (global)", ville);
+    pushGroupFromArray(dataGlobal.bde_listes || dataGlobal.listes_bde,  "BDE (global)");
+    pushGroupFromArray(dataGlobal.bdp_listes || dataGlobal.listes_bdp,  "BDP (global)");
+    pushGroupFromArray(dataGlobal.fakelistes,                           "Fake (global)");
 
     // ─────────────────────────────────────────
-    // D. Log si rien trouvé
+    // D. Si rien trouvé (en dehors de "Aucune liste")
     // ─────────────────────────────────────────
-    if (selectListe.children.length === 1) { // seulement l'option "Aucune liste"
+    if (selectListe.children.length === 1) {
       console.log("Aucune liste trouvée pour", ville, "année", annee);
     }
+
+    console.log("loadListes OK", { ville, annee, dataLocal, dataGlobal });
 
   } catch (e) {
     console.error("loadListes: Erreur :", e);
