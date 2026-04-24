@@ -14,6 +14,7 @@
             --card-bg: #161f2b;
             --poly-cyan: #009ee3;
             --danger: #ff5c5c;
+            --heart: #ff4d6d;
             --header-height: 70px;
             --sidebar-width: 400px;
         }
@@ -30,7 +31,6 @@
             overflow: hidden;
         }
 
-        /* ===== HEADER (identique à index.html) ===== */
         header {
             display: flex;
             justify-content: space-between;
@@ -108,6 +108,7 @@
         @keyframes pulseHint { 0%,100%{opacity:0.4} 50%{opacity:0.9} }
         @keyframes slideUpFade { from{opacity:0;transform:translateY(12px)} to{opacity:1;transform:translateY(0)} }
         @keyframes fadeIn { from{opacity:0} to{opacity:1} }
+        @keyframes heartPop { 0%{transform:scale(1)} 40%{transform:scale(1.5)} 70%{transform:scale(0.9)} 100%{transform:scale(1)} }
 
         /* ===== SIDEBAR ===== */
         #sidebar-section {
@@ -117,8 +118,8 @@
 
         .sidebar-tabs { display: flex; border-bottom: 1px solid #1a2535; flex-shrink: 0; }
         .sidebar-tab {
-            flex: 1; padding: 16px 10px; text-align: center; cursor: pointer; font-size: 0.85em;
-            font-weight: 700; letter-spacing: 1px; text-transform: uppercase; color: #555;
+            flex: 1; padding: 14px 6px; text-align: center; cursor: pointer; font-size: 0.78em;
+            font-weight: 700; letter-spacing: 0.5px; text-transform: uppercase; color: #555;
             border-bottom: 3px solid transparent; transition: all 0.2s; user-select: none;
         }
         .sidebar-tab.active { color: var(--poly-cyan); border-bottom-color: var(--poly-cyan); background: rgba(0,158,227,0.05); }
@@ -153,13 +154,51 @@
         .bracelet-card-info { flex: 1; }
         .bracelet-card-name { font-weight: 700; font-size: 0.9em; margin-bottom: 2px; }
         .bracelet-card-meta { font-size: 0.75em; color: #667; }
-        .bracelet-card-actions { display: flex; gap: 6px; flex-shrink: 0; }
+        .bracelet-card-actions { display: flex; gap: 6px; flex-shrink: 0; align-items: center; }
         .btn-tiny {
             background: transparent; border: 1px solid #333; color: #aaa; padding: 4px 8px;
             border-radius: 4px; cursor: pointer; font-size: 0.75em; transition: 0.2s;
         }
         .btn-tiny:hover { border-color: var(--poly-cyan); color: var(--poly-cyan); }
         .btn-tiny.danger:hover { border-color: var(--danger); color: var(--danger); }
+
+        /* ===== BOUTON COEUR ===== */
+        .btn-heart {
+            background: transparent; border: 1px solid #333; color: #555;
+            width: 30px; height: 30px; border-radius: 50%; cursor: pointer;
+            font-size: 0.9em; display: flex; align-items: center; justify-content: center;
+            transition: all 0.2s; flex-shrink: 0;
+        }
+        .btn-heart:hover { border-color: var(--heart); color: var(--heart); background: rgba(255,77,109,0.08); }
+        .btn-heart.liked { border-color: var(--heart); color: var(--heart); background: rgba(255,77,109,0.12); animation: heartPop 0.35s ease-out; }
+
+        /* ===== COLLECTION ===== */
+        #collection-grid { display: flex; flex-direction: column; gap: 10px; flex: 1; }
+
+        .collection-empty {
+            display: flex; flex-direction: column; align-items: center; justify-content: center;
+            flex: 1; text-align: center; color: #444; padding: 40px 20px; gap: 12px;
+        }
+        .collection-empty .big-heart { font-size: 3em; opacity: 0.3; }
+        .collection-empty p { font-size: 0.9em; line-height: 1.6; }
+
+        .collection-login-notice {
+            background: rgba(255,92,92,0.08); border: 1px solid rgba(255,92,92,0.3);
+            border-radius: 8px; padding: 14px 16px; font-size: 0.82em; color: #aaa;
+            line-height: 1.5; text-align: center;
+        }
+
+        .collection-count {
+            font-size: 0.75em; color: #667; letter-spacing: 1px; text-transform: uppercase;
+            padding-bottom: 10px; border-bottom: 1px solid #1a2535; margin-bottom: 14px; flex-shrink: 0;
+        }
+
+        .collection-card {
+            background: #161f2b; border: 1px solid #222; border-radius: 10px; padding: 14px;
+            cursor: pointer; transition: all 0.2s; display: flex; align-items: center; gap: 12px;
+            animation: slideUpFade 0.3s ease-out backwards;
+        }
+        .collection-card:hover { border-color: var(--heart); transform: translateX(3px); box-shadow: -3px 0 10px rgba(255,77,109,0.1); }
 
         /* ===== AJOUTER / PERSONNALISER ===== */
         .section-label { font-size: 0.7em; letter-spacing: 2px; text-transform: uppercase; color: #556; margin-bottom: 8px; margin-top: 16px; }
@@ -237,6 +276,7 @@
             .header-left, .header-right { width: 100%; justify-content: center; }
             .header-nav { flex-wrap: wrap; justify-content: center; }
             .logo-title { font-size: 0.9em; }
+            .sidebar-tab { font-size: 0.7em; padding: 12px 4px; }
         }
 
         .site-footer {
@@ -280,9 +320,11 @@
     <div id="sidebar-section">
         <div class="sidebar-tabs">
             <div class="sidebar-tab active" id="tab-btn-search" onclick="switchTab('search')">🔍 Rechercher</div>
+            <div class="sidebar-tab" id="tab-btn-collection" onclick="switchTab('collection')">❤️ Collection</div>
             <div class="sidebar-tab" id="tab-btn-add" onclick="switchTab('add')">➕ Ajouter</div>
         </div>
 
+        <!-- ===== ONGLET RECHERCHER ===== -->
         <div class="tab-panel active" id="panel-search">
             <div class="filter-row">
                 <select class="filter-select" id="filter-ville" onchange="applyFilters()">
@@ -321,6 +363,22 @@
             <div id="no-results" class="no-results" style="display:none;">Aucun bracelet trouvé.</div>
         </div>
 
+        <!-- ===== ONGLET COLLECTION ===== -->
+        <div class="tab-panel" id="panel-collection">
+            <div id="collection-login-notice" class="collection-login-notice" style="display:none;">
+                🔒 Connectez-vous pour accéder à votre collection de bracelets favoris.
+            </div>
+            <div id="collection-content" style="display:none; flex-direction:column; flex:1;">
+                <div class="collection-count" id="collection-count">0 bracelet dans votre collection</div>
+                <div id="collection-grid"></div>
+                <div id="collection-empty" class="collection-empty" style="display:none;">
+                    <div class="big-heart">❤️</div>
+                    <p>Votre collection est vide.<br>Cliquez sur le <strong>❤</strong> d'un bracelet<br>pour l'ajouter ici.</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- ===== ONGLET AJOUTER ===== -->
         <div class="tab-panel" id="panel-add">
             <div id="add-role-notice" style="display:none; background:rgba(0,158,227,0.08); border:1px solid rgba(0,158,227,0.25); border-radius:6px; padding:10px 14px; font-size:0.8em; color:#aaa; margin-bottom:16px; line-height:1.5;">
                 En tant qu'<strong style="color:var(--poly-cyan)">utilisateur</strong>, votre bracelet sera soumis en proposition et devra être approuvé par un éditeur.
@@ -372,8 +430,9 @@
                 <option value="nice">Nice</option>
             </select>
 
+            <!-- FIX: id corrigé en "inp-annee-form" pour éviter la collision avec inp-ville -->
             <div class="section-label">Année</div>
-            <select class="form-field" id="inp-ville" onchange="loadListes()">
+            <select class="form-field" id="inp-annee-form" onchange="loadListes()">
                 <option value="">— Sélectionner —</option>
                 <option value="2026-2027">2026-2027</option>
                 <option value="2025-2026">2025-2026</option>
@@ -381,8 +440,9 @@
                 <option value="2023-2024">2023-2024</option>
             </select>
 
+            <!-- FIX: id corrigé en "inp-liste-liee" (existait dans le JS mais pas dans le HTML) -->
             <div class="section-label">Lier à une liste <span style="color:#556">(optionnel)</span></div>
-            <select class="form-field" id="inp-annee" onchange="loadListes()">
+            <select class="form-field" id="inp-liste-liee">
                 <option value="">— Aucune liste —</option>
             </select>
 
@@ -426,26 +486,17 @@ import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/fi
 
 async function aAtteintLimiteQuotidienne() {
     if (!currentUser) return true;
-
-    // Définir le début de la journée actuelle (00:00:00)
     const debutJournee = new Date();
     debutJournee.setHours(0, 0, 0, 0);
-
-    // On compte les bracelets ET les propositions créés par cet utilisateur aujourd'hui
-    // Note : Cela suppose que vous enregistrez le champ 'auteur' (email) et 'dateCreation'
     const qBracelets = query(collection(db, "bracelets"), 
                         where("auteur", "==", currentUser.email), 
                         where("createdAt", ">=", debutJournee));
-    
     const qPropositions = query(collection(db, "propositions"), 
                         where("auteur", "==", currentUser.email), 
                         where("createdAt", ">=", debutJournee));
-
     const [snapB, snapP] = await Promise.all([getDocs(qBracelets), getDocs(qPropositions)]);
-    
     const totalAujourdhui = snapB.size + snapP.size;
-    const LIMITE = 5; // Modifiez ce chiffre selon vos besoins
-
+    const LIMITE = 5;
     return totalAujourdhui >= LIMITE;
 }
     
@@ -470,6 +521,7 @@ let currentUser = null;
 let currentUserData = null;
 let selectedBraceletData = null;
 let editingBraceletId = null;
+let userCollection = new Set(); // IDs des bracelets en collection
 let mainScene, mainCamera, mainRenderer, mainBracelet, animFrameId, controls;
 let modalScene, modalCamera, modalRenderer, modalBracelet, modalAnimId;
 
@@ -505,18 +557,153 @@ onAuthStateChanged(auth, async (user) => {
                 }
             }
         } catch(e) { console.error(e); }
+
+        // Charger la collection de l'utilisateur
+        await loadUserCollection();
+        showCollectionContent(true);
     } else {
         currentUser = null;
         currentUserData = null;
+        userCollection = new Set();
         authBtn.textContent = 'Connexion 🔒';
         authBtn.className = 'btn-auth';
         authBtn.onclick = () => { location.href = 'authentification.html'; };
         document.getElementById('add-login-notice').style.display = 'block';
         document.getElementById('btn-propose').style.display = 'none';
         document.getElementById('admin-actions').classList.remove('visible');
+        showCollectionContent(false);
     }
     loadListes();
 });
+
+// ============================================================
+// COLLECTION — chargement & sauvegarde
+// ============================================================
+async function loadUserCollection() {
+    if (!currentUser) return;
+    try {
+        const snap = await getDoc(doc(db, "collections", currentUser.email));
+        if (snap.exists()) {
+            const data = snap.data();
+            userCollection = new Set(data.braceletIds || []);
+        } else {
+            userCollection = new Set();
+        }
+    } catch(e) {
+        console.error("Erreur chargement collection:", e);
+        userCollection = new Set();
+    }
+}
+
+async function saveUserCollection() {
+    if (!currentUser) return;
+    try {
+        await setDoc(doc(db, "collections", currentUser.email), {
+            braceletIds: Array.from(userCollection),
+            updatedAt: serverTimestamp()
+        });
+    } catch(e) {
+        console.error("Erreur sauvegarde collection:", e);
+    }
+}
+
+window.toggleCollection = async function(braceletId, btn) {
+    if (!currentUser) {
+        alert('Connectez-vous pour ajouter des bracelets à votre collection.');
+        return;
+    }
+    if (userCollection.has(braceletId)) {
+        userCollection.delete(braceletId);
+        btn.classList.remove('liked');
+        btn.title = 'Ajouter à ma collection';
+    } else {
+        userCollection.add(braceletId);
+        btn.classList.add('liked');
+        btn.title = 'Retirer de ma collection';
+    }
+    await saveUserCollection();
+    // Mettre à jour tous les boutons coeur pour ce bracelet
+    document.querySelectorAll(`.btn-heart[data-id="${braceletId}"]`).forEach(b => {
+        if (userCollection.has(braceletId)) b.classList.add('liked');
+        else b.classList.remove('liked');
+    });
+    renderCollection();
+};
+
+function showCollectionContent(loggedIn) {
+    const notice = document.getElementById('collection-login-notice');
+    const content = document.getElementById('collection-content');
+    if (loggedIn) {
+        notice.style.display = 'none';
+        content.style.display = 'flex';
+        renderCollection();
+    } else {
+        notice.style.display = 'block';
+        content.style.display = 'none';
+    }
+}
+
+function renderCollection() {
+    const grid = document.getElementById('collection-grid');
+    const empty = document.getElementById('collection-empty');
+    const count = document.getElementById('collection-count');
+    grid.innerHTML = '';
+
+    const collectionBracelets = allBracelets.filter(b => userCollection.has(b.id));
+    const n = collectionBracelets.length;
+    count.textContent = n === 0 ? 'Aucun bracelet dans votre collection' :
+                        n === 1 ? '1 bracelet dans votre collection' :
+                        `${n} bracelets dans votre collection`;
+
+    if (n === 0) {
+        empty.style.display = 'flex';
+        return;
+    }
+    empty.style.display = 'none';
+
+    collectionBracelets.forEach((b, i) => {
+        const card = document.createElement('div');
+        card.className = 'collection-card';
+        card.style.animationDelay = `${i * 0.05}s`;
+
+        const preview = document.createElement('div');
+        preview.className = 'bracelet-preview-mini';
+        preview.style.background = b.couleurFond || '#003057';
+        preview.style.color = b.couleurTexte || '#ffffff';
+        preview.textContent = (b.texte || 'BRACELET').slice(0, 10);
+
+        const info = document.createElement('div');
+        info.className = 'bracelet-card-info';
+        info.innerHTML = `
+            <div class="bracelet-card-name">${escHtml(b.texte || 'Sans titre')}</div>
+            <div class="bracelet-card-meta">${escHtml(b.ville || '?')} · ${escHtml(b.annee || '?')}</div>
+        `;
+
+        const actions = document.createElement('div');
+        actions.className = 'bracelet-card-actions';
+
+        const btnVoir = document.createElement('button');
+        btnVoir.className = 'btn-tiny';
+        btnVoir.textContent = '👁';
+        btnVoir.onclick = (e) => { e.stopPropagation(); openModal(b); };
+        actions.appendChild(btnVoir);
+
+        // Bouton coeur (déjà liké dans la collection)
+        const btnHeart = document.createElement('button');
+        btnHeart.className = 'btn-heart liked';
+        btnHeart.dataset.id = b.id;
+        btnHeart.title = 'Retirer de ma collection';
+        btnHeart.textContent = '♥';
+        btnHeart.onclick = async (e) => { e.stopPropagation(); await toggleCollection(b.id, btnHeart); };
+        actions.appendChild(btnHeart);
+
+        card.appendChild(preview);
+        card.appendChild(info);
+        card.appendChild(actions);
+        card.onclick = () => { loadBraceletIn3D(b); };
+        grid.appendChild(card);
+    });
+}
 
 // ============================================================
 // CHARGEMENT BRACELETS
@@ -527,6 +714,7 @@ async function loadBracelets() {
         allBracelets = [];
         snap.forEach(d => allBracelets.push({ id: d.id, ...d.data() }));
         applyFilters();
+        if (currentUser) renderCollection();
         document.getElementById('loading-bracelets').style.display = 'none';
         document.getElementById('bracelets-grid').style.display = 'flex';
     } catch(e) {
@@ -535,18 +723,16 @@ async function loadBracelets() {
     }
 }
 
+// FIX: Utilisation des bons IDs inp-ville et inp-annee-form
 async function loadListes() {
     const ville = document.getElementById('inp-ville').value;
-    const annee = document.getElementById('inp-annee').value;
+    const annee = document.getElementById('inp-annee-form').value;
     const select = document.getElementById('inp-liste-liee');
     
-    // On réinitialise le menu
     select.innerHTML = '<option value="">— Aucune liste —</option>';
     
-    // Si la ville ou l'année n'est pas sélectionnée, on s'arrête
     if (!ville || !annee) return;
 
-    // 1. Ajouter les options fixes BDE et BDP
     const entitesFixes = ['BDE', 'BDP'];
     entitesFixes.forEach(entite => {
         const opt = document.createElement('option');
@@ -555,7 +741,6 @@ async function loadListes() {
         select.appendChild(opt);
     });
 
-    // 2. Charger les listes depuis les 3 sous-collections
     const sousCollections = ['listes_bde', 'listes_bdp', 'fakelistes'];
     const basePath = `ecoles/${ville}/archives/${annee}`;
     
@@ -568,17 +753,15 @@ async function loadListes() {
         
         results.forEach((snap, index) => {
             if (!snap.empty) {
-                // On crée un groupe visuel pour séparer BDE, BDP et Fakes
                 const label = sousCollections[index].replace('listes_', '').toUpperCase();
                 const group = document.createElement('optgroup');
                 group.label = `--- LISTES ${label} ---`;
                 
-                snap.forEach(doc => {
-                    const data = doc.data();
+                snap.forEach(docSnap => {
+                    const data = docSnap.data();
                     const opt = document.createElement('option');
-                    // On utilise le champ "nom" du document, ou son ID s'il n'y a pas de champ nom
-                    opt.value = data.nom || doc.id; 
-                    opt.textContent = data.nom || doc.id;
+                    opt.value = data.nom || docSnap.id; 
+                    opt.textContent = data.nom || docSnap.id;
                     group.appendChild(opt);
                 });
                 select.appendChild(group);
@@ -662,11 +845,21 @@ function renderBracelets() {
         const actions = document.createElement('div');
         actions.className = 'bracelet-card-actions';
 
+        // Bouton Voir
         const btnVoir = document.createElement('button');
         btnVoir.className = 'btn-tiny';
         btnVoir.textContent = '👁';
         btnVoir.onclick = (e) => { e.stopPropagation(); openModal(b); };
         actions.appendChild(btnVoir);
+
+        // Bouton Coeur (collection)
+        const btnHeart = document.createElement('button');
+        btnHeart.className = 'btn-heart' + (userCollection.has(b.id) ? ' liked' : '');
+        btnHeart.dataset.id = b.id;
+        btnHeart.title = userCollection.has(b.id) ? 'Retirer de ma collection' : 'Ajouter à ma collection';
+        btnHeart.textContent = '♥';
+        btnHeart.onclick = async (e) => { e.stopPropagation(); await toggleCollection(b.id, btnHeart); };
+        actions.appendChild(btnHeart);
 
         if (canAdmin) {
             const btnEdit = document.createElement('button');
@@ -736,29 +929,29 @@ window.updatePreview = function() {
 };
 
 // ============================================================
-// SUBMIT BRACELET
+// SUBMIT BRACELET — FIX: lecture de inp-annee-form
 // ============================================================
 window.submitBracelet = async function(isProposal) {
-        if (!currentUser) { alert('Connectez-vous d\'abord.'); return; }
+    if (!currentUser) { alert('Connectez-vous d\'abord.'); return; }
     const feedback = document.getElementById('add-feedback');
     feedback.textContent = "Vérification...";
     feedback.className = "";
 
-    // 1. Vérification de la limite anti-spam
     try {
         const limiteAtteinte = await aAtteintLimiteQuotidienne();
         if (limiteAtteinte) {
             feedback.textContent = "🚫 Limite quotidienne atteinte (max 5). Revenez demain !";
             feedback.className = "err";
-            return; // On arrête tout ici
+            return;
         }
     } catch (e) {
         console.error("Erreur vérification limite:", e);
     }
+
     const data = {
         texte: document.getElementById('inp-texte').value.trim(),
         ville: document.getElementById('inp-ville').value,
-        annee: document.getElementById('inp-annee').value,
+        annee: document.getElementById('inp-annee-form').value,   // FIX
         couleurFond: document.getElementById('inp-bg-color').value,
         couleurTexte: document.getElementById('inp-text-color').value,
         listeLiee: document.getElementById('inp-liste-liee').value || null,
@@ -808,6 +1001,7 @@ window.submitBracelet = async function(isProposal) {
         btn.disabled = false;
     }
 };
+
 function setFeedback(msg, isErr = false) {
     const el = document.getElementById('add-feedback');
     el.textContent = msg;
@@ -817,7 +1011,7 @@ function setFeedback(msg, isErr = false) {
 function resetForm() {
     document.getElementById('inp-texte').value = '';
     document.getElementById('inp-ville').value = '';
-    document.getElementById('inp-annee').value = '';
+    document.getElementById('inp-annee-form').value = '';   // FIX
     document.getElementById('inp-bg-color').value = '#0066cc';
     document.getElementById('inp-bg-hex').value = '#0066cc';
     document.getElementById('inp-text-color').value = '#ffffff';
@@ -831,7 +1025,7 @@ function openEditForm(b) {
     editingBraceletId = b.id;
     document.getElementById('inp-texte').value = b.texte || '';
     document.getElementById('inp-ville').value = b.ville || '';
-    document.getElementById('inp-annee').value = b.annee || '';
+    document.getElementById('inp-annee-form').value = b.annee || '';   // FIX
     document.getElementById('inp-bg-color').value = b.couleurFond || '#0066cc';
     document.getElementById('inp-bg-hex').value = b.couleurFond || '#0066cc';
     document.getElementById('inp-text-color').value = b.couleurTexte || '#ffffff';
@@ -853,10 +1047,8 @@ window.switchTab = function(tab) {
 };
 
 // ============================================================
-// THREE.JS - MOTEUR 3D SILICONE EXTRUDÉ
+// THREE.JS
 // ============================================================
-
-// Génère la texture visuelle ET la carte de relief (bump map)
 function createBraceletTextures(bgColor, textColor, text) {
     const canvas = document.createElement('canvas');
     canvas.width = 4096; canvas.height = 256;
@@ -866,17 +1058,13 @@ function createBraceletTextures(bgColor, textColor, text) {
     bumpCanvas.width = 4096; bumpCanvas.height = 256;
     const bCtx = bumpCanvas.getContext('2d');
 
-    // 1. Fond
     ctx.fillStyle = bgColor || '#003057';
     ctx.fillRect(0, 0, canvas.width, canvas.height);
     bCtx.fillStyle = '#808080';
     bCtx.fillRect(0, 0, bumpCanvas.width, bumpCanvas.height);
 
-    // 2. Texte (On a enlevé le .toUpperCase() ici)
     const val = (text || ''); 
     
-    // 3. Calcul de la taille de la police (Auto-scale)
-    // On utilise "Arial" plutôt qu'Arial Black pour que les minuscules soient plus lisibles
     let fontSize = 130; 
     ctx.font = `900 ${fontSize}px "Arial", "Segoe UI Emoji", sans-serif`;
     
@@ -890,7 +1078,6 @@ function createBraceletTextures(bgColor, textColor, text) {
 
     const finalFont = `900 ${fontSize}px "Arial", "Segoe UI Emoji", sans-serif`;
 
-    // 4. Fonction de dessin teintée (pour les emojis et les lettres)
     const drawTintedText = (targetCtx, color, x, y) => {
         const tempCanvas = document.createElement('canvas');
         tempCanvas.width = canvas.width;
@@ -901,7 +1088,6 @@ function createBraceletTextures(bgColor, textColor, text) {
         tCtx.textAlign = 'center';
         tCtx.textBaseline = 'middle';
         tCtx.fillStyle = '#000000';
-        // On dessine le texte tel quel (minuscules incluses)
         tCtx.fillText(val, x, y);
 
         tCtx.globalCompositeOperation = 'source-in';
@@ -911,13 +1097,10 @@ function createBraceletTextures(bgColor, textColor, text) {
         targetCtx.drawImage(tempCanvas, 0, 0);
     };
 
-    // 5. Rendu final sur les deux faces
     [0.25, 0.75].forEach(pos => {
         const x = canvas.width * pos;
         const y = canvas.height / 2;
-
         drawTintedText(ctx, textColor || '#ffffff', x, y);
-
         bCtx.shadowBlur = 4;
         bCtx.shadowColor = 'white';
         drawTintedText(bCtx, '#ffffff', x, y);
@@ -931,23 +1114,20 @@ function createBraceletTextures(bgColor, textColor, text) {
 
 function createBracelet(bgColor, textColor, text) {
     const group = new THREE.Group();
-
-    // Paramètres géométriques pour un bracelet massif
     const radiusOuter = 3.5;
-    const radiusInner = 3.3;  // Différence = 0.25 (C'est la vraie épaisseur de ton silicone)
-    const height = 0.65;       // C'est la largeur du bracelet
-    const radialSegments = 128; // Très lisse
+    const radiusInner = 3.3;
+    const height = 0.65;
+    const radialSegments = 128;
 
     const textures = createBraceletTextures(bgColor, textColor, text);
 
-    // Matériau Physique pour le silicone
     const siliconeMaterialOuter = new THREE.MeshPhysicalMaterial({
         map: textures.map,
         bumpMap: textures.bumpMap,
-        bumpScale: 0.08,        // L'effet d'extrusion 3D
-        roughness: 0.85,        // Silicone mat...
+        bumpScale: 0.08,
+        roughness: 0.85,
         metalness: 0.0,
-        clearcoat: 0.2,         // ...mais qui reflète légèrement la lumière
+        clearcoat: 0.2,
         clearcoatRoughness: 0.5
     });
 
@@ -957,7 +1137,7 @@ function createBracelet(bgColor, textColor, text) {
         metalness: 0.0,
         clearcoat: 0.2,
         clearcoatRoughness: 0.5,
-        side: THREE.BackSide    // Pour l'intérieur de l'anneau
+        side: THREE.BackSide
     });
 
     const siliconeMaterialCaps = new THREE.MeshPhysicalMaterial({
@@ -969,14 +1149,12 @@ function createBracelet(bgColor, textColor, text) {
         side: THREE.DoubleSide
     });
 
-    // Création des différentes parties
     const outerGeo = new THREE.CylinderGeometry(radiusOuter, radiusOuter, height, radialSegments, 1, true);
     const outerMesh = new THREE.Mesh(outerGeo, siliconeMaterialOuter);
 
     const innerGeo = new THREE.CylinderGeometry(radiusInner, radiusInner, height, radialSegments, 1, true);
     const innerMesh = new THREE.Mesh(innerGeo, siliconeMaterialInner);
 
-    // Bords (caps) en haut et en bas pour fermer la géométrie et donner l'illusion d'une masse solide
     const topCapGeo = new THREE.RingGeometry(radiusInner, radiusOuter, radialSegments);
     const topCap = new THREE.Mesh(topCapGeo, siliconeMaterialCaps);
     topCap.rotation.x = -Math.PI / 2;
@@ -987,16 +1165,14 @@ function createBracelet(bgColor, textColor, text) {
     bottomCap.rotation.x = Math.PI / 2;
     bottomCap.position.y = -height / 2;
 
-    // Assemblage
     group.add(outerMesh);
     group.add(innerMesh);
     group.add(topCap);
     group.add(bottomCap);
 
-    group.rotation.x = 0.2; // Légère inclinaison pour mieux voir l'épaisseur du bord supérieur
+    group.rotation.x = 0.2;
     group.rotation.z = 0.05;
 
-    // Sauvegarde des références pour les mises à jour en direct
     group.userData = {
         outerMesh, innerMesh, topCap, bottomCap,
         map: textures.map, bumpMap: textures.bumpMap,
@@ -1010,7 +1186,6 @@ function updateBraceletColors(braceletGroup, bgColor, textColor, text) {
     if (!braceletGroup) return;
     const data = braceletGroup.userData || {};
 
-    // Nettoyage de la mémoire de l'ancienne carte
     if (data.map) data.map.dispose();
     if (data.bumpMap) data.bumpMap.dispose();
 
@@ -1057,18 +1232,14 @@ function initMainViewer() {
     mainRenderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
     mainRenderer.setClearColor(0x000000, 0);
 
-    // Un bump map (relief) a besoin d'un bon éclairage directionnel pour être visible
-    mainScene.add(new THREE.AmbientLight(0xffffff, 0.6)); // Lumière de base
-
+    mainScene.add(new THREE.AmbientLight(0xffffff, 0.6));
     const sun = new THREE.DirectionalLight(0xffffff, 1.2);
     sun.position.set(10, 10, 10);
     mainScene.add(sun);
-
-    const fill = new THREE.DirectionalLight(0xaaccff, 0.6); // Lumière d'ambiance bleue/froide
+    const fill = new THREE.DirectionalLight(0xaaccff, 0.6);
     fill.position.set(-10, -5, -10);
     mainScene.add(fill);
-
-    const pointLight = new THREE.PointLight(0xffffff, 0.8, 50); // Lumière proche pour faire briller l'extrusion
+    const pointLight = new THREE.PointLight(0xffffff, 0.8, 50);
     pointLight.position.set(0, 2, 5);
     mainScene.add(pointLight);
 
@@ -1118,11 +1289,9 @@ function loadBraceletIn3D(b) {
 
     const nameEl = document.getElementById('viewer-bracelet-name');
     const infoEl = document.getElementById('viewer-bracelet-info');
-
     nameEl.textContent = (b.texte || 'BRACELET').toUpperCase();
     infoEl.textContent = `${b.ville ? b.ville.toUpperCase() : ''} · ${b.annee || ''}`;
     nameEl.style.opacity = '1';
-
     document.getElementById('viewer-hint').style.opacity = '0';
     selectedBraceletData = b;
 }
@@ -1185,7 +1354,6 @@ function initModalViewer(b) {
     modalRenderer.setSize(canvas.clientWidth || 480, 120);
     modalRenderer.setClearColor(0x070d14, 1);
 
-    // Lumières pour le modal (adaptées à l'extrusion de la bump map)
     const amb = new THREE.AmbientLight(0xffffff, 0.6);
     modalScene.add(amb);
     const dir = new THREE.DirectionalLight(0xffffff, 1.2);
@@ -1220,6 +1388,7 @@ document.addEventListener('DOMContentLoaded', () => {
     initMainViewer();
     loadBracelets();
     updatePreview();
+    showCollectionContent(false); // Par défaut non connecté
 });
 window.loadBracelets = loadBracelets;
 </script>
