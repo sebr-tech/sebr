@@ -606,31 +606,26 @@
     📍 Cliquez sur une école pour voir ses bureaux et ses listes.
     </div>
     
-    <div id="sidebar-section">
-        <div id="blog-container" style="height: 100%; display: flex; flex-direction: column; overflow-y: auto;">
-            <div style="text-align:center; padding:20px; color:var(--poly-cyan);">Chargement du Guide du Rezo...</div>
+   <div id="sidebar-section">
+      <div id="blog-container" style="height:100%; display:flex; flex-direction:column; overflow-y:auto">
+        <div style="text-align:center; padding:20px; color:var(--poly-cyan);">
+          Chargement du Guide du Rezo...
         </div>
+      </div>
     
-        <div id="school-container" class="hidden">
-            <h2 id="side-title"></h2>
-            <div id="side-content"></div>
-        </div>
-    </div>
-
-    <div id="school-container" class="hidden">
+      <div id="school-container" class="hidden">
         <div class="side-header-flex">
-            <h2 id="side-title">Le Rezo Polytech</h2>
-            <select id="annee-selector">
-                <option value="2026-2027">2026-2027</option>
-                <option value="2025-2026" selected>2025-2026</option>
-                <option value="2024-2025">2024-2025</option>
-                <option value="2023-2024">2023-2024</option>
-            </select>
+          <h2 id="side-title">Le Rezo Polytech</h2>
+          <select id="annee-selector">
+            <option value="2026-2027">2026-2027</option>
+            <option value="2025-2026" selected>2025-2026</option>
+            <option value="2024-2025">2024-2025</option>
+            <option value="2023-2024">2023-2024</option>
+          </select>
         </div>
-        <div id="side-content">
-            </div>
+        <div id="side-content"></div>
+      </div>
     </div>
-</div>
 
     
 
@@ -808,132 +803,102 @@
     });
 
    async function ouvrirEcole(ecoleId, name, cityColor) {
-  // 1. Basculer l'affichage
-  document.getElementById('blog-container').classList.add('hidden');
-  document.getElementById('school-container').classList.remove('hidden');
-
-  document.querySelectorAll('.ecole-point').forEach(point => {
-    point.classList.remove('active');
-  });
-
-  const pointActif = document.querySelector(`.ecole-point[data-folder="${ecoleId}"]`);
-  if (pointActif) {
-    pointActif.classList.add('active');
-  }
-
-  // 2. Sauvegarder l'école courante
-  currentEcole = {
-    id: ecoleId,
-    name,
-    color: cityColor
-  };
-
-  const annee = document.getElementById('annee-selector').value;
-
-  // 3. Mettre à jour le titre latéral
-  sideTitle.innerHTML = `
-    Polytech ${name}
-    <img 
-      src="${ecoleId}.png" 
-      style="height:50px; vertical-align:middle; margin-left:10px;"
-      onerror="this.style.display='none'"
-    >
-  `;
-  sideTitle.style.color = cityColor;
-
-  // 4. Afficher le loader initial
-  sideContent.innerHTML = `
-    <div class="btn-back" onclick="retourAuBlog()">← Retour au Guide du Rezo</div>
-    <div id="dynamic-area">
-      <div class="loading-text" style="text-align:center; padding:20px; font-weight:bold; color:${cityColor};">
-        Chargement des données ${annee}...
-      </div>
-    </div>
-  `;
-
-  const dynamicArea = document.getElementById('dynamic-area');
-
-  try {
-    // 5. Charger l'événement
-    const eventSnap = await fetchWithCache('ecoles', ecoleId, 'events', annee);
-    let eventHtml = '';
-
-    if (eventSnap.exists() && eventSnap.data().soiree) {
-      const e = eventSnap.data().soiree;
-
-      if (e.nom && e.nom.trim() !== '') {
-        eventHtml = `
-          <div class="rezo-banner" style="border-bottom: 3px solid ${cityColor};">
-            <span style="color:var(--poly-cyan); font-weight:bold; font-size:1.1em;">
-              REZO 🎉 ${e.nom.toUpperCase()}
-            </span><br>
-            <span style="color:#aaa; font-size:0.9em;">
-              📅 ${formaterDate(e.date) || 'À venir'}
-            </span>
-          </div>
-        `;
-      }
-    }
-
-    // 6. Charger les archives
-    const archSnap = await fetchWithCache('ecoles', ecoleId, 'archives', annee);
-
-    if (archSnap.exists()) {
-      const d = archSnap.data();
-      let sections = '';
-
-      if (d.campagne_start || d.passation_date) {
-        sections += `
-          <div class="category-wrapper">
-            <div class="category-title" style="color:${cityColor}">
-              Calendrier local
-            </div>
-            ${
-              d.campagne_start
-                ? `<div class="rezo-banner" style="animation-delay: 0.1s;">
-                    🗳️ Campagne : ${formaterDate(d.campagne_start)} au ${formaterDate(d.campagne_end) || '...'}
-                  </div>`
-                : ''
-            }
-            ${
-              d.passation_date
-                ? `<div class="rezo-banner" style="animation-delay: 0.2s;">
-                    🤝 Passation : ${formaterDate(d.passation_date)}
-                  </div>`
-                : ''
-            }
-          </div>
-        `;
-      }
-
-      sections += renderSection('BDE', d.bde_actuel, cityColor, ecoleId, annee, 'bde_actuel');
-
-      if (d.bdp_actuel && (d.bdp_actuel.nom || d.bdp_actuel.prez)) {
-        sections += renderSection('BDP', d.bdp_actuel, cityColor, ecoleId, annee, 'bdp_actuel');
-      }
-
-      sections += renderSection('Listes BDE', d.listes_bde, cityColor, ecoleId, annee, 'listes_bde');
-      sections += renderSection('Listes BDP', d.listes_bdp, cityColor, ecoleId, annee, 'listes_bdp');
-      sections += renderSection('Fakelistes', d.fakelistes, cityColor, ecoleId, annee, 'fakelistes');
-
-      dynamicArea.innerHTML = eventHtml + sections;
-    } else {
-      dynamicArea.innerHTML = `
-        ${eventHtml}
-        <p style="color:#666; text-align:center; animation: slideUpFade 0.4s ease-out;">
-          Aucune donnée pour cette année.
-        </p>
+      document.getElementById('blog-container').classList.add('hidden');
+      document.getElementById('school-container').classList.remove('hidden');
+    
+      document.querySelectorAll('.ecole-point').forEach(point => {
+        point.classList.remove('active');
+      });
+    
+      const pointActif = document.querySelector(`.ecole-point[data-folder="${ecoleId}"]`);
+      if (pointActif) pointActif.classList.add('active');
+    
+      currentEcole = { id: ecoleId, name, color: cityColor };
+    
+      const annee = document.getElementById('annee-selector').value;
+    
+      sideTitle.innerHTML = `
+        Polytech ${name}
+        <img src="${ecoleId}.png"
+             style="height:50px; vertical-align:middle; margin-left:10px;"
+             onerror="this.style.display='none'">
       `;
+      sideTitle.style.color = cityColor;
+    
+      sideContent.innerHTML = `
+        <div class="btn-back" onclick="retourAuBlog()">← Retour au Guide du Rezo</div>
+        <div id="dynamic-area">
+          <div class="loading-text" style="text-align:center; padding:20px; font-weight:bold; color:${cityColor};">
+            Chargement des données ${annee}...
+          </div>
+        </div>
+      `;
+    
+      const dynamicArea = document.getElementById('dynamic-area');
+    
+      try {
+        const eventSnap = await fetchWithCache('ecoles', ecoleId, 'events', annee);
+        let eventHtml = '';
+    
+        if (eventSnap.exists() && eventSnap.data().soiree) {
+          const e = eventSnap.data().soiree;
+          if (e.nom && e.nom.trim() !== '') {
+            eventHtml = `
+              <div class="rezo-banner" style="border-bottom:3px solid ${cityColor};">
+                <span style="color:var(--poly-cyan); font-weight:bold; font-size:1.1em;">
+                  REZO 🎉 ${e.nom.toUpperCase()}
+                </span><br>
+                <span style="color:#aaa; font-size:0.9em;">
+                  📅 ${formaterDate(e.date) || 'À venir'}
+                </span>
+              </div>
+            `;
+          }
+        }
+    
+        const archSnap = await fetchWithCache('ecoles', ecoleId, 'archives', annee);
+    
+        if (archSnap.exists()) {
+          const d = archSnap.data();
+          let sections = '';
+    
+          if (d.campagne_start || d.passation_date) {
+            sections += `
+              <div class="category-wrapper">
+                <div class="category-title" style="color:${cityColor}">Calendrier local</div>
+                ${d.campagne_start ? `<div class="rezo-banner">🗳️ Campagne : ${formaterDate(d.campagne_start)} au ${formaterDate(d.campagne_end) || '...'}</div>` : ''}
+                ${d.passation_date ? `<div class="rezo-banner">🤝 Passation : ${formaterDate(d.passation_date)}</div>` : ''}
+              </div>
+            `;
+          }
+    
+          sections += renderSection('BDE', d.bde_actuel, cityColor, ecoleId, annee, 'bde_actuel');
+    
+          if (d.bdp_actuel && (d.bdp_actuel.nom || d.bdp_actuel.prez)) {
+            sections += renderSection('BDP', d.bdp_actuel, cityColor, ecoleId, annee, 'bdp_actuel');
+          }
+    
+          sections += renderSection('Listes BDE', d.listes_bde, cityColor, ecoleId, annee, 'listes_bde');
+          sections += renderSection('Listes BDP', d.listes_bdp, cityColor, ecoleId, annee, 'listes_bdp');
+          sections += renderSection('Fakelistes', d.fakelistes, cityColor, ecoleId, annee, 'fakelistes');
+    
+          dynamicArea.innerHTML = eventHtml + sections;
+        } else {
+          dynamicArea.innerHTML = eventHtml + `
+            <p style="color:#666; text-align:center; animation:slideUpFade 0.4s ease-out;">
+              Aucune donnée pour cette année.
+            </p>
+          `;
+        }
+      } catch (error) {
+        console.error(error);
+        dynamicArea.innerHTML = `
+          <p style="color:#ff8080; text-align:center;">
+            Erreur lors du chargement des données.
+          </p>
+        `;
+      }
     }
-  } catch (error) {
-    console.error(error);
-    dynamicArea.innerHTML = `
-      <p style="color:#ff8080; text-align:center;">
-        Erreur lors du chargement des données.
-      </p>
-    `;
-  }
-}
 
     function renderSection(title, data, cityColor, ecoleId, annee, type) {
         if (!data || (Array.isArray(data) && data.length === 0)) {
