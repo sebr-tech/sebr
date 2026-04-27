@@ -2,51 +2,27 @@
 <html lang="fr">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
 <style>
-  @import url('https://fonts.googleapis.com/css2?family=Syne:wght@700;800&family=DM+Sans:wght@400;500&display=swap');
+  /* Styles standalone si blog.html est ouvert seul */
+  body { font-family: 'DM Sans', 'Segoe UI', sans-serif; background: #f5f7fa; margin: 0; padding: 0; }
 
-  * { box-sizing: border-box; margin: 0; padding: 0; }
-
-  body {
-    font-family: 'DM Sans', sans-serif;
-    background: #f5f7fa;
-    color: #1a1a2e;
-    min-height: 100vh;
-  }
-
-  header {
-    background: #009FE3;
-    padding: 18px 24px 0;
-    box-shadow: 0 4px 20px rgba(0,159,227,0.25);
-  }
-
-  header h1 {
-    font-family: 'Syne', sans-serif;
-    font-size: 1.1rem;
-    font-weight: 800;
-    color: white;
-    letter-spacing: 0.05em;
-    text-transform: uppercase;
-    opacity: 0.9;
-    margin-bottom: 14px;
-  }
-
-  .tabs {
+  .blog-tabs-nav {
     display: flex;
     gap: 4px;
     overflow-x: auto;
     scrollbar-width: none;
+    background: #009FE3;
+    padding: 14px 18px 0;
   }
-  .tabs::-webkit-scrollbar { display: none; }
+  .blog-tabs-nav::-webkit-scrollbar { display: none; }
 
-  .tab-btn {
+  .blog-tab-btn {
     background: rgba(255,255,255,0.15);
     color: white;
     border: none;
     border-radius: 8px 8px 0 0;
     padding: 10px 14px;
-    font-family: 'DM Sans', sans-serif;
+    font-family: inherit;
     font-size: 13px;
     font-weight: 500;
     cursor: pointer;
@@ -54,55 +30,42 @@
     transition: background 0.2s, transform 0.15s;
     outline: none;
   }
-
-  .tab-btn:hover {
-    background: rgba(255,255,255,0.25);
-  }
-
-  .tab-btn.active {
+  .blog-tab-btn:hover { background: rgba(255,255,255,0.25); }
+  .blog-tab-btn.active {
     background: #f5f7fa;
     color: #009FE3;
     font-weight: 700;
     transform: translateY(2px);
   }
 
-  .content-area {
+  .blog-content-area {
     padding: 28px 24px;
     max-width: 720px;
-    margin: 0 auto;
   }
 
-  .tab-panel {
-    display: none;
-    animation: fadeIn 0.3s ease;
-  }
+  .blog-panel { display: none; animation: blogFadeIn 0.3s ease; }
+  .blog-panel.active { display: block; }
 
-  .tab-panel.active {
-    display: block;
-  }
-
-  @keyframes fadeIn {
+  @keyframes blogFadeIn {
     from { opacity: 0; transform: translateY(6px); }
     to   { opacity: 1; transform: translateY(0); }
   }
 
-  h2 {
-    font-family: 'Syne', sans-serif;
-    font-size: 1.5rem;
+  .blog-content-area h2 {
+    font-family: 'Syne', 'Segoe UI', sans-serif;
+    font-size: 1.4rem;
     font-weight: 800;
     color: #009FE3;
-    margin-bottom: 14px;
+    margin: 0 0 14px;
     padding-bottom: 10px;
     border-bottom: 2px solid #e0e8f0;
   }
 
-  p { line-height: 1.7; margin-bottom: 12px; color: #333; font-size: 0.95rem; }
-
-  ul { padding-left: 18px; }
-  li { margin-bottom: 12px; line-height: 1.65; font-size: 0.95rem; }
-
-  strong { color: #005a87; }
-  em { color: #666; }
+  .blog-content-area p { line-height: 1.7; margin-bottom: 12px; color: #333; font-size: 0.95rem; }
+  .blog-content-area ul { padding-left: 18px; }
+  .blog-content-area li { margin-bottom: 12px; line-height: 1.65; font-size: 0.95rem; }
+  .blog-content-area strong { color: #005a87; }
+  .blog-content-area em { color: #666; }
 
   .badge {
     display: inline-block;
@@ -121,27 +84,26 @@
 </head>
 <body>
 
-<header>
-  <h1>🎓 Guide du Bizuth Polytech</h1>
-  <div class="tabs">
-    <button class="tab-btn active" data-tab="accueil">🏠 Accueil</button>
-    <button class="tab-btn" data-tab="evenements">🎉 Événements</button>
-    <button class="tab-btn" data-tab="combar">🩱 Combar</button>
-    <button class="tab-btn" data-tab="bracelets">🎟️ Bracelets</button>
-    <button class="tab-btn" data-tab="bde">🏛️ BDE & BDP</button>
-    <button class="tab-btn" data-tab="campagnes">⚔️ Campagnes</button>
-  </div>
-</header>
+<!-- NAVIGATION ONGLETS -->
+<nav class="blog-tabs-nav" id="blog-tabs-nav">
+  <button class="blog-tab-btn active" data-blog-tab="accueil">🏠 Accueil</button>
+  <button class="blog-tab-btn" data-blog-tab="evenements">🎉 Événements</button>
+  <button class="blog-tab-btn" data-blog-tab="combar">🩱 Combar</button>
+  <button class="blog-tab-btn" data-blog-tab="bracelets">🎟️ Bracelets</button>
+  <button class="blog-tab-btn" data-blog-tab="bde">🏛️ BDE & BDP</button>
+  <button class="blog-tab-btn" data-blog-tab="campagnes">⚔️ Campagnes</button>
+</nav>
 
-<div class="content-area">
+<!-- CONTENU -->
+<div class="blog-content-area">
 
-  <div id="accueil" class="tab-panel active">
+  <div id="blog-panel-accueil" class="blog-panel active">
     <h2>Bienvenue dans le Rézo !</h2>
     <p>Tu viens de débarquer à Polytech et tu entends un vocabulaire bizarre ? Pas de panique ! Le "Rézo Polytech", c'est 15 écoles en France, mais c'est surtout une grande famille avec ses propres traditions, son argot et son folklore.</p>
     <p>Ce mini-guide est là pour t'aider à décrypter cet univers. Explore les onglets pour tout savoir sur la vie étudiante, de la fameuse "combar" aux campagnes BDE !</p>
   </div>
 
-  <div id="evenements" class="tab-panel">
+  <div id="blog-panel-evenements" class="blog-panel">
     <h2>Le Rézo ne dort jamais.</h2>
     <p>Tout au long de l'année, les écoles se rencontrent lors d'événements nationaux épiques :</p>
     <ul>
@@ -152,28 +114,28 @@
     </ul>
   </div>
 
-    <div id="bde" class="tab-panel">
-    <h2>Ceux qui font bouger l'école.</h2>
-    <ul>
-      <li><strong>Le BDE</strong> (Bureau des Élèves) : C'est le cœur de la vie locale. Ils organisent les soirées, les activités, gèrent le foyer et les clubs de ton école.</li>
-      <li><strong>Le BDP</strong> (Bureau des Polytech) ou BDR : C'est le pont entre ton école et les 14 autres. Ils s'assurent de la cohésion nationale et organisent les déplacements pour les événements inter-écoles.</li>
-    </ul>
-  </div>
-    
-  <div id="combar" class="tab-panel">
+  <div id="blog-panel-combar" class="blog-panel">
     <h2>Ton armure d'étudiant.</h2>
     <p>Oublie les costards, ici l'habit officiel, c'est la <strong>"combar"</strong> (salopette) !</p>
     <p>Chaque école a sa propre couleur (bleu, rouge, jaune, noir...). Au fil de tes années, tu vas la personnaliser : tu y coudras ton surnom, l'écusson de ton école, ceux des autres Polytech que tu rencontreras, et des patchs liés à tes exploits.</p>
     <p><em>Attention : il y a des règles non-écrites sur la façon de la porter, tu les apprendras vite !</em></p>
   </div>
 
-  <div id="bracelets" class="tab-panel">
+  <div id="blog-panel-bracelets" class="blog-panel">
     <h2>Ton CV de fêtard.</h2>
     <p>À chaque événement, soirée ou rassemblement majeur, tu recevras un bracelet en tissu. La tradition ? Ne <em>jamais</em> les enlever (ou du moins en faire une belle collection sur ton sac ou ta combar).</p>
     <p>Plus tu as de bracelets à ton poignet, plus tu prouves que tu as roulé ta bosse dans le Rézo. Certains se les échangent même en signe d'amitié entre écoles.</p>
   </div>
 
-  <div id="campagnes" class="tab-panel">
+  <div id="blog-panel-bde" class="blog-panel">
+    <h2>Ceux qui font bouger l'école.</h2>
+    <ul>
+      <li><strong>Le BDE</strong> (Bureau des Élèves) : C'est le cœur de la vie locale. Ils organisent les soirées, les activités, gèrent le foyer et les clubs de ton école.</li>
+      <li><strong>Le BDP</strong> (Bureau des Polytech) ou BDR : C'est le pont entre ton école et les 14 autres. Ils s'assurent de la cohésion nationale et organisent les déplacements pour les événements inter-écoles.</li>
+    </ul>
+  </div>
+
+  <div id="blog-panel-campagnes" class="blog-panel">
     <h2>La semaine de la folie.</h2>
     <p>Pour élire le nouveau BDE, c'est la "période des campagnes".</p>
     <ul>
@@ -184,15 +146,21 @@
 
 </div>
 
+<!-- Script actif uniquement si blog.html est ouvert en standalone -->
 <script>
-  document.querySelectorAll('.tab-btn').forEach(btn => {
-    btn.addEventListener('click', () => {
-      document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
-      document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
-      btn.classList.add('active');
-      document.getElementById(btn.dataset.tab).classList.add('active');
-    });
-  });
+  (function() {
+    // N'active ce script que si on est dans blog.html directement (pas dans un innerHTML)
+    if (document.querySelector('html')) {
+      document.querySelectorAll('[data-blog-tab]').forEach(function(btn) {
+        btn.addEventListener('click', function() {
+          document.querySelectorAll('[data-blog-tab]').forEach(function(b) { b.classList.remove('active'); });
+          document.querySelectorAll('.blog-panel').forEach(function(p) { p.classList.remove('active'); });
+          btn.classList.add('active');
+          document.getElementById('blog-panel-' + btn.dataset.blogTab).classList.add('active');
+        });
+      });
+    }
+  })();
 </script>
 
 </body>
