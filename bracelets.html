@@ -146,6 +146,18 @@
         .bracelet-card:hover { border-color: var(--poly-cyan); transform: translateX(3px); box-shadow: -3px 0 10px rgba(0,158,227,0.15); }
         .bracelet-card.selected { border-color: var(--poly-cyan); background: rgba(0,158,227,0.08); }
 
+        /* Mise en évidence du bracelet ciblé par URL */
+        .bracelet-card.highlighted {
+            border-color: var(--poly-cyan);
+            background: rgba(0,158,227,0.12);
+            box-shadow: 0 0 0 2px rgba(0,158,227,0.4), -3px 0 10px rgba(0,158,227,0.3);
+            animation: highlightPulse 1.5s ease-out;
+        }
+        @keyframes highlightPulse {
+            0% { box-shadow: 0 0 0 6px rgba(0,158,227,0.5), -3px 0 20px rgba(0,158,227,0.5); }
+            100% { box-shadow: 0 0 0 2px rgba(0,158,227,0.4), -3px 0 10px rgba(0,158,227,0.3); }
+        }
+
         .bracelet-preview-mini {
             width: 54px; height: 26px; border-radius: 30px; display: flex; align-items: center; justify-content: center;
             font-size: 7px; font-weight: 900; letter-spacing: 1px; text-transform: uppercase;
@@ -529,6 +541,10 @@ let userCollection = new Set(); // IDs des bracelets en collection
 let mainScene, mainCamera, mainRenderer, mainBracelet, animFrameId, controls;
 let modalScene, modalCamera, modalRenderer, modalBracelet, modalAnimId;
 
+// ID du bracelet ciblé via l'URL (?bracelet=ID)
+const urlParams = new URLSearchParams(window.location.search);
+const targetBraceletId = urlParams.get('bracelet') || null;
+
 // ============================================================
 // AUTH
 // ============================================================
@@ -721,6 +737,26 @@ async function loadBracelets() {
         if (currentUser) renderCollection();
         document.getElementById('loading-bracelets').style.display = 'none';
         document.getElementById('bracelets-grid').style.display = 'flex';
+
+        // ── Sélection automatique via paramètre URL ──
+        if (targetBraceletId) {
+            const target = allBracelets.find(b => b.id === targetBraceletId);
+            if (target) {
+                // Charger en 3D immédiatement
+                loadBraceletIn3D(target);
+                // Ouvrir la modal de détail
+                openModal(target);
+                // Mettre en évidence la carte dans la liste après le rendu
+                setTimeout(() => {
+                    const card = document.querySelector(`.bracelet-card[data-bracelet-id="${CSS.escape(targetBraceletId)}"]`);
+                    if (card) {
+                        card.classList.add('selected', 'highlighted');
+                        card.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                    }
+                }, 100);
+            }
+        }
+
     } catch(e) {
         document.getElementById('loading-bracelets').textContent = 'Erreur de chargement.';
         console.error(e);
@@ -876,6 +912,8 @@ function renderBracelets() {
         const card = document.createElement('div');
         card.className = 'bracelet-card';
         card.style.animationDelay = `${i * 0.05}s`;
+        // Attribut data pour permettre la sélection par ID
+        card.dataset.braceletId = b.id;
 
         const preview = document.createElement('div');
         preview.className = 'bracelet-preview-mini';
