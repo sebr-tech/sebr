@@ -495,7 +495,8 @@
 
                     const bBtn = createElement('button', { class: 'btn-voir-bracelet' }, '👁 Voir');
                     bBtn.addEventListener('click', () => {
-                        window.open(`bracelets.html`, '_blank');
+                        // Redirection vers bracelets.html avec l'ID du bracelet en paramètre
+                        window.open(`bracelets.html?bracelet=${encodeURIComponent(b.id)}`, '_blank');
                     });
                     bItem.appendChild(bBtn);
 
