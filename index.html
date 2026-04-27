@@ -122,7 +122,6 @@
             white-space: nowrap;
         }
 
-
         .logo-title .subtitle {
             display: block;
             font-size: 0.7em;
@@ -277,34 +276,31 @@
             100% { box-shadow: 0 0 0 0 rgba(227, 204, 0, 0); }
         }
 
-        /* 1. On retire l'animation de la classe de base */
         .ecole-point {
-          position: absolute;
-          width: 7.5%;
-          aspect-ratio: 1 / 1;
-          border-radius: 50%;
-          cursor: pointer;
-          display: flex;
-          justify-content: center;
-          align-items: center;
-          transition: all 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-          z-index: 10;
-          filter: drop-shadow(0 2px 4px rgba(0,0,0,0.5));
+            position: absolute;
+            width: 7.5%;
+            aspect-ratio: 1 / 1;
+            border-radius: 50%;
+            cursor: pointer;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            transition: all 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            z-index: 10;
+            filter: drop-shadow(0 2px 4px rgba(0,0,0,0.5));
         }
-        
+
         .ecole-point.animate-on-load {
-          animation: popIn 1.2s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+            animation: popIn 1.2s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
         }
-        
-        /* 2. On l'applique seulement quand le body a la classe 'is-loading' */
+
         .is-loading .ecole-point {
             animation: popIn 1.2s cubic-bezier(0.175, 0.885, 0.32, 1.275) backwards;
         }
-        
-        /* On fait de même pour la carte de France si tu veux qu'elle reste fixe après */
+
         .is-loading .france-svg {
             animation: fadeInDropdown 1s ease-out forwards;
-        }        
+        }
 
         .ecole-point:not(.active):hover {
             transform: scale(1.4);
@@ -326,13 +322,105 @@
             border-radius: 50%;
         }
 
+        /* ===== SIDEBAR ===== */
+
         #sidebar-section {
             flex: 1;
             min-width: 380px;
             background: #0b1118;
             border-left: 1px solid #222;
             overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* ===== BLOG (onglets dans la sidebar) ===== */
+
+        #blog-container {
+            display: flex;
+            flex-direction: column;
+            flex: 1;
+        }
+
+        .blog-tabs-nav {
+            display: flex;
+            gap: 4px;
+            overflow-x: auto;
+            scrollbar-width: none;
+            background: #009FE3;
+            padding: 12px 16px 0;
+            flex-shrink: 0;
+        }
+        .blog-tabs-nav::-webkit-scrollbar { display: none; }
+
+        .blog-tab-btn {
+            background: rgba(255,255,255,0.15);
+            color: white;
+            border: none;
+            border-radius: 8px 8px 0 0;
+            padding: 9px 13px;
+            font-family: 'Segoe UI', Roboto, sans-serif;
+            font-size: 12.5px;
+            font-weight: 500;
+            cursor: pointer;
+            white-space: nowrap;
+            transition: background 0.2s, transform 0.15s;
+            outline: none;
+        }
+        .blog-tab-btn:hover { background: rgba(255,255,255,0.25); }
+        .blog-tab-btn.active {
+            background: #0b1118;
+            color: #009FE3;
+            font-weight: 700;
+            transform: translateY(2px);
+        }
+
+        .blog-content-area {
+            padding: 22px 20px;
+            flex: 1;
+            overflow-y: auto;
+        }
+
+        .blog-panel { display: none; animation: blogFadeIn 0.3s ease; }
+        .blog-panel.active { display: block; }
+
+        @keyframes blogFadeIn {
+            from { opacity: 0; transform: translateY(6px); }
+            to   { opacity: 1; transform: translateY(0); }
+        }
+
+        .blog-content-area h2 {
+            color: #009FE3;
+            margin: 0 0 14px;
+            font-size: 1.3rem;
+            padding-bottom: 10px;
+            border-bottom: 2px solid #1e2d3d;
+        }
+        .blog-content-area p { line-height: 1.7; margin-bottom: 12px; color: #ccc; font-size: 0.92rem; }
+        .blog-content-area ul { padding-left: 18px; }
+        .blog-content-area li { margin-bottom: 10px; line-height: 1.65; font-size: 0.92rem; color: #ccc; }
+        .blog-content-area strong { color: #7ecfff; }
+        .blog-content-area em { color: #888; }
+
+        .blog-badge {
+            display: inline-block;
+            background: #009FE3;
+            color: white;
+            font-size: 11px;
+            font-weight: 700;
+            letter-spacing: 0.05em;
+            padding: 2px 8px;
+            border-radius: 20px;
+            margin-left: 6px;
+            vertical-align: middle;
+            text-transform: uppercase;
+        }
+
+        /* ===== SCHOOL VIEW ===== */
+
+        #school-container {
             padding: 25px;
+            flex: 1;
         }
 
         .side-header-flex {
@@ -373,7 +461,6 @@
             cursor: pointer;
             transition: color 0.2s;
         }
-
         .btn-back:hover { color: white; }
 
         .category-wrapper {
@@ -463,11 +550,13 @@
             transition: opacity 0.2s;
         }
 
-        .hidden { display: none !important; opacity: 0; }
+        .hidden { display: none !important; }
+
+        /* ===== FOOTER ===== */
 
         .site-footer {
             text-align: center;
-            padding: 15px;
+            padding: 10px 15px;
             font-size: 0.8em;
             color: #555;
             background: #050a0f;
@@ -483,23 +572,10 @@
         /* ===== RESPONSIVE ===== */
 
         @media (max-width: 1100px) {
-            header {
-                flex-wrap: wrap;
-                padding: 14px 16px;
-            }
-
-            .header-left,
-            .header-right {
-                width: 100%;
-            }
-
-            .header-right {
-                justify-content: space-between;
-            }
-
-            .search-container {
-                width: min(100%, 420px);
-            }
+            header { flex-wrap: wrap; padding: 14px 16px; }
+            .header-left, .header-right { width: 100%; }
+            .header-right { justify-content: space-between; }
+            .search-container { width: min(100%, 420px); }
         }
 
         @media (max-width: 850px) {
@@ -526,8 +602,7 @@
                 max-width: none;
             }
 
-            .logo-title,
-            .user-greeting {
+            .logo-title, .user-greeting {
                 text-align: center;
                 max-width: none;
             }
@@ -539,10 +614,7 @@
                 background: radial-gradient(circle at center, #87CEEB 0%, #050a0f 100%);
             }
 
-            .map-wrapper {
-                width: 90%;
-                transform: scale(1.05);
-            }
+            .map-wrapper { width: 90%; transform: scale(1.05); }
 
             #sidebar-section {
                 min-width: 100%;
@@ -552,7 +624,7 @@
         }
     </style>
 </head>
-    
+
 <body class="is-loading">
 
 <header>
@@ -602,489 +674,460 @@
             <div class="ecole-point animate-on-load" style="top: 78%; left: 59%; --halo-color: #1674b9; animation-delay: 2.8s;" data-name="Montpellier" data-folder="montpellier"><img src="montpellier.png" alt="Montpellier"></div>
             <div class="ecole-point animate-on-load" style="top: 78%; left: 71%; --halo-color: #00a5b5; animation-delay: 3.0s;" data-name="Marseille" data-folder="marseille"><img src="marseille.png" alt="Marseille"></div>
             <div class="ecole-point animate-on-load" style="top: 80%; left: 83%; --halo-color: #b3d334; animation-delay: 3.2s;" data-name="Nice Sophia" data-folder="nice"><img src="nice.png" alt="Nice"></div>
-            </div>
-    </div>
-    
-   <div id="sidebar-section">
-      <div id="blog-container" style="height:100%; display:flex; flex-direction:column; overflow-y:auto">
-        <div style="text-align:center; padding:20px; color:var(--poly-cyan);">
-          Chargement du Guide du Rezo...
         </div>
-      </div>
-    
-      <div id="school-container" class="hidden">
-        <div class="side-header-flex">
-          <h2 id="side-title">Le Rezo Polytech</h2>
-          <select id="annee-selector">
-            <option value="2026-2027">2026-2027</option>
-            <option value="2025-2026" selected>2025-2026</option>
-            <option value="2024-2025">2024-2025</option>
-            <option value="2023-2024">2023-2024</option>
-          </select>
-        </div>
-        <div id="side-content"></div>
-      </div>
     </div>
 
-    
-
-<script type="module">
-  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-  import { getFirestore, doc, getDoc, collectionGroup, getDocs } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
-  import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
-
-  const firebaseConfig = {
-    apiKey: "AIzaSyB1SgV4E80Qxs2vQ-jIGexv6YYqaiARs",
-    authDomain: "sebr-dea8d.firebaseapp.com",
-    projectId: "sebr-dea8d",
-    storageBucket: "sebr-dea8d.firebasestorage.app",
-    messagingSenderId: "948314281215",
-    appId: "1:948314281215:web:1fddf38350d9a3663e68ca"
-  };
-
-  const app = initializeApp(firebaseConfig);
-  const db = getFirestore(app);
-  const auth = getAuth(app);
-
-  const adminButton = document.getElementById("admin-button");
-  const defaultTheme = { blue: "#003057", cyan: "#009ee3" };
-
-  const schoolThemes = {
-    lille: { blue: "#c62828", cyan: "#ef5350" },
-    sorbonne: { blue: "#6a1b1f", cyan: "#d97a83" },
-    saclay: { blue: "#4a2a7a", cyan: "#9b8cff" },
-    nancy: { blue: "#7b2f16", cyan: "#f08a5d" },
-    dijon: { blue: "#5a5a9a", cyan: "#d3d3ff" },
-    orleans: { blue: "#a64b12", cyan: "#f37021" },
-    angers: { blue: "#9a412c", cyan: "#ff8368" },
-    tours: { blue: "#5d2e74", cyan: "#8c4799" },
-    nantes: { blue: "#8f6a00", cyan: "#ffc20e" },
-    clermont: { blue: "#547c27", cyan: "#8dc63f" },
-    lyon: { blue: "#5b1111", cyan: "#a93a3a" },
-    annecy: { blue: "#951b60", cyan: "#ea1d8e" },
-    grenoble: { blue: "#7d6748", cyan: "#b49a71" },
-    montpellier: { blue: "#0f4e7f", cyan: "#1674b9" },
-    marseille: { blue: "#006b78", cyan: "#00a5b5" },
-    nice: { blue: "#6f8f1d", cyan: "#b3d334" }
-  };
-
-  function applyTheme(theme) {
-    document.documentElement.style.setProperty("--poly-blue", theme.blue);
-    document.documentElement.style.setProperty("--poly-cyan", theme.cyan);
-  }
-
-  function resetTheme() {
-    applyTheme(defaultTheme);
-  }
-
-  const memoryCache = {};
-
-  async function fetchWithCache(collection, ecoleId, subCollection, annee) {
-    const cacheKey = `sebrcache_${collection}_${ecoleId}_${subCollection}_${annee}`;
-    if (memoryCache[cacheKey]) return memoryCache[cacheKey];
-
-    const docRef = doc(db, collection, ecoleId, subCollection, annee);
-    const snap = await getDoc(docRef);
-    memoryCache[cacheKey] = snap;
-    return snap;
-  }
-
-  function formaterDate(val) {
-    if (!val) return "";
-    let d;
-    if (val.toDate) d = val.toDate();
-    else if (val.seconds) d = new Date(val.seconds * 1000);
-    else d = new Date(val);
-    if (isNaN(d.getTime())) return "";
-    return d.toLocaleDateString("fr-FR", {
-      day: "numeric",
-      month: "long",
-      year: "numeric"
-    }).toUpperCase();
-  }
-
-  const points = document.querySelectorAll(".ecole-point");
-  const sideContent = document.getElementById("side-content");
-  const sideTitle = document.getElementById("side-title");
-  const tooltip = document.getElementById("tooltip");
-  const anneeSelector = document.getElementById("annee-selector");
-  const authButton = document.getElementById("auth-button");
-  const userGreeting = document.getElementById("user-greeting");
-
-  let currentEcole = null;
-  let connectedUserProfile = null;
-
-  function updateAuthUI(user, profile = null) {
-    if (user) {
-      const prenom = profile?.prenom || user.displayName || user.email?.split("@")[0] || "toi";
-      userGreeting.textContent = `Bonjour ${prenom}`;
-      userGreeting.classList.add("visible");
-      adminButton.classList.remove("hidden");
-      authButton.textContent = "Déconnexion";
-      authButton.classList.add("logout");
-
-      const theme = schoolThemes[profile?.ecole] || defaultTheme;
-      applyTheme(theme);
-    } else {
-      connectedUserProfile = null;
-      userGreeting.textContent = "";
-      userGreeting.classList.remove("visible");
-      adminButton.classList.add("hidden");
-      authButton.textContent = "Connexion";
-      authButton.classList.remove("logout");
-      resetTheme();
-    }
-  }
-
-  authButton.addEventListener("click", async () => {
-    if (auth.currentUser) {
-      await signOut(auth);
-      window.location.href = "index.html";
-    } else {
-      window.location.href = "authentification.html";
-    }
-  });
-
-  onAuthStateChanged(auth, async (user) => {
-    if (!user) {
-      updateAuthUI(null);
-      return;
-    }
-
-    try {
-      const userSnap = await getDoc(doc(db, "users", user.email));
-      connectedUserProfile = userSnap.exists() ? userSnap.data() : null;
-      updateAuthUI(user, connectedUserProfile);
-    } catch (error) {
-      console.error("Erreur profil utilisateur :", error);
-      updateAuthUI(user, null);
-    }
-  });
-
-  anneeSelector.addEventListener("change", () => {
-    if (currentEcole) ouvrirEcole(currentEcole.id, currentEcole.name, currentEcole.color);
-  });
-
-  points.forEach((p) => {
-    const color = p.style.getPropertyValue("--halo-color");
-
-    p.addEventListener("mouseenter", async () => {
-      tooltip.classList.remove("hidden");
-      tooltip.style.borderColor = color;
-      tooltip.innerHTML = `<strong style="color:${color}">Polytech ${p.dataset.name}</strong>`;
-
-      const snap = await fetchWithCache("ecoles", p.dataset.folder, "events", anneeSelector.value);
-      if (snap.exists() && snap.data().soiree) {
-        const s = snap.data().soiree;
-        if (s.nom && s.nom.trim() !== "") {
-          tooltip.innerHTML += `
-            <div style="margin-top:8px;border-top:1px solid #333;padding-top:5px;">
-              <span style="font-size:0.85em;color:#fff;display:block;">${s.nom.toUpperCase()}</span>
-              <span style="font-size:0.75em;color:var(--poly-cyan);font-weight:bold;">
-                ${formaterDate(s.date)} à venir
-              </span>
+    <div id="sidebar-section">
+        <!-- BLOG : contenu injecté directement (pas via fetch + innerHTML) -->
+        <div id="blog-container">
+            <nav class="blog-tabs-nav" id="blog-tabs-nav">
+                <button class="blog-tab-btn active" data-blog-tab="accueil">🏠 Accueil</button>
+                <button class="blog-tab-btn" data-blog-tab="evenements">🎉 Événements</button>
+                <button class="blog-tab-btn" data-blog-tab="combar">🩱 Combar</button>
+                <button class="blog-tab-btn" data-blog-tab="bracelets">🎟️ Bracelets</button>
+                <button class="blog-tab-btn" data-blog-tab="bde">🏛️ BDE & BDP</button>
+                <button class="blog-tab-btn" data-blog-tab="campagnes">⚔️ Campagnes</button>
+            </nav>
+            <div class="blog-content-area">
+                <div id="blog-panel-accueil" class="blog-panel active">
+                    <h2>Bienvenue dans le Rézo !</h2>
+                    <p>Tu viens de débarquer à Polytech et tu entends un vocabulaire bizarre ? Pas de panique ! Le "Rézo Polytech", c'est 15 écoles en France, mais c'est surtout une grande famille avec ses propres traditions, son argot et son folklore.</p>
+                    <p>Ce mini-guide est là pour t'aider à décrypter cet univers. Explore les onglets pour tout savoir sur la vie étudiante, de la fameuse "combar" aux campagnes BDE !</p>
+                </div>
+                <div id="blog-panel-evenements" class="blog-panel">
+                    <h2>Le Rézo ne dort jamais.</h2>
+                    <p>Tout au long de l'année, les écoles se rencontrent lors d'événements nationaux épiques :</p>
+                    <ul>
+                        <li><strong>Le WEI</strong> (Week-End d'Intégration) : L'événement local de ton école pour tisser les premiers liens.</li>
+                        <li><strong>Le TPN</strong> (Tournoi Polytech Neige) : Du ski, de la fondue et des défis entre Polytech dans les Alpes.</li>
+                        <li><strong>Le SIGEM / Assises :</strong> Des rassemblements où les bureaux des différentes écoles prennent les grandes décisions pour le réseau.</li>
+                        <li><strong>Le TPE</strong> (Tournoi Polytech Estival) : Pour prouver quelle école est la meilleure sur le terrain de sport !</li>
+                    </ul>
+                </div>
+                <div id="blog-panel-combar" class="blog-panel">
+                    <h2>Ton armure d'étudiant.</h2>
+                    <p>Oublie les costards, ici l'habit officiel, c'est la <strong>"combar"</strong> (salopette) !</p>
+                    <p>Chaque école a sa propre couleur (bleu, rouge, jaune, noir...). Au fil de tes années, tu vas la personnaliser : tu y coudras ton surnom, l'écusson de ton école, ceux des autres Polytech que tu rencontreras, et des patchs liés à tes exploits.</p>
+                    <p><em>Attention : il y a des règles non-écrites sur la façon de la porter, tu les apprendras vite !</em></p>
+                </div>
+                <div id="blog-panel-bracelets" class="blog-panel">
+                    <h2>Ton CV de fêtard.</h2>
+                    <p>À chaque événement, soirée ou rassemblement majeur, tu recevras un bracelet en tissu. La tradition ? Ne <em>jamais</em> les enlever (ou du moins en faire une belle collection sur ton sac ou ta combar).</p>
+                    <p>Plus tu as de bracelets à ton poignet, plus tu prouves que tu as roulé ta bosse dans le Rézo. Certains se les échangent même en signe d'amitié entre écoles.</p>
+                </div>
+                <div id="blog-panel-bde" class="blog-panel">
+                    <h2>Ceux qui font bouger l'école.</h2>
+                    <ul>
+                        <li><strong>Le BDE</strong> (Bureau des Élèves) : C'est le cœur de la vie locale. Ils organisent les soirées, les activités, gèrent le foyer et les clubs de ton école.</li>
+                        <li><strong>Le BDP</strong> (Bureau des Polytech) ou BDR : C'est le pont entre ton école et les 14 autres. Ils s'assurent de la cohésion nationale et organisent les déplacements pour les événements inter-écoles.</li>
+                    </ul>
+                </div>
+                <div id="blog-panel-campagnes" class="blog-panel">
+                    <h2>La semaine de la folie.</h2>
+                    <p>Pour élire le nouveau BDE, c'est la "période des campagnes".</p>
+                    <ul>
+                        <li><strong>Les Listes :</strong> Ce sont les équipes de candidats. Pendant une ou deux semaines, ils vont organiser des activités, distribuer des goodies, faire des crêpes à 8h du mat' et transformer l'école selon leur thème pour gagner tes votes.</li>
+                        <li><strong>Les Fakelistes :</strong> <span class="blog-badge">⭐ folklore</span> Ce sont des listes parodiques. Ils ne veulent pas gagner, ils sont juste là pour troller, mettre de l'ambiance, faire des blagues absurdes et animer la campagne. Ils sont l'âme du folklore !</li>
+                    </ul>
+                </div>
             </div>
-          `;
-        }
-      }
-    });
-
-    p.addEventListener("mouseleave", () => tooltip.classList.add("hidden"));
-
-    p.addEventListener("mousemove", (e) => {
-      tooltip.style.left = e.clientX + 15 + "px";
-      tooltip.style.top = e.clientY + 15 + "px";
-    });
-
-    p.addEventListener("click", () => {
-      window.location.hash = p.dataset.folder;
-      ouvrirEcole(p.dataset.folder, p.dataset.name, color);
-    });
-  });
-
-  async function ouvrirEcole(ecoleId, name, cityColor) {
-    document.getElementById("blog-container").classList.add("hidden");
-    document.getElementById("school-container").classList.remove("hidden");
-
-    document.querySelectorAll(".ecole-point").forEach((point) => point.classList.remove("active"));
-    const pointActif = document.querySelector(`.ecole-point[data-folder="${ecoleId}"]`);
-    if (pointActif) pointActif.classList.add("active");
-
-    currentEcole = { id: ecoleId, name, color: cityColor };
-    const annee = document.getElementById("annee-selector").value;
-
-    sideTitle.innerHTML = `Polytech ${name}
-      <img src="${ecoleId}.png" style="height:50px;vertical-align:middle;margin-left:10px;" onerror="this.style.display='none'">`;
-    sideTitle.style.color = cityColor;
-
-    sideContent.innerHTML = `
-      <div class="btn-back" onclick="retourAuBlog()">← Retour au Guide du Rezo</div>
-      <div id="dynamic-area">
-        <div class="loading-text" style="text-align:center;padding:20px;font-weight:bold;color:${cityColor}">
-          Chargement des données ${annee}...
         </div>
-      </div>
-    `;
 
-    const dynamicArea = document.getElementById("dynamic-area");
-
-    try {
-      const eventSnap = await fetchWithCache("ecoles", ecoleId, "events", annee);
-      let eventHtml = "";
-
-      if (eventSnap.exists() && eventSnap.data().soiree) {
-        const e = eventSnap.data().soiree;
-        if (e.nom && e.nom.trim() !== "") {
-          eventHtml = `
-            <div class="rezo-banner" style="border-bottom:3px solid ${cityColor}">
-              <span style="color:var(--poly-cyan);font-weight:bold;font-size:1.1em;">REZO : ${e.nom.toUpperCase()}</span><br>
-              <span style="color:#aaa;font-size:0.9em;">${formaterDate(e.date)} à venir</span>
+        <!-- VUE ÉCOLE -->
+        <div id="school-container" class="hidden">
+            <div class="side-header-flex">
+                <h2 id="side-title">Le Rezo Polytech</h2>
+                <select id="annee-selector">
+                    <option value="2026-2027">2026-2027</option>
+                    <option value="2025-2026" selected>2025-2026</option>
+                    <option value="2024-2025">2024-2025</option>
+                    <option value="2023-2024">2023-2024</option>
+                </select>
             </div>
-          `;
-        }
-      }
-
-      const archSnap = await fetchWithCache("ecoles", ecoleId, "archives", annee);
-
-      if (archSnap.exists()) {
-        const d = archSnap.data();
-        let sections = "";
-
-        if (d.campagnestart || d.passationdate) {
-          sections += `
-            <div class="category-wrapper">
-              <div class="category-title" style="color:${cityColor}">Calendrier local</div>
-              ${d.campagnestart ? `<div class="rezo-banner">Campagne : ${formaterDate(d.campagnestart)} au ${formaterDate(d.campagneend || d.campagnestart)}</div>` : ""}
-              ${d.passationdate ? `<div class="rezo-banner">Passation : ${formaterDate(d.passationdate)}</div>` : ""}
-            </div>
-          `;
-        }
-
-        sections += renderSection("BDE actuel", d.bdeactuel, cityColor, ecoleId, annee, "bdeactuel");
-        if (d.bdpactuel && d.bdpactuel.nom && d.bdpactuel.prez) {
-          sections += renderSection("BDP actuel", d.bdpactuel, cityColor, ecoleId, annee, "bdpactuel");
-        }
-        sections += renderSection("Listes BDE", d.listesbde, cityColor, ecoleId, annee, "listesbde");
-        sections += renderSection("Listes BDP", d.listesbdp, cityColor, ecoleId, annee, "listesbdp");
-        sections += renderSection("Fakelistes", d.fakelistes, cityColor, ecoleId, annee, "fakelistes");
-
-        dynamicArea.innerHTML = eventHtml + sections;
-      } else {
-        dynamicArea.innerHTML = eventHtml + `<p style="color:#666;text-align:center;animation:slideUpFade 0.4s ease-out;">Aucune donnée pour cette année.</p>`;
-      }
-    } catch (error) {
-      console.error(error);
-      dynamicArea.innerHTML = `<p style="color:#ff8080;text-align:center;">Erreur lors du chargement des données.</p>`;
-    }
-  }
-
-  function renderSection(title, data, cityColor, ecoleId, annee, type) {
-    if (!data || (Array.isArray(data) && data.length === 0)) {
-      if (type === "bdeactuel") data = { nom: "Non renseigné", prez: "N/A" };
-      else return "";
-    }
-
-    let items = Array.isArray(data) ? data : [data];
-
-    items.sort((a, b) => {
-      const rankA = parseInt(a.classement || Infinity);
-      const rankB = parseInt(b.classement || Infinity);
-      return rankA - rankB;
-    });
-
-    const isBureau = type.includes("actuel");
-    const fallback = isBureau ? `${ecoleId}.png` : "default.png";
-
-    const cards = items.map((i, index) => {
-      const url = `liste.html?ecole=${ecoleId}&annee=${annee}&type=${type}&id=${encodeURIComponent(i.nom || "bureau")}`;
-      return `
-        <div class="list-card" onclick="window.location.href='${url}'"
-             style="border-left: 4px solid ${i.couleur || cityColor}; animation-delay:${index * 0.1}s">
-          ${i.classement ? `<div class="rank-badge">${i.classement}</div>` : ""}
-          <img src="${i.logo || i.photo || fallback}" class="list-logo" onerror="this.src='default.png'">
-          <div style="flex:1">
-            <div class="list-name">${i.nom || "Équipe sans titre"}</div>
-            <div class="list-prez">Prez : ${i.prez || "N/A"}</div>
-          </div>
+            <div id="side-content"></div>
         </div>
-      `;
-    }).join("");
-
-    return `
-      <div class="category-wrapper">
-        <div class="category-title">${title}</div>
-        ${cards}
-      </div>
-    `;
-  }
-
-  let indexRecherche = [];
-  const barre = document.getElementById("barreRecherche");
-  const listeResultats = document.getElementById("resultatsRecherche");
-
-  async function preparerIndex() {
-    indexRecherche = [];
-
-    try {
-      const archiveSnapshot = await getDocs(collectionGroup(db, "archives"));
-      archiveSnapshot.forEach((docItem) => {
-        const data = docItem.data();
-        const annee = docItem.id;
-        const ecoleId = docItem.ref.parent.parent.id;
-
-        ["listesbde", "listesbdp", "fakelistes", "bdeactuel", "bdpactuel"].forEach((type) => {
-          if (data[type]) {
-            const items = Array.isArray(data[type]) ? data[type] : [data[type]];
-            items.forEach((item) => {
-              if (item.nom || item.prez) {
-                const nom = item.nom || (type.includes("bde") ? "BDE" : "BDP");
-                const prez = item.prez || "";
-                const vp = item.vp || "";
-                const rr = item.rr || "";
-
-                indexRecherche.push({
-                  nom,
-                  prez,
-                  vp,
-                  rr,
-                  ecole: ecoleId,
-                  annee,
-                  type,
-                  searchKey: `${nom} ${prez} ${vp} ${rr} ${ecoleId} ${annee}`.toLowerCase()
-                });
-              }
-            });
-          }
-        });
-      });
-    } catch (err) {
-      console.error("Erreur indexation Firestore :", err);
-    }
-
-    try {
-      const eventSnapshot = await getDocs(collectionGroup(db, "events"));
-      eventSnapshot.forEach((docItem) => {
-        const data = docItem.data();
-        const annee = docItem.id;
-        const ecoleId = docItem.ref.parent.parent.id;
-
-        if (data.locaux && Array.isArray(data.locaux)) {
-          data.locaux.forEach((ev) => {
-            indexRecherche.push({
-              nom: ev.nom,
-              typeInfo: "Événement Local",
-              ecole: ecoleId,
-              annee,
-              type: "event",
-              searchKey: `${ev.nom} event ${ecoleId} ${annee}`.toLowerCase()
-            });
-          });
-        }
-
-        if (data.soiree && data.soiree.nom) {
-          indexRecherche.push({
-            nom: data.soiree.nom,
-            typeInfo: "Soirée Rezo",
-            ecole: ecoleId,
-            annee,
-            type: "rezo",
-            searchKey: `${data.soiree.nom} rezo ${ecoleId} ${annee}`.toLowerCase()
-          });
-        }
-      });
-    } catch (err) {
-      console.error("Erreur indexation events :", err);
-    }
-
-    const blogContainer = document.getElementById("blog-container");
-    if (blogContainer) {
-      try {
-        const response = await fetch("blog.html");
-        if (response.ok) {
-          const html = await response.text();
-          const parser = new DOMParser();
-          const docHtml = parser.parseFromString(html, "text/html");
-          blogContainer.innerHTML = docHtml.body.innerHTML;
-        } else {
-          blogContainer.innerHTML = `<p style="text-align:center;padding:20px;">Le guide du Rezo est momentanément indisponible.</p>`;
-        }
-      } catch (error) {
-        console.error("Erreur fetch blog :", error);
-        blogContainer.innerHTML = `<p style="text-align:center;">Erreur de chargement du blog.</p>`;
-      }
-    }
-  }
-
-  barre.addEventListener("input", (e) => {
-    const val = e.target.value.toLowerCase();
-    if (val.length < 2) {
-      listeResultats.style.display = "none";
-      return;
-    }
-
-    const filtres = indexRecherche.filter((i) => i.searchKey.includes(val)).slice(0, 8);
-
-    if (filtres.length > 0) {
-      listeResultats.innerHTML = filtres.map((f) => {
-        const sousTitre = f.typeInfo ? f.typeInfo : `Prez : ${f.prez || "N/A"}`;
-        let targetType = f.type;
-        let targetId = f.nom;
-
-        if (f.type === "event" || f.type === "rezo") {
-          targetType = "bdeactuel";
-          targetId = "BDE";
-        }
-
-        return `
-          <div class="result-item" onclick="window.location.href='liste.html?ecole=${f.ecole}&annee=${f.annee}&type=${targetType}&id=${encodeURIComponent(targetId)}'">
-            <strong>${f.nom}</strong>
-            <span class="type-badge">${f.ecole.toUpperCase()}</span>
-            <div style="font-size:0.8em;color:#aaa;">${sousTitre} • ${f.annee}</div>
-          </div>
-        `;
-      }).join("");
-      listeResultats.style.display = "block";
-    } else {
-      listeResultats.style.display = "none";
-    }
-  });
-
-  document.addEventListener("click", (e) => {
-    if (!barre.contains(e.target) && !listeResultats.contains(e.target)) {
-      listeResultats.style.display = "none";
-    }
-  });
-
-  window.addEventListener("load", async () => {
-    await preparerIndex();
-
-    const h = window.location.hash.replace("#", "");
-    if (h) {
-      const p = document.querySelector(`.ecole-point[data-folder="${h}"]`);
-      if (p) ouvrirEcole(h, p.dataset.name, p.style.getPropertyValue("--halo-color"));
-    }
-
-    setTimeout(() => {
-      document.body.classList.remove("is-loading");
-      document.querySelectorAll(".ecole-point").forEach((point) => {
-        point.classList.remove("animate-on-load");
-      });
-    }, 0);
-  });
-
-  window.retourAuBlog = function () {
-    document.getElementById("blog-container").classList.remove("hidden");
-    document.getElementById("school-container").classList.add("hidden");
-    document.querySelectorAll(".ecole-point").forEach((p) => p.classList.remove("active"));
-    currentEcole = null;
-    window.location.hash = "";
-    resetTheme();
-  };
-</script>
+    </div>
+</div>
 
 <footer class="site-footer">
     &copy; 2026 SEBR.tech - le site du Rezo | <a href="mentions-legales.html">Mentions Légales</a>
 </footer>
+
+<script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+    import { getFirestore, doc, getDoc, collectionGroup, getDocs } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+    import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+
+    const firebaseConfig = {
+        apiKey: "AIzaSyB1SgV4E80Qxs2vQ-jIGexv6YYqaiARs",
+        authDomain: "sebr-dea8d.firebaseapp.com",
+        projectId: "sebr-dea8d",
+        storageBucket: "sebr-dea8d.firebasestorage.app",
+        messagingSenderId: "948314281215",
+        appId: "1:948314281215:web:1fddf38350d9a3663e68ca"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const db = getFirestore(app);
+    const auth = getAuth(app);
+
+    const adminButton = document.getElementById("admin-button");
+    const defaultTheme = { blue: "#003057", cyan: "#009ee3" };
+
+    const schoolThemes = {
+        lille: { blue: "#c62828", cyan: "#ef5350" },
+        sorbonne: { blue: "#6a1b1f", cyan: "#d97a83" },
+        saclay: { blue: "#4a2a7a", cyan: "#9b8cff" },
+        nancy: { blue: "#7b2f16", cyan: "#f08a5d" },
+        dijon: { blue: "#5a5a9a", cyan: "#d3d3ff" },
+        orleans: { blue: "#a64b12", cyan: "#f37021" },
+        angers: { blue: "#9a412c", cyan: "#ff8368" },
+        tours: { blue: "#5d2e74", cyan: "#8c4799" },
+        nantes: { blue: "#8f6a00", cyan: "#ffc20e" },
+        clermont: { blue: "#547c27", cyan: "#8dc63f" },
+        lyon: { blue: "#5b1111", cyan: "#a93a3a" },
+        annecy: { blue: "#951b60", cyan: "#ea1d8e" },
+        grenoble: { blue: "#7d6748", cyan: "#b49a71" },
+        montpellier: { blue: "#0f4e7f", cyan: "#1674b9" },
+        marseille: { blue: "#006b78", cyan: "#00a5b5" },
+        nice: { blue: "#6f8f1d", cyan: "#b3d334" }
+    };
+
+    function applyTheme(theme) {
+        document.documentElement.style.setProperty("--poly-blue", theme.blue);
+        document.documentElement.style.setProperty("--poly-cyan", theme.cyan);
+    }
+
+    function resetTheme() { applyTheme(defaultTheme); }
+
+    const memoryCache = {};
+
+    async function fetchWithCache(collection, ecoleId, subCollection, annee) {
+        const cacheKey = `sebrcache_${collection}_${ecoleId}_${subCollection}_${annee}`;
+        if (memoryCache[cacheKey]) return memoryCache[cacheKey];
+        const docRef = doc(db, collection, ecoleId, subCollection, annee);
+        const snap = await getDoc(docRef);
+        memoryCache[cacheKey] = snap;
+        return snap;
+    }
+
+    function formaterDate(val) {
+        if (!val) return "";
+        let d;
+        if (val.toDate) d = val.toDate();
+        else if (val.seconds) d = new Date(val.seconds * 1000);
+        else d = new Date(val);
+        if (isNaN(d.getTime())) return "";
+        return d.toLocaleDateString("fr-FR", { day: "numeric", month: "long", year: "numeric" }).toUpperCase();
+    }
+
+    const points = document.querySelectorAll(".ecole-point");
+    const sideContent = document.getElementById("side-content");
+    const sideTitle = document.getElementById("side-title");
+    const tooltip = document.getElementById("tooltip");
+    const anneeSelector = document.getElementById("annee-selector");
+    const authButton = document.getElementById("auth-button");
+    const userGreeting = document.getElementById("user-greeting");
+
+    let currentEcole = null;
+    let connectedUserProfile = null;
+
+    // ===== ONGLETS BLOG (délégation sur le conteneur) =====
+    document.getElementById("blog-tabs-nav").addEventListener("click", (e) => {
+        const btn = e.target.closest("[data-blog-tab]");
+        if (!btn) return;
+        document.querySelectorAll(".blog-tab-btn").forEach(b => b.classList.remove("active"));
+        document.querySelectorAll(".blog-panel").forEach(p => p.classList.remove("active"));
+        btn.classList.add("active");
+        document.getElementById("blog-panel-" + btn.dataset.blogTab).classList.add("active");
+    });
+
+    // ===== AUTH =====
+    function updateAuthUI(user, profile = null) {
+        if (user) {
+            const prenom = profile?.prenom || user.displayName || user.email?.split("@")[0] || "toi";
+            userGreeting.textContent = `Bonjour ${prenom}`;
+            userGreeting.classList.add("visible");
+            adminButton.classList.remove("hidden");
+            authButton.textContent = "Déconnexion";
+            authButton.classList.add("logout");
+            applyTheme(schoolThemes[profile?.ecole] || defaultTheme);
+        } else {
+            connectedUserProfile = null;
+            userGreeting.textContent = "";
+            userGreeting.classList.remove("visible");
+            adminButton.classList.add("hidden");
+            authButton.textContent = "Connexion";
+            authButton.classList.remove("logout");
+            resetTheme();
+        }
+    }
+
+    authButton.addEventListener("click", async () => {
+        if (auth.currentUser) {
+            await signOut(auth);
+            window.location.href = "index.html";
+        } else {
+            window.location.href = "authentification.html";
+        }
+    });
+
+    onAuthStateChanged(auth, async (user) => {
+        if (!user) { updateAuthUI(null); return; }
+        try {
+            const userSnap = await getDoc(doc(db, "users", user.email));
+            connectedUserProfile = userSnap.exists() ? userSnap.data() : null;
+            updateAuthUI(user, connectedUserProfile);
+        } catch (error) {
+            console.error("Erreur profil utilisateur :", error);
+            updateAuthUI(user, null);
+        }
+    });
+
+    anneeSelector.addEventListener("change", () => {
+        if (currentEcole) ouvrirEcole(currentEcole.id, currentEcole.name, currentEcole.color);
+    });
+
+    // ===== CARTE =====
+    points.forEach((p) => {
+        const color = p.style.getPropertyValue("--halo-color");
+
+        p.addEventListener("mouseenter", async () => {
+            tooltip.classList.remove("hidden");
+            tooltip.style.borderColor = color;
+            tooltip.innerHTML = `<strong style="color:${color}">Polytech ${p.dataset.name}</strong>`;
+            const snap = await fetchWithCache("ecoles", p.dataset.folder, "events", anneeSelector.value);
+            if (snap.exists() && snap.data().soiree) {
+                const s = snap.data().soiree;
+                if (s.nom && s.nom.trim() !== "") {
+                    tooltip.innerHTML += `
+                        <div style="margin-top:8px;border-top:1px solid #333;padding-top:5px;">
+                            <span style="font-size:0.85em;color:#fff;display:block;">${s.nom.toUpperCase()}</span>
+                            <span style="font-size:0.75em;color:var(--poly-cyan);font-weight:bold;">${formaterDate(s.date)} à venir</span>
+                        </div>`;
+                }
+            }
+        });
+
+        p.addEventListener("mouseleave", () => tooltip.classList.add("hidden"));
+        p.addEventListener("mousemove", (e) => {
+            tooltip.style.left = e.clientX + 15 + "px";
+            tooltip.style.top = e.clientY + 15 + "px";
+        });
+        p.addEventListener("click", () => {
+            window.location.hash = p.dataset.folder;
+            ouvrirEcole(p.dataset.folder, p.dataset.name, color);
+        });
+    });
+
+    async function ouvrirEcole(ecoleId, name, cityColor) {
+        document.getElementById("blog-container").classList.add("hidden");
+        document.getElementById("school-container").classList.remove("hidden");
+
+        document.querySelectorAll(".ecole-point").forEach(point => point.classList.remove("active"));
+        const pointActif = document.querySelector(`.ecole-point[data-folder="${ecoleId}"]`);
+        if (pointActif) pointActif.classList.add("active");
+
+        currentEcole = { id: ecoleId, name, color: cityColor };
+        const annee = anneeSelector.value;
+
+        sideTitle.innerHTML = `Polytech ${name}
+            <img src="${ecoleId}.png" style="height:50px;vertical-align:middle;margin-left:10px;" onerror="this.style.display='none'">`;
+        sideTitle.style.color = cityColor;
+
+        sideContent.innerHTML = `
+            <div class="btn-back" id="btn-retour">← Retour au Guide du Rezo</div>
+            <div id="dynamic-area">
+                <div class="loading-text" style="text-align:center;padding:20px;font-weight:bold;color:${cityColor}">
+                    Chargement des données ${annee}...
+                </div>
+            </div>`;
+
+        document.getElementById("btn-retour").addEventListener("click", retourAuBlog);
+
+        const dynamicArea = document.getElementById("dynamic-area");
+
+        try {
+            const eventSnap = await fetchWithCache("ecoles", ecoleId, "events", annee);
+            let eventHtml = "";
+
+            if (eventSnap.exists() && eventSnap.data().soiree) {
+                const e = eventSnap.data().soiree;
+                if (e.nom && e.nom.trim() !== "") {
+                    eventHtml = `
+                        <div class="rezo-banner" style="border-bottom:3px solid ${cityColor}">
+                            <span style="color:var(--poly-cyan);font-weight:bold;font-size:1.1em;">REZO : ${e.nom.toUpperCase()}</span><br>
+                            <span style="color:#aaa;font-size:0.9em;">${formaterDate(e.date)} à venir</span>
+                        </div>`;
+                }
+            }
+
+            const archSnap = await fetchWithCache("ecoles", ecoleId, "archives", annee);
+
+            if (archSnap.exists()) {
+                const d = archSnap.data();
+                let sections = "";
+
+                if (d.campagnestart || d.passationdate) {
+                    sections += `
+                        <div class="category-wrapper">
+                            <div class="category-title" style="color:${cityColor}">Calendrier local</div>
+                            ${d.campagnestart ? `<div class="rezo-banner">Campagne : ${formaterDate(d.campagnestart)} au ${formaterDate(d.campagneend || d.campagnestart)}</div>` : ""}
+                            ${d.passationdate ? `<div class="rezo-banner">Passation : ${formaterDate(d.passationdate)}</div>` : ""}
+                        </div>`;
+                }
+
+                sections += renderSection("BDE actuel", d.bdeactuel, cityColor, ecoleId, annee, "bdeactuel");
+                if (d.bdpactuel && d.bdpactuel.nom && d.bdpactuel.prez) {
+                    sections += renderSection("BDP actuel", d.bdpactuel, cityColor, ecoleId, annee, "bdpactuel");
+                }
+                sections += renderSection("Listes BDE", d.listesbde, cityColor, ecoleId, annee, "listesbde");
+                sections += renderSection("Listes BDP", d.listesbdp, cityColor, ecoleId, annee, "listesbdp");
+                sections += renderSection("Fakelistes", d.fakelistes, cityColor, ecoleId, annee, "fakelistes");
+
+                dynamicArea.innerHTML = eventHtml + sections;
+            } else {
+                dynamicArea.innerHTML = eventHtml + `<p style="color:#666;text-align:center;animation:slideUpFade 0.4s ease-out;">Aucune donnée pour cette année.</p>`;
+            }
+        } catch (error) {
+            console.error(error);
+            dynamicArea.innerHTML = `<p style="color:#ff8080;text-align:center;">Erreur lors du chargement des données.</p>`;
+        }
+    }
+
+    function renderSection(title, data, cityColor, ecoleId, annee, type) {
+        if (!data || (Array.isArray(data) && data.length === 0)) {
+            if (type === "bdeactuel") data = { nom: "Non renseigné", prez: "N/A" };
+            else return "";
+        }
+
+        let items = Array.isArray(data) ? data : [data];
+        items.sort((a, b) => parseInt(a.classement || Infinity) - parseInt(b.classement || Infinity));
+
+        const isBureau = type.includes("actuel");
+        const fallback = isBureau ? `${ecoleId}.png` : "default.png";
+
+        const cards = items.map((i, index) => {
+            const url = `liste.html?ecole=${ecoleId}&annee=${annee}&type=${type}&id=${encodeURIComponent(i.nom || "bureau")}`;
+            return `
+                <div class="list-card" onclick="window.location.href='${url}'"
+                     style="border-left: 4px solid ${i.couleur || cityColor}; animation-delay:${index * 0.1}s">
+                    ${i.classement ? `<div class="rank-badge">${i.classement}</div>` : ""}
+                    <img src="${i.logo || i.photo || fallback}" class="list-logo" onerror="this.src='default.png'">
+                    <div style="flex:1">
+                        <div class="list-name">${i.nom || "Équipe sans titre"}</div>
+                        <div class="list-prez">Prez : ${i.prez || "N/A"}</div>
+                    </div>
+                </div>`;
+        }).join("");
+
+        return `
+            <div class="category-wrapper">
+                <div class="category-title">${title}</div>
+                ${cards}
+            </div>`;
+    }
+
+    // ===== RECHERCHE =====
+    let indexRecherche = [];
+    const barre = document.getElementById("barreRecherche");
+    const listeResultats = document.getElementById("resultatsRecherche");
+
+    async function preparerIndex() {
+        indexRecherche = [];
+        try {
+            const archiveSnapshot = await getDocs(collectionGroup(db, "archives"));
+            archiveSnapshot.forEach((docItem) => {
+                const data = docItem.data();
+                const annee = docItem.id;
+                const ecoleId = docItem.ref.parent.parent.id;
+                ["listesbde", "listesbdp", "fakelistes", "bdeactuel", "bdpactuel"].forEach((type) => {
+                    if (data[type]) {
+                        const items = Array.isArray(data[type]) ? data[type] : [data[type]];
+                        items.forEach((item) => {
+                            if (item.nom || item.prez) {
+                                const nom = item.nom || (type.includes("bde") ? "BDE" : "BDP");
+                                indexRecherche.push({
+                                    nom, prez: item.prez || "", vp: item.vp || "", rr: item.rr || "",
+                                    ecole: ecoleId, annee, type,
+                                    searchKey: `${nom} ${item.prez || ""} ${item.vp || ""} ${item.rr || ""} ${ecoleId} ${annee}`.toLowerCase()
+                                });
+                            }
+                        });
+                    }
+                });
+            });
+        } catch (err) { console.error("Erreur indexation Firestore :", err); }
+
+        try {
+            const eventSnapshot = await getDocs(collectionGroup(db, "events"));
+            eventSnapshot.forEach((docItem) => {
+                const data = docItem.data();
+                const annee = docItem.id;
+                const ecoleId = docItem.ref.parent.parent.id;
+                if (data.locaux && Array.isArray(data.locaux)) {
+                    data.locaux.forEach((ev) => {
+                        indexRecherche.push({ nom: ev.nom, typeInfo: "Événement Local", ecole: ecoleId, annee, type: "event", searchKey: `${ev.nom} event ${ecoleId} ${annee}`.toLowerCase() });
+                    });
+                }
+                if (data.soiree && data.soiree.nom) {
+                    indexRecherche.push({ nom: data.soiree.nom, typeInfo: "Soirée Rezo", ecole: ecoleId, annee, type: "rezo", searchKey: `${data.soiree.nom} rezo ${ecoleId} ${annee}`.toLowerCase() });
+                }
+            });
+        } catch (err) { console.error("Erreur indexation events :", err); }
+    }
+
+    barre.addEventListener("input", (e) => {
+        const val = e.target.value.toLowerCase();
+        if (val.length < 2) { listeResultats.style.display = "none"; return; }
+        const filtres = indexRecherche.filter(i => i.searchKey.includes(val)).slice(0, 8);
+        if (filtres.length > 0) {
+            listeResultats.innerHTML = filtres.map(f => {
+                const sousTitre = f.typeInfo ? f.typeInfo : `Prez : ${f.prez || "N/A"}`;
+                let targetType = f.type;
+                let targetId = f.nom;
+                if (f.type === "event" || f.type === "rezo") { targetType = "bdeactuel"; targetId = "BDE"; }
+                return `
+                    <div class="result-item" onclick="window.location.href='liste.html?ecole=${f.ecole}&annee=${f.annee}&type=${targetType}&id=${encodeURIComponent(targetId)}'">
+                        <strong>${f.nom}</strong>
+                        <span class="type-badge">${f.ecole.toUpperCase()}</span>
+                        <div style="font-size:0.8em;color:#aaa;">${sousTitre} • ${f.annee}</div>
+                    </div>`;
+            }).join("");
+            listeResultats.style.display = "block";
+        } else {
+            listeResultats.style.display = "none";
+        }
+    });
+
+    document.addEventListener("click", (e) => {
+        if (!barre.contains(e.target) && !listeResultats.contains(e.target)) {
+            listeResultats.style.display = "none";
+        }
+    });
+
+    function retourAuBlog() {
+        document.getElementById("blog-container").classList.remove("hidden");
+        document.getElementById("school-container").classList.add("hidden");
+        document.querySelectorAll(".ecole-point").forEach(p => p.classList.remove("active"));
+        currentEcole = null;
+        window.location.hash = "";
+        resetTheme();
+    }
+
+    window.addEventListener("load", async () => {
+        await preparerIndex();
+        const h = window.location.hash.replace("#", "");
+        if (h) {
+            const p = document.querySelector(`.ecole-point[data-folder="${h}"]`);
+            if (p) ouvrirEcole(h, p.dataset.name, p.style.getPropertyValue("--halo-color"));
+        }
+        setTimeout(() => {
+            document.body.classList.remove("is-loading");
+            document.querySelectorAll(".ecole-point").forEach(point => point.classList.remove("animate-on-load"));
+        }, 0);
+    });
+</script>
 
 </body>
 </html>
