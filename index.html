@@ -279,18 +279,21 @@
 
         /* 1. On retire l'animation de la classe de base */
         .ecole-point {
-            position: absolute;
-            width: 7.5%;
-            aspect-ratio: 1/1;
-            border-radius: 50%;
-            cursor: pointer;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            transition: all 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-            z-index: 10;
-            filter: drop-shadow(0 2px 4px rgba(0,0,0,0.5));
-            /* Supprime la ligne animation ici */
+          position: absolute;
+          width: 7.5%;
+          aspect-ratio: 1 / 1;
+          border-radius: 50%;
+          cursor: pointer;
+          display: flex;
+          justify-content: center;
+          align-items: center;
+          transition: all 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+          z-index: 10;
+          filter: drop-shadow(0 2px 4px rgba(0,0,0,0.5));
+        }
+        
+        .ecole-point.animate-on-load {
+          animation: popIn 1.2s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
         }
         
         /* 2. On l'applique seulement quand le body a la classe 'is-loading' */
@@ -583,23 +586,23 @@
         <div class="map-wrapper">
             <img src="france.svg" class="france-svg" alt="Carte de France">
 
-            <div class="ecole-point" style="top: 8%; left: 58%; --halo-color: #ed1c24; animation-delay: 0.2s;" data-name="Lille" data-folder="lille"><img src="lille.png" alt="Lille"></div>
-            <div class="ecole-point" style="top: 21%; left: 53%; --halo-color: #b2b2b2; animation-delay: 0.4s;" data-name="Paris-Sorbonne" data-folder="sorbonne"><img src="sorbonne.png" alt="Sorbonne"></div>
-            <div class="ecole-point" style="top: 26%; left: 52%; --halo-color: #8e95b3; animation-delay: 0.6s;" data-name="Paris-Saclay" data-folder="saclay"><img src="saclay.png" alt="Saclay"></div>
-            <div class="ecole-point" style="top: 24%; left: 76%; --halo-color: #f04e23; animation-delay: 0.8s;" data-name="Nancy" data-folder="nancy"><img src="nancy.png" alt="Nancy"></div>
-            <div class="ecole-point" style="top: 42%; left: 70%; --halo-color: #d3d3ff; animation-delay: 1.0s;" data-name="Dijon" data-folder="dijon"><img src="dijon.png" alt="Dijon"></div>
-            <div class="ecole-point" style="top: 36%; left: 49%; --halo-color: #f37021; animation-delay: 1.2s;" data-name="Orléans" data-folder="orleans"><img src="orleans.png" alt="Orléans"></div>
-            <div class="ecole-point" style="top: 40%; left: 32%; --halo-color: #ff8368; animation-delay: 1.4s;" data-name="Angers" data-folder="angers"><img src="angers.png" alt="Angers"></div>
-            <div class="ecole-point" style="top: 41%; left: 40%; --halo-color: #8c4799; animation-delay: 1.6s;" data-name="Tours" data-folder="tours"><img src="tours.png" alt="Tours"></div>
-            <div class="ecole-point" style="top: 42%; left: 24%; --halo-color: #ffc20e; animation-delay: 1.8s;" data-name="Nantes" data-folder="nantes"><img src="nantes.png" alt="Nantes"></div>
-            <div class="ecole-point" style="top: 58%; left: 55%; --halo-color: #8dc63f; animation-delay: 2.0s;" data-name="Clermont-Ferrand" data-folder="clermont"><img src="clermont.png" alt="Clermont"></div>
-            <div class="ecole-point" style="top: 57%; left: 70%; --halo-color: #781716; animation-delay: 2.2s;" data-name="Lyon" data-folder="lyon"><img src="lyon.png" alt="Lyon"></div>
-            <div class="ecole-point" style="top: 53%; left: 78%; --halo-color: #ea1d8e; animation-delay: 2.4s;" data-name="Annecy-Chambéry" data-folder="annecy"><img src="annecy.png" alt="Annecy"></div>
-            <div class="ecole-point" style="top: 63%; left: 76%; --halo-color: #b49a71; animation-delay: 2.6s;" data-name="Grenoble" data-folder="grenoble"><img src="grenoble.png" alt="Grenoble"></div>
-            <div class="ecole-point" style="top: 78%; left: 59%; --halo-color: #1674b9; animation-delay: 2.8s;" data-name="Montpellier" data-folder="montpellier"><img src="montpellier.png" alt="Montpellier"></div>
-            <div class="ecole-point" style="top: 78%; left: 71%; --halo-color: #00a5b5; animation-delay: 3.0s;" data-name="Marseille" data-folder="marseille"><img src="marseille.png" alt="Marseille"></div>
-            <div class="ecole-point" style="top: 80%; left: 83%; --halo-color: #b3d334; animation-delay: 3.2s;" data-name="Nice Sophia" data-folder="nice"><img src="nice.png" alt="Nice"></div>
-        </div>
+            <div class="ecole-point animate-on-load" style="top: 8%; left: 58%; --halo-color: #ed1c24; animation-delay: 0.2s;" data-name="Lille" data-folder="lille"><img src="lille.png" alt="Lille"></div>
+            <div class="ecole-point animate-on-load" style="top: 21%; left: 53%; --halo-color: #b2b2b2; animation-delay: 0.4s;" data-name="Paris-Sorbonne" data-folder="sorbonne"><img src="sorbonne.png" alt="Sorbonne"></div>
+            <div class="ecole-point animate-on-load" style="top: 26%; left: 52%; --halo-color: #8e95b3; animation-delay: 0.6s;" data-name="Paris-Saclay" data-folder="saclay"><img src="saclay.png" alt="Saclay"></div>
+            <div class="ecole-point animate-on-load" style="top: 24%; left: 76%; --halo-color: #f04e23; animation-delay: 0.8s;" data-name="Nancy" data-folder="nancy"><img src="nancy.png" alt="Nancy"></div>
+            <div class="ecole-point animate-on-load" style="top: 42%; left: 70%; --halo-color: #d3d3ff; animation-delay: 1.0s;" data-name="Dijon" data-folder="dijon"><img src="dijon.png" alt="Dijon"></div>
+            <div class="ecole-point animate-on-load" style="top: 36%; left: 49%; --halo-color: #f37021; animation-delay: 1.2s;" data-name="Orléans" data-folder="orleans"><img src="orleans.png" alt="Orléans"></div>
+            <div class="ecole-point animate-on-load" style="top: 40%; left: 32%; --halo-color: #ff8368; animation-delay: 1.4s;" data-name="Angers" data-folder="angers"><img src="angers.png" alt="Angers"></div>
+            <div class="ecole-point animate-on-load" style="top: 41%; left: 40%; --halo-color: #8c4799; animation-delay: 1.6s;" data-name="Tours" data-folder="tours"><img src="tours.png" alt="Tours"></div>
+            <div class="ecole-point animate-on-load" style="top: 42%; left: 24%; --halo-color: #ffc20e; animation-delay: 1.8s;" data-name="Nantes" data-folder="nantes"><img src="nantes.png" alt="Nantes"></div>
+            <div class="ecole-point animate-on-load" style="top: 58%; left: 55%; --halo-color: #8dc63f; animation-delay: 2.0s;" data-name="Clermont-Ferrand" data-folder="clermont"><img src="clermont.png" alt="Clermont"></div>
+            <div class="ecole-point animate-on-load" style="top: 57%; left: 70%; --halo-color: #781716; animation-delay: 2.2s;" data-name="Lyon" data-folder="lyon"><img src="lyon.png" alt="Lyon"></div>
+            <div class="ecole-point animate-on-load" style="top: 53%; left: 78%; --halo-color: #ea1d8e; animation-delay: 2.4s;" data-name="Annecy-Chambéry" data-folder="annecy"><img src="annecy.png" alt="Annecy"></div>
+            <div class="ecole-point animate-on-load" style="top: 63%; left: 76%; --halo-color: #b49a71; animation-delay: 2.6s;" data-name="Grenoble" data-folder="grenoble"><img src="grenoble.png" alt="Grenoble"></div>
+            <div class="ecole-point animate-on-load" style="top: 78%; left: 59%; --halo-color: #1674b9; animation-delay: 2.8s;" data-name="Montpellier" data-folder="montpellier"><img src="montpellier.png" alt="Montpellier"></div>
+            <div class="ecole-point animate-on-load" style="top: 78%; left: 71%; --halo-color: #00a5b5; animation-delay: 3.0s;" data-name="Marseille" data-folder="marseille"><img src="marseille.png" alt="Marseille"></div>
+            <div class="ecole-point animate-on-load" style="top: 80%; left: 83%; --halo-color: #b3d334; animation-delay: 3.2s;" data-name="Nice Sophia" data-folder="nice"><img src="nice.png" alt="Nice"></div>
+            </div>
     </div>
     
     <div class="map-instruction" style="margin: 30px auto; max-width: 600px; font-size: 1.1rem; color: var(--poly-cyan); font-weight: bold; background: rgba(22, 31, 43, 0.8); padding: 12px 25px; border-radius: 30px; border: 1px solid var(--poly-cyan); text-align: center;">
@@ -630,512 +633,457 @@
     
 
 <script type="module">
-    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-    import { getFirestore, doc, getDoc, collectionGroup, getDocs } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
-    import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+  import { getFirestore, doc, getDoc, collectionGroup, getDocs } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+  import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
 
-    const firebaseConfig = {
-        apiKey: "AIzaSyB1_SgV4E80Qxs2vQ-_jIGexv6YYqaiARs",
-        authDomain: "sebr-dea8d.firebaseapp.com",
-        projectId: "sebr-dea8d",
-        storageBucket: "sebr-dea8d.firebasestorage.app",
-        messagingSenderId: "948314281215",
-        appId: "1:948314281215:web:1fddf38350d9a3663e68ca"
-    };
+  const firebaseConfig = {
+    apiKey: "AIzaSyB1SgV4E80Qxs2vQ-jIGexv6YYqaiARs",
+    authDomain: "sebr-dea8d.firebaseapp.com",
+    projectId: "sebr-dea8d",
+    storageBucket: "sebr-dea8d.firebasestorage.app",
+    messagingSenderId: "948314281215",
+    appId: "1:948314281215:web:1fddf38350d9a3663e68ca"
+  };
 
-    const app = initializeApp(firebaseConfig);
-    const db = getFirestore(app);
-    const auth = getAuth(app);
-    const adminButton = document.getElementById('admin-button');
+  const app = initializeApp(firebaseConfig);
+  const db = getFirestore(app);
+  const auth = getAuth(app);
 
-    const defaultTheme = {
-        blue: '#003057',
-        cyan: '#009ee3'
-    };
+  const adminButton = document.getElementById("admin-button");
+  const defaultTheme = { blue: "#003057", cyan: "#009ee3" };
 
-    const schoolThemes = {
-        lille:       { blue: '#c62828', cyan: '#ef5350' },
-        sorbonne:    { blue: '#6a1b1f', cyan: '#d97a83' },
-        saclay:      { blue: '#4a2a7a', cyan: '#9b8cff' },
-        nancy:       { blue: '#7b2f16', cyan: '#f08a5d' },
-        dijon:       { blue: '#5a5a9a', cyan: '#d3d3ff' },
-        orleans:     { blue: '#a64b12', cyan: '#f37021' },
-        angers:      { blue: '#9a412c', cyan: '#ff8368' },
-        tours:       { blue: '#5d2e74', cyan: '#8c4799' },
-        nantes:      { blue: '#8f6a00', cyan: '#ffc20e' },
-        clermont:    { blue: '#547c27', cyan: '#8dc63f' },
-        lyon:        { blue: '#5b1111', cyan: '#a93a3a' },
-        annecy:      { blue: '#951b60', cyan: '#ea1d8e' },
-        grenoble:    { blue: '#7d6748', cyan: '#b49a71' },
-        montpellier: { blue: '#0f4e7f', cyan: '#1674b9' },
-        marseille:   { blue: '#006b78', cyan: '#00a5b5' },
-        nice:        { blue: '#6f8f1d', cyan: '#b3d334' }
-    };
+  const schoolThemes = {
+    lille: { blue: "#c62828", cyan: "#ef5350" },
+    sorbonne: { blue: "#6a1b1f", cyan: "#d97a83" },
+    saclay: { blue: "#4a2a7a", cyan: "#9b8cff" },
+    nancy: { blue: "#7b2f16", cyan: "#f08a5d" },
+    dijon: { blue: "#5a5a9a", cyan: "#d3d3ff" },
+    orleans: { blue: "#a64b12", cyan: "#f37021" },
+    angers: { blue: "#9a412c", cyan: "#ff8368" },
+    tours: { blue: "#5d2e74", cyan: "#8c4799" },
+    nantes: { blue: "#8f6a00", cyan: "#ffc20e" },
+    clermont: { blue: "#547c27", cyan: "#8dc63f" },
+    lyon: { blue: "#5b1111", cyan: "#a93a3a" },
+    annecy: { blue: "#951b60", cyan: "#ea1d8e" },
+    grenoble: { blue: "#7d6748", cyan: "#b49a71" },
+    montpellier: { blue: "#0f4e7f", cyan: "#1674b9" },
+    marseille: { blue: "#006b78", cyan: "#00a5b5" },
+    nice: { blue: "#6f8f1d", cyan: "#b3d334" }
+  };
 
-    function applyTheme(theme) {
-        document.documentElement.style.setProperty('--poly-blue', theme.blue);
-        document.documentElement.style.setProperty('--poly-cyan', theme.cyan);
+  function applyTheme(theme) {
+    document.documentElement.style.setProperty("--poly-blue", theme.blue);
+    document.documentElement.style.setProperty("--poly-cyan", theme.cyan);
+  }
+
+  function resetTheme() {
+    applyTheme(defaultTheme);
+  }
+
+  const memoryCache = {};
+
+  async function fetchWithCache(collection, ecoleId, subCollection, annee) {
+    const cacheKey = `sebrcache_${collection}_${ecoleId}_${subCollection}_${annee}`;
+    if (memoryCache[cacheKey]) return memoryCache[cacheKey];
+
+    const docRef = doc(db, collection, ecoleId, subCollection, annee);
+    const snap = await getDoc(docRef);
+    memoryCache[cacheKey] = snap;
+    return snap;
+  }
+
+  function formaterDate(val) {
+    if (!val) return "";
+    let d;
+    if (val.toDate) d = val.toDate();
+    else if (val.seconds) d = new Date(val.seconds * 1000);
+    else d = new Date(val);
+    if (isNaN(d.getTime())) return "";
+    return d.toLocaleDateString("fr-FR", {
+      day: "numeric",
+      month: "long",
+      year: "numeric"
+    }).toUpperCase();
+  }
+
+  const points = document.querySelectorAll(".ecole-point");
+  const sideContent = document.getElementById("side-content");
+  const sideTitle = document.getElementById("side-title");
+  const tooltip = document.getElementById("tooltip");
+  const anneeSelector = document.getElementById("annee-selector");
+  const authButton = document.getElementById("auth-button");
+  const userGreeting = document.getElementById("user-greeting");
+
+  let currentEcole = null;
+  let connectedUserProfile = null;
+
+  function updateAuthUI(user, profile = null) {
+    if (user) {
+      const prenom = profile?.prenom || user.displayName || user.email?.split("@")[0] || "toi";
+      userGreeting.textContent = `Bonjour ${prenom}`;
+      userGreeting.classList.add("visible");
+      adminButton.classList.remove("hidden");
+      authButton.textContent = "Déconnexion";
+      authButton.classList.add("logout");
+
+      const theme = schoolThemes[profile?.ecole] || defaultTheme;
+      applyTheme(theme);
+    } else {
+      connectedUserProfile = null;
+      userGreeting.textContent = "";
+      userGreeting.classList.remove("visible");
+      adminButton.classList.add("hidden");
+      authButton.textContent = "Connexion";
+      authButton.classList.remove("logout");
+      resetTheme();
+    }
+  }
+
+  authButton.addEventListener("click", async () => {
+    if (auth.currentUser) {
+      await signOut(auth);
+      window.location.href = "index.html";
+    } else {
+      window.location.href = "authentification.html";
+    }
+  });
+
+  onAuthStateChanged(auth, async (user) => {
+    if (!user) {
+      updateAuthUI(null);
+      return;
     }
 
-    function resetTheme() {
-        applyTheme(defaultTheme);
+    try {
+      const userSnap = await getDoc(doc(db, "users", user.email));
+      connectedUserProfile = userSnap.exists() ? userSnap.data() : null;
+      updateAuthUI(user, connectedUserProfile);
+    } catch (error) {
+      console.error("Erreur profil utilisateur :", error);
+      updateAuthUI(user, null);
     }
+  });
 
-    const memoryCache = {};
+  anneeSelector.addEventListener("change", () => {
+    if (currentEcole) ouvrirEcole(currentEcole.id, currentEcole.name, currentEcole.color);
+  });
 
-    async function fetchWithCache(collection, ecoleId, subCollection, annee) {
-        const cacheKey = `sebr_cache_${collection}_${ecoleId}_${subCollection}_${annee}`;
-        if (memoryCache[cacheKey]) return memoryCache[cacheKey];
+  points.forEach((p) => {
+    const color = p.style.getPropertyValue("--halo-color");
 
-        const docRef = doc(db, collection, ecoleId, subCollection, annee);
-        const snap = await getDoc(docRef);
-        memoryCache[cacheKey] = snap;
-        return snap;
-    }
+    p.addEventListener("mouseenter", async () => {
+      tooltip.classList.remove("hidden");
+      tooltip.style.borderColor = color;
+      tooltip.innerHTML = `<strong style="color:${color}">Polytech ${p.dataset.name}</strong>`;
 
-    function formaterDate(val) {
-        if (!val) return "";
-        let d;
-        if (val.toDate) d = val.toDate();
-        else if (val.seconds) d = new Date(val.seconds * 1000);
-        else d = new Date(val);
-
-        if (isNaN(d.getTime())) return "";
-        return d.toLocaleDateString('fr-FR', { day: 'numeric', month: 'long', year: 'numeric' }).toUpperCase();
-    }
-
-    const points = document.querySelectorAll('.ecole-point');
-    const sideContent = document.getElementById('side-content');
-    const sideTitle = document.getElementById('side-title');
-    const tooltip = document.getElementById('tooltip');
-    const anneeSelector = document.getElementById('annee-selector');
-    const authButton = document.getElementById('auth-button');
-    const userGreeting = document.getElementById('user-greeting');
-
-    let currentEcole = null;
-    let connectedUserProfile = null;
-
-    function updateAuthUI(user, profile = null) {
-        if (user) {
-            const prenom = profile?.prenom || user.displayName || user.email?.split('@')[0] || 'toi';
-            userGreeting.textContent = `Bonjour ${prenom}`;
-            userGreeting.classList.add('visible');
-    
-            adminButton.classList.remove('hidden');
-    
-            authButton.textContent = 'Déconnexion';
-            authButton.classList.add('logout');
-    
-            const theme = schoolThemes[profile?.ecole] || defaultTheme;
-            applyTheme(theme);
-        } else {
-            connectedUserProfile = null;
-            userGreeting.textContent = '';
-            userGreeting.classList.remove('visible');
-    
-            adminButton.classList.add('hidden');
-    
-            authButton.textContent = 'Connexion 🔒';
-            authButton.classList.remove('logout');
-            resetTheme();
+      const snap = await fetchWithCache("ecoles", p.dataset.folder, "events", anneeSelector.value);
+      if (snap.exists() && snap.data().soiree) {
+        const s = snap.data().soiree;
+        if (s.nom && s.nom.trim() !== "") {
+          tooltip.innerHTML += `
+            <div style="margin-top:8px;border-top:1px solid #333;padding-top:5px;">
+              <span style="font-size:0.85em;color:#fff;display:block;">${s.nom.toUpperCase()}</span>
+              <span style="font-size:0.75em;color:var(--poly-cyan);font-weight:bold;">
+                ${formaterDate(s.date)} à venir
+              </span>
+            </div>
+          `;
         }
-    }
-
-    authButton.addEventListener('click', async () => {
-        if (auth.currentUser) {
-            await signOut(auth);
-            window.location.href = 'index.html';
-        } else {
-            window.location.href = 'authentification.html';
-        }
+      }
     });
 
-    onAuthStateChanged(auth, async (user) => {
-        if (!user) {
-            updateAuthUI(null);
-            return;
+    p.addEventListener("mouseleave", () => tooltip.classList.add("hidden"));
+
+    p.addEventListener("mousemove", (e) => {
+      tooltip.style.left = e.clientX + 15 + "px";
+      tooltip.style.top = e.clientY + 15 + "px";
+    });
+
+    p.addEventListener("click", () => {
+      window.location.hash = p.dataset.folder;
+      ouvrirEcole(p.dataset.folder, p.dataset.name, color);
+    });
+  });
+
+  async function ouvrirEcole(ecoleId, name, cityColor) {
+    document.getElementById("blog-container").classList.add("hidden");
+    document.getElementById("school-container").classList.remove("hidden");
+
+    document.querySelectorAll(".ecole-point").forEach((point) => point.classList.remove("active"));
+    const pointActif = document.querySelector(`.ecole-point[data-folder="${ecoleId}"]`);
+    if (pointActif) pointActif.classList.add("active");
+
+    currentEcole = { id: ecoleId, name, color: cityColor };
+    const annee = document.getElementById("annee-selector").value;
+
+    sideTitle.innerHTML = `Polytech ${name}
+      <img src="${ecoleId}.png" style="height:50px;vertical-align:middle;margin-left:10px;" onerror="this.style.display='none'">`;
+    sideTitle.style.color = cityColor;
+
+    sideContent.innerHTML = `
+      <div class="btn-back" onclick="retourAuBlog()">← Retour au Guide du Rezo</div>
+      <div id="dynamic-area">
+        <div class="loading-text" style="text-align:center;padding:20px;font-weight:bold;color:${cityColor}">
+          Chargement des données ${annee}...
+        </div>
+      </div>
+    `;
+
+    const dynamicArea = document.getElementById("dynamic-area");
+
+    try {
+      const eventSnap = await fetchWithCache("ecoles", ecoleId, "events", annee);
+      let eventHtml = "";
+
+      if (eventSnap.exists() && eventSnap.data().soiree) {
+        const e = eventSnap.data().soiree;
+        if (e.nom && e.nom.trim() !== "") {
+          eventHtml = `
+            <div class="rezo-banner" style="border-bottom:3px solid ${cityColor}">
+              <span style="color:var(--poly-cyan);font-weight:bold;font-size:1.1em;">REZO : ${e.nom.toUpperCase()}</span><br>
+              <span style="color:#aaa;font-size:0.9em;">${formaterDate(e.date)} à venir</span>
+            </div>
+          `;
+        }
+      }
+
+      const archSnap = await fetchWithCache("ecoles", ecoleId, "archives", annee);
+
+      if (archSnap.exists()) {
+        const d = archSnap.data();
+        let sections = "";
+
+        if (d.campagnestart || d.passationdate) {
+          sections += `
+            <div class="category-wrapper">
+              <div class="category-title" style="color:${cityColor}">Calendrier local</div>
+              ${d.campagnestart ? `<div class="rezo-banner">Campagne : ${formaterDate(d.campagnestart)} au ${formaterDate(d.campagneend || d.campagnestart)}</div>` : ""}
+              ${d.passationdate ? `<div class="rezo-banner">Passation : ${formaterDate(d.passationdate)}</div>` : ""}
+            </div>
+          `;
         }
 
-        try {
-            const userSnap = await getDoc(doc(db, 'users', user.email));
-            connectedUserProfile = userSnap.exists() ? userSnap.data() : null;
-            updateAuthUI(user, connectedUserProfile);
-        } catch (error) {
-            console.error('Erreur profil utilisateur :', error);
-            updateAuthUI(user, null);
+        sections += renderSection("BDE actuel", d.bdeactuel, cityColor, ecoleId, annee, "bdeactuel");
+        if (d.bdpactuel && d.bdpactuel.nom && d.bdpactuel.prez) {
+          sections += renderSection("BDP actuel", d.bdpactuel, cityColor, ecoleId, annee, "bdpactuel");
         }
+        sections += renderSection("Listes BDE", d.listesbde, cityColor, ecoleId, annee, "listesbde");
+        sections += renderSection("Listes BDP", d.listesbdp, cityColor, ecoleId, annee, "listesbdp");
+        sections += renderSection("Fakelistes", d.fakelistes, cityColor, ecoleId, annee, "fakelistes");
+
+        dynamicArea.innerHTML = eventHtml + sections;
+      } else {
+        dynamicArea.innerHTML = eventHtml + `<p style="color:#666;text-align:center;animation:slideUpFade 0.4s ease-out;">Aucune donnée pour cette année.</p>`;
+      }
+    } catch (error) {
+      console.error(error);
+      dynamicArea.innerHTML = `<p style="color:#ff8080;text-align:center;">Erreur lors du chargement des données.</p>`;
+    }
+  }
+
+  function renderSection(title, data, cityColor, ecoleId, annee, type) {
+    if (!data || (Array.isArray(data) && data.length === 0)) {
+      if (type === "bdeactuel") data = { nom: "Non renseigné", prez: "N/A" };
+      else return "";
+    }
+
+    let items = Array.isArray(data) ? data : [data];
+
+    items.sort((a, b) => {
+      const rankA = parseInt(a.classement || Infinity);
+      const rankB = parseInt(b.classement || Infinity);
+      return rankA - rankB;
     });
 
-    anneeSelector.addEventListener('change', () => {
-        if (currentEcole) ouvrirEcole(currentEcole.id, currentEcole.name, currentEcole.color);
-    });
+    const isBureau = type.includes("actuel");
+    const fallback = isBureau ? `${ecoleId}.png` : "default.png";
 
-    points.forEach(p => {
-        const color = p.style.getPropertyValue('--halo-color');
-
-        p.addEventListener('mouseenter', async () => {
-            tooltip.classList.remove('hidden');
-            tooltip.style.borderColor = color;
-            tooltip.innerHTML = `<strong style="color: ${color};">Polytech ${p.dataset.name}</strong>`;
-
-            const snap = await fetchWithCache('ecoles', p.dataset.folder, 'events', anneeSelector.value);
-            if (snap.exists() && snap.data().soiree) {
-                const s = snap.data().soiree;
-                if (s.nom && s.nom.trim() !== '') {
-                    tooltip.innerHTML += `<div style="margin-top:8px; border-top:1px solid #333; padding-top:5px;">
-                        <span style="font-size:0.85em; color:#fff; display:block;">🎉 ${s.nom.toUpperCase()}</span>
-                        <span style="font-size:0.75em; color:var(--poly-cyan); font-weight:bold;">📅 ${formaterDate(s.date) || 'À venir'}</span>
-                    </div>`;
-                }
-            }
-        });
-
-        p.addEventListener('mouseleave', () => tooltip.classList.add('hidden'));
-        p.addEventListener('mousemove', (e) => {
-            tooltip.style.left = (e.clientX + 15) + 'px';
-            tooltip.style.top = (e.clientY + 15) + 'px';
-        });
-
-        p.addEventListener('click', () => {
-            window.location.hash = p.dataset.folder;
-            ouvrirEcole(p.dataset.folder, p.dataset.name, color);
-        });
-    });
-
-   async function ouvrirEcole(ecoleId, name, cityColor) {
-      document.getElementById('blog-container').classList.add('hidden');
-      document.getElementById('school-container').classList.remove('hidden');
-    
-      document.querySelectorAll('.ecole-point').forEach(point => {
-        point.classList.remove('active');
-      });
-    
-      const pointActif = document.querySelector(`.ecole-point[data-folder="${ecoleId}"]`);
-      if (pointActif) pointActif.classList.add('active');
-    
-      currentEcole = { id: ecoleId, name, color: cityColor };
-    
-      const annee = document.getElementById('annee-selector').value;
-    
-      sideTitle.innerHTML = `
-        Polytech ${name}
-        <img src="${ecoleId}.png"
-             style="height:50px; vertical-align:middle; margin-left:10px;"
-             onerror="this.style.display='none'">
-      `;
-      sideTitle.style.color = cityColor;
-    
-      sideContent.innerHTML = `
-        <div class="btn-back" onclick="retourAuBlog()">← Retour au Guide du Rezo</div>
-        <div id="dynamic-area">
-          <div class="loading-text" style="text-align:center; padding:20px; font-weight:bold; color:${cityColor};">
-            Chargement des données ${annee}...
+    const cards = items.map((i, index) => {
+      const url = `liste.html?ecole=${ecoleId}&annee=${annee}&type=${type}&id=${encodeURIComponent(i.nom || "bureau")}`;
+      return `
+        <div class="list-card" onclick="window.location.href='${url}'"
+             style="border-left: 4px solid ${i.couleur || cityColor}; animation-delay:${index * 0.1}s">
+          ${i.classement ? `<div class="rank-badge">${i.classement}</div>` : ""}
+          <img src="${i.logo || i.photo || fallback}" class="list-logo" onerror="this.src='default.png'">
+          <div style="flex:1">
+            <div class="list-name">${i.nom || "Équipe sans titre"}</div>
+            <div class="list-prez">Prez : ${i.prez || "N/A"}</div>
           </div>
         </div>
       `;
-    
-      const dynamicArea = document.getElementById('dynamic-area');
-    
-      try {
-        const eventSnap = await fetchWithCache('ecoles', ecoleId, 'events', annee);
-        let eventHtml = '';
-    
-        if (eventSnap.exists() && eventSnap.data().soiree) {
-          const e = eventSnap.data().soiree;
-          if (e.nom && e.nom.trim() !== '') {
-            eventHtml = `
-              <div class="rezo-banner" style="border-bottom:3px solid ${cityColor};">
-                <span style="color:var(--poly-cyan); font-weight:bold; font-size:1.1em;">
-                  REZO 🎉 ${e.nom.toUpperCase()}
-                </span><br>
-                <span style="color:#aaa; font-size:0.9em;">
-                  📅 ${formaterDate(e.date) || 'À venir'}
-                </span>
-              </div>
-            `;
+    }).join("");
+
+    return `
+      <div class="category-wrapper">
+        <div class="category-title">${title}</div>
+        ${cards}
+      </div>
+    `;
+  }
+
+  let indexRecherche = [];
+  const barre = document.getElementById("barreRecherche");
+  const listeResultats = document.getElementById("resultatsRecherche");
+
+  async function preparerIndex() {
+    indexRecherche = [];
+
+    try {
+      const archiveSnapshot = await getDocs(collectionGroup(db, "archives"));
+      archiveSnapshot.forEach((docItem) => {
+        const data = docItem.data();
+        const annee = docItem.id;
+        const ecoleId = docItem.ref.parent.parent.id;
+
+        ["listesbde", "listesbdp", "fakelistes", "bdeactuel", "bdpactuel"].forEach((type) => {
+          if (data[type]) {
+            const items = Array.isArray(data[type]) ? data[type] : [data[type]];
+            items.forEach((item) => {
+              if (item.nom || item.prez) {
+                const nom = item.nom || (type.includes("bde") ? "BDE" : "BDP");
+                const prez = item.prez || "";
+                const vp = item.vp || "";
+                const rr = item.rr || "";
+
+                indexRecherche.push({
+                  nom,
+                  prez,
+                  vp,
+                  rr,
+                  ecole: ecoleId,
+                  annee,
+                  type,
+                  searchKey: `${nom} ${prez} ${vp} ${rr} ${ecoleId} ${annee}`.toLowerCase()
+                });
+              }
+            });
           }
+        });
+      });
+    } catch (err) {
+      console.error("Erreur indexation Firestore :", err);
+    }
+
+    try {
+      const eventSnapshot = await getDocs(collectionGroup(db, "events"));
+      eventSnapshot.forEach((docItem) => {
+        const data = docItem.data();
+        const annee = docItem.id;
+        const ecoleId = docItem.ref.parent.parent.id;
+
+        if (data.locaux && Array.isArray(data.locaux)) {
+          data.locaux.forEach((ev) => {
+            indexRecherche.push({
+              nom: ev.nom,
+              typeInfo: "Événement Local",
+              ecole: ecoleId,
+              annee,
+              type: "event",
+              searchKey: `${ev.nom} event ${ecoleId} ${annee}`.toLowerCase()
+            });
+          });
         }
-    
-        const archSnap = await fetchWithCache('ecoles', ecoleId, 'archives', annee);
-    
-        if (archSnap.exists()) {
-          const d = archSnap.data();
-          let sections = '';
-    
-          if (d.campagne_start || d.passation_date) {
-            sections += `
-              <div class="category-wrapper">
-                <div class="category-title" style="color:${cityColor}">Calendrier local</div>
-                ${d.campagne_start ? `<div class="rezo-banner">🗳️ Campagne : ${formaterDate(d.campagne_start)} au ${formaterDate(d.campagne_end) || '...'}</div>` : ''}
-                ${d.passation_date ? `<div class="rezo-banner">🤝 Passation : ${formaterDate(d.passation_date)}</div>` : ''}
-              </div>
-            `;
-          }
-    
-          sections += renderSection('BDE', d.bde_actuel, cityColor, ecoleId, annee, 'bde_actuel');
-    
-          if (d.bdp_actuel && (d.bdp_actuel.nom || d.bdp_actuel.prez)) {
-            sections += renderSection('BDP', d.bdp_actuel, cityColor, ecoleId, annee, 'bdp_actuel');
-          }
-    
-          sections += renderSection('Listes BDE', d.listes_bde, cityColor, ecoleId, annee, 'listes_bde');
-          sections += renderSection('Listes BDP', d.listes_bdp, cityColor, ecoleId, annee, 'listes_bdp');
-          sections += renderSection('Fakelistes', d.fakelistes, cityColor, ecoleId, annee, 'fakelistes');
-    
-          dynamicArea.innerHTML = eventHtml + sections;
+
+        if (data.soiree && data.soiree.nom) {
+          indexRecherche.push({
+            nom: data.soiree.nom,
+            typeInfo: "Soirée Rezo",
+            ecole: ecoleId,
+            annee,
+            type: "rezo",
+            searchKey: `${data.soiree.nom} rezo ${ecoleId} ${annee}`.toLowerCase()
+          });
+        }
+      });
+    } catch (err) {
+      console.error("Erreur indexation events :", err);
+    }
+
+    const blogContainer = document.getElementById("blog-container");
+    if (blogContainer) {
+      try {
+        const response = await fetch("blog.html");
+        if (response.ok) {
+          const html = await response.text();
+          const parser = new DOMParser();
+          const docHtml = parser.parseFromString(html, "text/html");
+          blogContainer.innerHTML = docHtml.body.innerHTML;
         } else {
-          dynamicArea.innerHTML = eventHtml + `
-            <p style="color:#666; text-align:center; animation:slideUpFade 0.4s ease-out;">
-              Aucune donnée pour cette année.
-            </p>
-          `;
+          blogContainer.innerHTML = `<p style="text-align:center;padding:20px;">Le guide du Rezo est momentanément indisponible.</p>`;
         }
       } catch (error) {
-        console.error(error);
-        dynamicArea.innerHTML = `
-          <p style="color:#ff8080; text-align:center;">
-            Erreur lors du chargement des données.
-          </p>
-        `;
+        console.error("Erreur fetch blog :", error);
+        blogContainer.innerHTML = `<p style="text-align:center;">Erreur de chargement du blog.</p>`;
       }
     }
+  }
 
-    function renderSection(title, data, cityColor, ecoleId, annee, type) {
-        if (!data || (Array.isArray(data) && data.length === 0)) {
-            if (type === 'bde_actuel') data = [{ nom: 'Non renseigné', prez: 'N/A' }];
-            else return '';
-        }
-
-        let items = Array.isArray(data) ? data : [data];
-
-        items.sort((a, b) => {
-            const rankA = parseInt(a.classement) || Infinity;
-            const rankB = parseInt(b.classement) || Infinity;
-            return rankA - rankB;
-        });
-
-        const isBureau = type.includes('actuel');
-        const fallback = isBureau ? `${ecoleId}.png` : 'default.png';
-
-        const cards = items.map((i, index) => {
-            const url = `liste.html?ecole=${ecoleId}&annee=${annee}&type=${type}&id=${encodeURIComponent(i.nom || 'bureau')}`;
-            return `<div class="list-card" onclick="window.location.href='${url}'" style="border-left: 4px solid ${i.couleur || cityColor}; animation-delay: ${index * 0.1}s">
-                ${i.classement ? `<div class="rank-badge">${i.classement}</div>` : ''}
-                <img src="${i.logo || i.photo || fallback}" class="list-logo" onerror="this.src='default.png'">
-                <div style="flex:1;">
-                    <div class="list-name">${i.nom || 'Équipe ' + title}</div>
-                    <div class="list-prez">Prez: ${i.prez || 'N/A'}</div>
-                </div>
-            </div>`;
-        }).join('');
-
-        return `<div class="category-wrapper"><div class="category-title">${title}</div>${cards}</div>`;
+  barre.addEventListener("input", (e) => {
+    const val = e.target.value.toLowerCase();
+    if (val.length < 2) {
+      listeResultats.style.display = "none";
+      return;
     }
 
-    let indexRecherche = [];
-    const barre = document.getElementById('barreRecherche');
-    const listeResultats = document.getElementById('resultatsRecherche');
+    const filtres = indexRecherche.filter((i) => i.searchKey.includes(val)).slice(0, 8);
 
-    async function preparerIndex() {
-        indexRecherche = [];
-    
-        try {
-            const archiveSnapshot = await getDocs(collectionGroup(db, 'archives'));
-    
-            archiveSnapshot.forEach((docItem) => {
-                const data = docItem.data();
-                const annee = docItem.id;
-                const ecoleId = docItem.ref.parent.parent.id;
-    
-                ['listes_bde', 'listes_bdp', 'fakelistes', 'bde_actuel', 'bdp_actuel'].forEach(type => {
-                    if (data[type]) {
-                        const items = Array.isArray(data[type]) ? data[type] : [data[type]];
-    
-                        items.forEach(item => {
-                            if (item.nom || item.prez) {
-                                const nom = item.nom || (type.includes('bde') ? 'BDE' : 'BDP');
-                                const prez = item.prez || '';
-                                const vp = item.vp || '';
-                                const rr = item.rr || '';
-    
-                                indexRecherche.push({
-                                    nom,
-                                    prez,
-                                    vp,
-                                    rr,
-                                    ecole: ecoleId,
-                                    annee,
-                                    type,
-                                    searchKey: `${nom} ${prez} ${vp} ${rr} ${ecoleId} ${annee}`.toLowerCase()
-                                });
-                            }
-                        });
-                    }
-                });
-            });
-        } catch (err) {
-            console.error("Erreur indexation Firestore:", err);
+    if (filtres.length > 0) {
+      listeResultats.innerHTML = filtres.map((f) => {
+        const sousTitre = f.typeInfo ? f.typeInfo : `Prez : ${f.prez || "N/A"}`;
+        let targetType = f.type;
+        let targetId = f.nom;
+
+        if (f.type === "event" || f.type === "rezo") {
+          targetType = "bdeactuel";
+          targetId = "BDE";
         }
-    
-        try {
-            const eventSnapshot = await getDocs(collectionGroup(db, 'events'));
-    
-            eventSnapshot.forEach((docItem) => {
-                const data = docItem.data();
-                const annee = docItem.id;
-                const ecoleId = docItem.ref.parent.parent.id;
-    
-                if (data.locaux && Array.isArray(data.locaux)) {
-                    data.locaux.forEach(ev => {
-                        indexRecherche.push({
-                            nom: ev.nom,
-                            typeInfo: 'Événement Local',
-                            ecole: ecoleId,
-                            annee,
-                            type: 'event',
-                            searchKey: `${ev.nom} event ${ecoleId} ${annee}`.toLowerCase()
-                        });
-                    });
-                }
-    
-                if (data.soiree && data.soiree.nom) {
-                    indexRecherche.push({
-                        nom: data.soiree.nom,
-                        typeInfo: 'Soirée Rezo',
-                        ecole: ecoleId,
-                        annee,
-                        type: 'rezo',
-                        searchKey: `${data.soiree.nom} rezo ${ecoleId} ${annee}`.toLowerCase()
-                    });
-                }
-            });
-        } catch (err) {
-            console.error("Erreur indexation events:", err);
-        }
-    
-        const blogContainer = document.getElementById('blog-container');
-    
-        if (blogContainer) {
-            try {
-                const response = await fetch('blog.html');
-    
-                if (response.ok) {
-                    const html = await response.text();
-                    const parser = new DOMParser();
-                    const docHtml = parser.parseFromString(html, 'text/html');
-                    blogContainer.innerHTML = docHtml.body.innerHTML;
-                } else {
-                    blogContainer.innerHTML = "<p style='text-align:center; padding:20px;'>Le guide du Rezo est momentanément indisponible.</p>";
-                }
-            } catch (error) {
-                console.error("Erreur fetch blog:", error);
-                blogContainer.innerHTML = "<p style='text-align:center;'>Erreur de chargement du blog.</p>";
-            }
-        }
+
+        return `
+          <div class="result-item" onclick="window.location.href='liste.html?ecole=${f.ecole}&annee=${f.annee}&type=${targetType}&id=${encodeURIComponent(targetId)}'">
+            <strong>${f.nom}</strong>
+            <span class="type-badge">${f.ecole.toUpperCase()}</span>
+            <div style="font-size:0.8em;color:#aaa;">${sousTitre} • ${f.annee}</div>
+          </div>
+        `;
+      }).join("");
+      listeResultats.style.display = "block";
+    } else {
+      listeResultats.style.display = "none";
+    }
+  });
+
+  document.addEventListener("click", (e) => {
+    if (!barre.contains(e.target) && !listeResultats.contains(e.target)) {
+      listeResultats.style.display = "none";
+    }
+  });
+
+  window.addEventListener("load", async () => {
+    await preparerIndex();
+
+    const h = window.location.hash.replace("#", "");
+    if (h) {
+      const p = document.querySelector(`.ecole-point[data-folder="${h}"]`);
+      if (p) ouvrirEcole(h, p.dataset.name, p.style.getPropertyValue("--halo-color"));
     }
 
-        const eventSnapshot = await getDocs(collectionGroup(db, 'events'));
-        eventSnapshot.forEach((docItem) => {
-            const data = docItem.data();
-            const annee = docItem.id;
-            const ecoleId = docItem.ref.parent.parent.id;
-
-            if (data.locaux && Array.isArray(data.locaux)) {
-                data.locaux.forEach(ev => {
-                    indexRecherche.push({
-                        nom: ev.nom,
-                        typeInfo: 'Événement Local',
-                        ecole: ecoleId,
-                        annee,
-                        type: 'event',
-                        searchKey: `${ev.nom} event ${ecoleId} ${annee}`.toLowerCase()
-                    });
-                });
-            }
-
-            if (data.soiree && data.soiree.nom) {
-                indexRecherche.push({
-                    nom: data.soiree.nom,
-                    typeInfo: 'Soirée Rezo',
-                    ecole: ecoleId,
-                    annee,
-                    type: 'rezo',
-                    searchKey: `${data.soiree.nom} rezo ${ecoleId} ${annee}`.toLowerCase()
-                });
-            }
-        });
-
-    barre.addEventListener('input', (e) => {
-        const val = e.target.value.toLowerCase();
-        if (val.length < 2) {
-            listeResultats.style.display = 'none';
-            return;
-        }
-
-        const filtres = indexRecherche.filter(i => i.searchKey.includes(val)).slice(0, 8);
-
-        if (filtres.length > 0) {
-            listeResultats.innerHTML = filtres.map(f => {
-                const sousTitre = f.typeInfo ? `${f.typeInfo}` : `Prez: ${f.prez || 'N/A'}`;
-
-                let targetType = f.type;
-                let targetId = f.nom;
-
-                if (f.type === 'event' || f.type === 'rezo') {
-                    targetType = 'bde_actuel';
-                    targetId = 'BDE';
-                }
-
-                return `
-                    <div class="result-item" onclick="window.location.href='liste.html?ecole=${f.ecole}&annee=${f.annee}&type=${targetType}&id=${encodeURIComponent(targetId)}'">
-                        <strong>${f.nom}</strong> <span class="type-badge">${f.ecole.toUpperCase()}</span>
-                        <div style="font-size: 0.8em; color: #aaa;">${sousTitre} (${f.annee})</div>
-                    </div>
-                `;
-            }).join('');
-
-            listeResultats.style.display = 'block';
-        } else {
-            listeResultats.style.display = 'none';
-        }
-    });
-
-    document.addEventListener('click', (e) => {
-        if (!barre.contains(e.target) && !listeResultats.contains(e.target)) {
-            listeResultats.style.display = 'none';
-        }
-    });
-
-    window.addEventListener('load', async () => {
-        await preparerIndex();
-        const h = window.location.hash.replace('#', '');
-        if (h) {
-            const p = document.querySelector(`.ecole-point[data-folder="${h}"]`);
-            if (p) ouvrirEcole(h, p.dataset.name, p.style.getPropertyValue('--halo-color'));
-        }
-    });
-
-    // On retire la classe de chargement après l'animation initiale
-    window.addEventListener('load', () => {
-        setTimeout(() => {
-            document.body.classList.remove('is-loading');
-        }, 4500); // 3.2s de délai max + 1.2s de durée
-    });
-
-    // Permet de rendre la fonction accessible au bouton "onclick"
-    window.retourAuBlog = function () {
-      document.getElementById('blog-container').classList.remove('hidden');
-      document.getElementById('school-container').classList.add('hidden');
-    
-      document.querySelectorAll('.ecole-point').forEach(p => {
-        p.classList.remove('active');
+    setTimeout(() => {
+      document.body.classList.remove("is-loading");
+      document.querySelectorAll(".ecole-point").forEach((point) => {
+        point.classList.remove("animate-on-load");
       });
-    
-      currentEcole = null;
-      window.location.hash = '';
-      resetTheme();
-    };
-    
+    }, 0);
+  });
+
+  window.retourAuBlog = function () {
+    document.getElementById("blog-container").classList.remove("hidden");
+    document.getElementById("school-container").classList.add("hidden");
+    document.querySelectorAll(".ecole-point").forEach((p) => p.classList.remove("active"));
+    currentEcole = null;
+    window.location.hash = "";
+    resetTheme();
+  };
 </script>
 
 <footer class="site-footer">
