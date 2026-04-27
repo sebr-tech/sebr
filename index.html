@@ -1088,14 +1088,17 @@
     });
 
     // Permet de rendre la fonction accessible au bouton "onclick"
-    window.retourAuBlog = function() {
-        document.getElementById('blog-container').classList.remove('hidden');
-        document.getElementById('school-container').classList.add('hidden');
-        
-        // Retirer le halo actif sur la carte
-        document.querySelectorAll('.ecole-point').forEach(p => p.classList.remove('active'));
-        window.location.hash = ''; 
-        resetTheme(); // Optionnel : remet les couleurs Polytech par défaut
+    window.retourAuBlog = function () {
+      document.getElementById('blog-container').classList.remove('hidden');
+      document.getElementById('school-container').classList.add('hidden');
+    
+      document.querySelectorAll('.ecole-point').forEach(p => {
+        p.classList.remove('active');
+      });
+    
+      currentEcole = null;
+      window.location.hash = '';
+      resetTheme();
     };
     
 </script>
