@@ -1,13 +1,11 @@
 import {
     getFirestore, doc, getDoc, setDoc, arrayUnion, arrayRemove, Timestamp,
-    collection, addDoc, serverTimestamp, updateDoc, increment
+    collection, addDoc, serverTimestamp, updateDoc
 } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 import { getAuth } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
 
 const db   = getFirestore();
 const auth = getAuth();
-
-const MAX_PROPOSALS = 10;
 
 let currentEventsArray  = [];
 let currentArchivesData = null;
@@ -38,17 +36,6 @@ function formatSimpleDate(val) {
     } catch(err) { return "Date inconnue"; }
 }
 
-/* ══════════ COMPTEUR DE PROPOSITIONS ══════════ */
-async function getRemainingProposals() {
-    const user = auth.currentUser;
-    if (!user) return 0;
-    try {
-        const snap = await getDoc(doc(db, "users", user.email));
-        if (!snap.exists()) return 0;
-        return MAX_PROPOSALS - (snap.data().proposalsCount || 0);
-    } catch { return 0; }
-}
-
 /* ══════════ SOUMISSION D'UNE PROPOSITION ══════════ */
 async function submitProposal(type, payload) {
     const user = auth.currentUser;
@@ -57,9 +44,6 @@ async function submitProposal(type, payload) {
     const userRef  = doc(db, "users", user.email);
     const userSnap = await getDoc(userRef);
     if (!userSnap.exists()) throw new Error("Utilisateur introuvable.");
-
-    const count = userSnap.data().proposalsCount || 0;
-    if (count >= MAX_PROPOSALS) throw new Error(`Limite de ${MAX_PROPOSALS} propositions atteinte.`);
 
     const ecole = document.getElementById('event-ecole-select').value;
     const annee = document.getElementById('event-annee-select').value;
@@ -75,11 +59,7 @@ async function submitProposal(type, payload) {
         createdAt: serverTimestamp()
     });
 
-    await updateDoc(userRef, { proposalsCount: increment(1) });
-
-    const remaining = MAX_PROPOSALS - count - 1;
-    showEventStatus(`📤 Proposition envoyée ! Il vous reste ${remaining} proposition(s).`);
-    updateEventProposalCounter(count + 1);
+    showEventStatus(`📤 Proposition envoyée !`);
 }
 
 function showEventStatus(msg, isError = false) {
@@ -88,13 +68,6 @@ function showEventStatus(msg, isError = false) {
     el.textContent  = msg;
     el.style.color  = isError ? '#ed1c24' : '#28a745';
     if (!isError) setTimeout(() => { if(el) el.textContent = ''; }, 5000);
-}
-
-function updateEventProposalCounter(count) {
-    const el = document.getElementById('event-proposal-counter');
-    if (!el) return;
-    el.textContent = `${MAX_PROPOSALS - count} proposition(s) restante(s)`;
-    el.style.color = count >= MAX_PROPOSALS ? '#ed1c24' : count >= 7 ? '#f09433' : '#28a745';
 }
 
 /* ══════════ CANCEL EDIT ══════════ */
@@ -229,7 +202,7 @@ function applyEventUserModeUI() {
         cardRezo.appendChild(note);
     }
 
-    // Compteur
+    // Zone de statut
     const statusEl = document.getElementById('event-status');
     if (!statusEl) {
         const s = document.createElement('p');
@@ -237,14 +210,6 @@ function applyEventUserModeUI() {
         s.style.cssText = 'text-align:center; font-size:0.9em; min-height:1.2em; margin-top:8px;';
         document.getElementById('card-local')?.insertAdjacentElement('afterend', s);
     }
-
-    const counter = document.createElement('div');
-    counter.id = 'event-proposal-counter';
-    counter.style.cssText = 'text-align:center; font-size:0.85em; font-weight:bold; margin-bottom:14px; padding:8px; background:#0d1520; border-radius:6px; border:1px solid #222;';
-    counter.textContent = `${MAX_PROPOSALS} proposition(s) restante(s)`;
-    document.getElementById('card-local')?.insertAdjacentElement('beforebegin', counter);
-
-    getRemainingProposals().then(remaining => updateEventProposalCounter(MAX_PROPOSALS - remaining));
 
     // Note d'avertissement
     const note = document.createElement('p');
