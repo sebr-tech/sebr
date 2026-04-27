@@ -607,8 +607,14 @@
     </div>
     
     <div id="sidebar-section">
-    <div id="blog-container" style="height: 100%; display: flex; flex-direction: column;">
-        <iframe src="blog.html" style="width: 100%; height: 100%; border: none; border-radius: 8px;"></iframe>
+        <div id="blog-container" style="height: 100%; display: flex; flex-direction: column; overflow-y: auto;">
+            <div style="text-align:center; padding:20px; color:var(--poly-cyan);">Chargement du Guide du Rezo...</div>
+        </div>
+    
+        <div id="school-container" class="hidden">
+            <h2 id="side-title"></h2>
+            <div id="side-content"></div>
+        </div>
     </div>
 
     <div id="school-container" class="hidden">
@@ -966,8 +972,10 @@
     const listeResultats = document.getElementById('resultatsRecherche');
 
     async function preparerIndex() {
-        indexRecherche = [];
+    // 1. Initialisation de l'index de recherche
+    indexRecherche = [];
 
+    try {
         const archiveSnapshot = await getDocs(collectionGroup(db, 'archives'));
         archiveSnapshot.forEach((docItem) => {
             const data = docItem.data();
@@ -1000,6 +1008,30 @@
                 }
             });
         });
+    } catch (err) {
+        console.error("Erreur indexation Firestore:", err);
+    }
+
+    // 2. Chargement du contenu du Blog (Solution pour GitHub Pages sans IFRAME)
+    const blogContainer = document.getElementById('blog-container');
+    if (blogContainer) {
+        try {
+            const response = await fetch('blog.html');
+            if (response.ok) {
+                const html = await response.text();
+                // On extrait seulement ce qui est dans le <body> de blog.html
+                const parser = new DOMParser();
+                const doc = parser.parseFromString(html, 'text/html');
+                blogContainer.innerHTML = doc.body.innerHTML;
+            } else {
+                blogContainer.innerHTML = "<p style='text-align:center; padding:20px;'>Le guide du Rezo est momentanément indisponible.</p>";
+            }
+        } catch (error) {
+            console.error("Erreur fetch blog:", error);
+            blogContainer.innerHTML = "<p style='text-align:center;'>Erreur de chargement du blog.</p>";
+        }
+    }
+}
 
         const eventSnapshot = await getDocs(collectionGroup(db, 'events'));
         eventSnapshot.forEach((docItem) => {
