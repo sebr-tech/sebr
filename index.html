@@ -549,11 +549,11 @@
         }
     </style>
 </head>
-<body>
+    
+<body class="is-loading">
 
 <header>
     <div class="header-left">
-        <body class="is-loading">
         <div class="logo-title">
             ✊SEBR.tech
             <span class="subtitle">Site d'Exploration des Bureaux du Rezo Polytech</span>
@@ -937,66 +937,102 @@
     const listeResultats = document.getElementById('resultatsRecherche');
 
     async function preparerIndex() {
-    // 1. Initialisation de l'index de recherche
-    indexRecherche = [];
-
-    try {
-        const archiveSnapshot = await getDocs(collectionGroup(db, 'archives'));
-        archiveSnapshot.forEach((docItem) => {
-            const data = docItem.data();
-            const annee = docItem.id;
-            const ecoleId = docItem.ref.parent.parent.id;
-
-            ['listes_bde', 'listes_bdp', 'fakelistes', 'bde_actuel', 'bdp_actuel'].forEach(type => {
-                if (data[type]) {
-                    const items = Array.isArray(data[type]) ? data[type] : [data[type]];
-
-                    items.forEach(item => {
-                        if (item.nom || item.prez) {
-                            const nom = item.nom || (type.includes('bde') ? 'BDE' : 'BDP');
-                            const prez = item.prez || '';
-                            const vp = item.vp || '';
-                            const rr = item.rr || '';
-
-                            indexRecherche.push({
-                                nom,
-                                prez,
-                                vp,
-                                rr,
-                                ecole: ecoleId,
-                                annee,
-                                type,
-                                searchKey: `${nom} ${prez} ${vp} ${rr} ${ecoleId} ${annee}`.toLowerCase()
-                            });
-                        }
+        indexRecherche = [];
+    
+        try {
+            const archiveSnapshot = await getDocs(collectionGroup(db, 'archives'));
+    
+            archiveSnapshot.forEach((docItem) => {
+                const data = docItem.data();
+                const annee = docItem.id;
+                const ecoleId = docItem.ref.parent.parent.id;
+    
+                ['listes_bde', 'listes_bdp', 'fakelistes', 'bde_actuel', 'bdp_actuel'].forEach(type => {
+                    if (data[type]) {
+                        const items = Array.isArray(data[type]) ? data[type] : [data[type]];
+    
+                        items.forEach(item => {
+                            if (item.nom || item.prez) {
+                                const nom = item.nom || (type.includes('bde') ? 'BDE' : 'BDP');
+                                const prez = item.prez || '';
+                                const vp = item.vp || '';
+                                const rr = item.rr || '';
+    
+                                indexRecherche.push({
+                                    nom,
+                                    prez,
+                                    vp,
+                                    rr,
+                                    ecole: ecoleId,
+                                    annee,
+                                    type,
+                                    searchKey: `${nom} ${prez} ${vp} ${rr} ${ecoleId} ${annee}`.toLowerCase()
+                                });
+                            }
+                        });
+                    }
+                });
+            });
+        } catch (err) {
+            console.error("Erreur indexation Firestore:", err);
+        }
+    
+        try {
+            const eventSnapshot = await getDocs(collectionGroup(db, 'events'));
+    
+            eventSnapshot.forEach((docItem) => {
+                const data = docItem.data();
+                const annee = docItem.id;
+                const ecoleId = docItem.ref.parent.parent.id;
+    
+                if (data.locaux && Array.isArray(data.locaux)) {
+                    data.locaux.forEach(ev => {
+                        indexRecherche.push({
+                            nom: ev.nom,
+                            typeInfo: 'Événement Local',
+                            ecole: ecoleId,
+                            annee,
+                            type: 'event',
+                            searchKey: `${ev.nom} event ${ecoleId} ${annee}`.toLowerCase()
+                        });
+                    });
+                }
+    
+                if (data.soiree && data.soiree.nom) {
+                    indexRecherche.push({
+                        nom: data.soiree.nom,
+                        typeInfo: 'Soirée Rezo',
+                        ecole: ecoleId,
+                        annee,
+                        type: 'rezo',
+                        searchKey: `${data.soiree.nom} rezo ${ecoleId} ${annee}`.toLowerCase()
                     });
                 }
             });
-        });
-    } catch (err) {
-        console.error("Erreur indexation Firestore:", err);
-    }
-
-    // 2. Chargement du contenu du Blog (Solution pour GitHub Pages sans IFRAME)
-    const blogContainer = document.getElementById('blog-container');
-    if (blogContainer) {
-        try {
-            const response = await fetch('blog.html');
-            if (response.ok) {
-                const html = await response.text();
-                // On extrait seulement ce qui est dans le <body> de blog.html
-                const parser = new DOMParser();
-                const doc = parser.parseFromString(html, 'text/html');
-                blogContainer.innerHTML = doc.body.innerHTML;
-            } else {
-                blogContainer.innerHTML = "<p style='text-align:center; padding:20px;'>Le guide du Rezo est momentanément indisponible.</p>";
+        } catch (err) {
+            console.error("Erreur indexation events:", err);
+        }
+    
+        const blogContainer = document.getElementById('blog-container');
+    
+        if (blogContainer) {
+            try {
+                const response = await fetch('blog.html');
+    
+                if (response.ok) {
+                    const html = await response.text();
+                    const parser = new DOMParser();
+                    const docHtml = parser.parseFromString(html, 'text/html');
+                    blogContainer.innerHTML = docHtml.body.innerHTML;
+                } else {
+                    blogContainer.innerHTML = "<p style='text-align:center; padding:20px;'>Le guide du Rezo est momentanément indisponible.</p>";
+                }
+            } catch (error) {
+                console.error("Erreur fetch blog:", error);
+                blogContainer.innerHTML = "<p style='text-align:center;'>Erreur de chargement du blog.</p>";
             }
-        } catch (error) {
-            console.error("Erreur fetch blog:", error);
-            blogContainer.innerHTML = "<p style='text-align:center;'>Erreur de chargement du blog.</p>";
         }
     }
-}
 
         const eventSnapshot = await getDocs(collectionGroup(db, 'events'));
         eventSnapshot.forEach((docItem) => {
