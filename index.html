@@ -834,6 +834,12 @@
 
     const memoryCache = {};
 
+    function normalize(str) {
+      return str
+        ? str.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase()
+        : "";
+    }
+    
     async function fetchWithCache(collection, ecoleId, subCollection, annee) {
         const cacheKey = `sebr_cache_${collection}_${ecoleId}_${subCollection}_${annee}`;
         if (memoryCache[cacheKey]) return memoryCache[cacheKey];
@@ -1155,42 +1161,58 @@
         });
     }
 
-    barre.addEventListener('input', (e) => {
-        const val = e.target.value.toLowerCase();
-        if (val.length < 2) {
-            listeResultats.style.display = 'none';
-            return;
-        }
+    barre.addEventListener("input", e => {
+  const valRaw  = e.target.value;
+  const val     = normalize(valRaw);
+  const valTrim = val.trim();
 
-        const filtres = indexRecherche.filter(i =>
-          i.searchKey.includes(val.slice(0, 8))
-        );
+  if (val.length < 2) {
+    listeResultats.style.display = "none";
+    return;
+  }
 
-        if (filtres.length > 0) {
-            listeResultats.innerHTML = filtres.map(f => {
-                const sousTitre = f.typeInfo ? `${f.typeInfo}` : `Prez: ${f.prez || 'N/A'}`;
+  const filtres = indexRecherche.filter(i => {
+    // Cas spécial : la liste cachée "67"
+    if (i.nom === "67") {
+      return valTrim === "67";
+    }
 
-                let targetType = f.type;
-                let targetId = f.nom;
+    // Cas normal : on matche sur tout le searchKey normalisé
+    return normalize(i.searchKey).includes(val.slice(0, 8));
+  });
 
-                if (f.type === 'event' || f.type === 'rezo') {
-                    targetType = 'bde_actuel';
-                    targetId = 'BDE';
-                }
+  if (filtres.length === 0) {
+    listeResultats.style.display = "none";
+    return;
+  }
 
-                return `
-                    <div class="result-item" onclick="window.location.href='liste.html?ecole=${f.ecole}&annee=${f.annee}&type=${targetType}&id=${encodeURIComponent(targetId)}'">
-                        <strong>${f.nom}</strong> <span class="type-badge">${f.ecole.toUpperCase()}</span>
-                        <div style="font-size: 0.8em; color: #aaa;">${sousTitre} (${f.annee})</div>
-                    </div>
-                `;
-            }).join('');
+  listeResultats.innerHTML = filtres.map(f => {
+    const sousTitre = f.typeInfo
+      ? f.typeInfo
+      : `Prez: ${f.prez || "N/A"}`;
 
-            listeResultats.style.display = 'block';
-        } else {
-            listeResultats.style.display = 'none';
-        }
-    });
+    let targetType = f.type;
+    let targetId   = f.nom;
+
+    if (f.type === "event" || f.type === "rezo") {
+      targetType = "bdeactuel";
+      targetId   = "BDE";
+    }
+
+    return `
+      <div class="result-item"
+           onclick="window.location.href='liste.html?ecole=${f.ecole}&annee=${f.annee}&type=${targetType}&id=${encodeURIComponent(targetId)}'">
+        <strong>${f.nom}</strong>
+        <span class="type-badge">${f.ecole.toUpperCase()}</span>
+        <div style="font-size: 0.8em; color: #aaa;">
+          ${sousTitre} • ${f.annee}
+        </div>
+      </div>
+    `;
+  }).join("");
+
+  listeResultats.style.display = "block";
+});
 
     document.addEventListener('click', (e) => {
         if (!barre.contains(e.target) && !listeResultats.contains(e.target)) {
