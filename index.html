@@ -1178,7 +1178,7 @@
     }
 
     // Cas normal : on matche sur tout le searchKey normalisé
-    return normalize(i.searchKey).includes(val.slice(0, 8));
+    return normalize(i.searchKey).includes(val);
   });
 
   if (filtres.length === 0) {
