@@ -1162,7 +1162,11 @@
             return;
         }
 
-        const filtres = indexRecherche.filter(i => i.searchKey.includes(val)).slice(0, 8);
+        const filtres = indexRecherche.filter(i =>
+          i.searchKey.includes(val.slice(0, 8)) &&
+          val.trim() !== "clément prime" &&
+          val.trim() !== "clement prime"
+        );
 
         if (filtres.length > 0) {
             listeResultats.innerHTML = filtres.map(f => {
