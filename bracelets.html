@@ -1426,7 +1426,15 @@ window.openModal = function(b) {
     const linkedVal = document.getElementById('modal-linked-value');
     if (b.listeLiee) {
         linkedEl.style.display = 'block';
-        linkedVal.textContent = b.listeLiee;
+        const encodedNom = encodeURIComponent(b.listeLiee);
+        const encodedVille = encodeURIComponent(b.ville || '');
+        const encodedAnnee = encodeURIComponent(b.annee || '');
+        const nomLower = b.listeLiee.toLowerCase();
+        const type = nomLower.includes('fake') ? 'fakelistes'
+                   : nomLower.includes('bdp') ? 'listes_bdp'
+                   : 'listes_bde';
+        const url = `https://sebr.tech/liste?ecole=${encodedVille}&annee=${encodedAnnee}&type=${type}&id=${encodedNom}`;
+        linkedVal.innerHTML = `<a href="${url}" target="_blank" style="color:var(--poly-cyan);text-decoration:none;font-weight:700;" onmouseover="this.style.textDecoration='underline'" onmouseout="this.style.textDecoration='none'">${escHtml(b.listeLiee)}</a>`;
     } else {
         linkedEl.style.display = 'none';
     }
