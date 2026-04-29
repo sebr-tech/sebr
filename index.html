@@ -1275,8 +1275,7 @@
         white-space: nowrap;
     ">🎵 REZO RADIO</button>
 
-    <div id="sc-iframe-wrap" style="display:none; border-radius: 12px; overflow: hidden; box-shadow: 0 8px 30px rgba(0,0,0,0.6); border: 1px solid var(--poly-cyan);">
-        <div id="sc-player" style="
+    <div id="sc-player" style="
     position: fixed;
     bottom: 20px;
     right: 20px;
@@ -1312,14 +1311,20 @@
 </div>
 
 <script>
-const randomTrack = Math.floor(Math.random() * 5); // remplace 10 par le nombre de titres
-document.getElementById('sc-iframe').src =
-    `https://w.soundcloud.com/player/?url=https%3A//soundcloud.com/bde-polytech-marseille/sets/sebr&color=%23009ee3&auto_play=true&hide_related=true&show_comments=false&show_user=false&show_reposts=false&show_teaser=false&start_track=${randomTrack}`;
+let playerLoaded = false;
 
 function togglePlayer() {
     const wrap = document.getElementById('sc-iframe-wrap');
     const btn = document.getElementById('sc-toggle');
     const visible = wrap.style.display !== 'none';
+
+    if (!playerLoaded) {
+        const randomTrack = Math.floor(Math.random() * 5); // remplace 10 par ton nombre de titres
+        document.getElementById('sc-iframe').src =
+            `https://w.soundcloud.com/player/?url=https%3A//soundcloud.com/bde-polytech-marseille/sets/sebr&color=%23009ee3&auto_play=true&hide_related=true&show_comments=false&show_user=false&show_reposts=false&show_teaser=false&start_track=${randomTrack}`;
+        playerLoaded = true;
+    }
+
     wrap.style.display = visible ? 'none' : 'block';
     btn.textContent = visible ? '🎵 REZO RADIO' : '✕ Fermer';
 }
