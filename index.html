@@ -1278,11 +1278,11 @@
     <div id="sc-iframe-wrap" style="display:none; border-radius: 12px; overflow: hidden; box-shadow: 0 8px 30px rgba(0,0,0,0.6); border: 1px solid var(--poly-cyan);">
         <iframe id="sc-iframe"
             width="300"
-            height="166"
+            height="300"
             scrolling="no"
             frameborder="no"
             allow="autoplay"
-            src="https://w.soundcloud.com/player/?url=https%3A//soundcloud.com/bde-polytech-marseille/sets/sebr&color=%23009ee3&auto_play=false&hide_related=true&show_comments=false&show_user=false&show_reposts=false&show_teaser=false">
+            src="https://w.soundcloud.com/player/?url=https%3A//soundcloud.com/bde-polytech-marseille/sets/sebr&color=%23009ee3&auto_play=false&hide_related=true&show_comments=false&show_user=false&show_reposts=false&show_teaser=false&show_artwork=true">
         </iframe>
     </div>
 </div>
@@ -1306,7 +1306,7 @@ function togglePlayer() {
             widget.getSounds(function(sounds) {
                 const randomIndex = Math.floor(Math.random() * sounds.length);
                 widget.skip(randomIndex);
-                widget.play();
+                setTimeout(() => widget.play(), 300);
             });
         });
         playerLoaded = true;
@@ -1316,7 +1316,6 @@ function togglePlayer() {
         widget.pause();
     }
 }
-</script>
-    
+</script>    
 </body>
 </html>
