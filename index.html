@@ -1275,58 +1275,46 @@
         white-space: nowrap;
     ">🎵 REZO RADIO</button>
 
-    <div id="sc-player" style="
-    position: fixed;
-    bottom: 20px;
-    right: 20px;
-    z-index: 500;
-    display: flex;
-    flex-direction: column;
-    align-items: flex-end;
-    gap: 8px;
-">
-    <button id="sc-toggle" onclick="togglePlayer()" style="
-        background: var(--poly-blue);
-        border: 1px solid var(--poly-cyan);
-        color: white;
-        padding: 8px 14px;
-        border-radius: 20px;
-        cursor: pointer;
-        font-size: 0.8em;
-        font-weight: 700;
-        letter-spacing: 1px;
-        transition: 0.2s;
-        white-space: nowrap;
-    ">🎵 REZO RADIO</button>
-
     <div id="sc-iframe-wrap" style="display:none; border-radius: 12px; overflow: hidden; box-shadow: 0 8px 30px rgba(0,0,0,0.6); border: 1px solid var(--poly-cyan);">
         <iframe id="sc-iframe"
             width="300"
             height="166"
             scrolling="no"
             frameborder="no"
-            allow="autoplay">
+            allow="autoplay"
+            src="https://w.soundcloud.com/player/?url=https%3A//soundcloud.com/bde-polytech-marseille/sets/sebr&color=%23009ee3&auto_play=false&hide_related=true&show_comments=false&show_user=false&show_reposts=false&show_teaser=false">
         </iframe>
     </div>
 </div>
 
+<script src="https://w.soundcloud.com/player/api.js"></script>
 <script>
 let playerLoaded = false;
+let widget = null;
 
 function togglePlayer() {
     const wrap = document.getElementById('sc-iframe-wrap');
     const btn = document.getElementById('sc-toggle');
     const visible = wrap.style.display !== 'none';
 
-    if (!playerLoaded) {
-        const randomTrack = Math.floor(Math.random() * 5); // remplace 10 par ton nombre de titres
-        document.getElementById('sc-iframe').src =
-            `https://w.soundcloud.com/player/?url=https%3A//soundcloud.com/bde-polytech-marseille/sets/sebr&color=%23009ee3&auto_play=true&hide_related=true&show_comments=false&show_user=false&show_reposts=false&show_teaser=false&start_track=${randomTrack}`;
-        playerLoaded = true;
-    }
-
     wrap.style.display = visible ? 'none' : 'block';
     btn.textContent = visible ? '🎵 REZO RADIO' : '✕ Fermer';
+
+    if (!playerLoaded) {
+        widget = SC.Widget(document.getElementById('sc-iframe'));
+        widget.bind(SC.Widget.Events.READY, function() {
+            widget.getSounds(function(sounds) {
+                const randomIndex = Math.floor(Math.random() * sounds.length);
+                widget.skip(randomIndex);
+                widget.play();
+            });
+        });
+        playerLoaded = true;
+    } else if (!visible) {
+        widget.play();
+    } else {
+        widget.pause();
+    }
 }
 </script>
     
