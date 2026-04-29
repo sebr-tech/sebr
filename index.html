@@ -1163,9 +1163,7 @@
         }
 
         const filtres = indexRecherche.filter(i =>
-          i.searchKey.includes(val.slice(0, 8)) &&
-          val.trim() !== "clément prime" &&
-          val.trim() !== "clement prime"
+          i.searchKey.includes(val.slice(0, 8))
         );
 
         if (filtres.length > 0) {
