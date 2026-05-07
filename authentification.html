@@ -337,7 +337,7 @@
       
       // On bloque si l'email n'est pas vérifié
       if (!user.emailVerified) {
-        setFeedback('error', "Veuillez valider votre email avant de vous connecter.");
+        setFeedback('error', "Veuillez valider votre email dans les spams avant de vous connecter.");
         await signOut(auth);
         return;
       }
@@ -422,6 +422,24 @@
         btnSubmit.disabled = false;
       }
     };
+
+    document.getElementById('btn-forgot').onclick = async () => {
+  const email = emailInput.value.trim().toLowerCase();
+  
+  if (!email) {
+    setFeedback('error', "Entrez votre email ci-dessus d'abord.");
+    return;
+  }
+
+  try {
+    await sendPasswordResetEmail(auth, email);
+    setFeedback('success', "✅ Email de réinitialisation envoyé ! Vérifiez vos spams.");
+  } catch (e) {
+    // Ne pas révéler si l'email existe ou non (sécurité)
+    setFeedback('success', "✅ Si cet email existe, un lien vous a été envoyé.");
+    console.error(e);
+  }
+};
   </script>
 </body>
 </html>
