@@ -5,21 +5,33 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="icon" type="image/png" href="image.png">
 
-    <title>SEBR.tech - le site du Rezo</title>
+    <title>SEBR.tech - le site du Rezo Polytech</title>
     <meta name="description" content="SEBR.tech - Site d'Exploration des Bureaux du Rezo Polytech">
 
     <meta property="og:type" content="website">
     <meta property="og:site_name" content="SEBR.tech">
-    <meta property="og:title" content="SEBR.tech - le site du Rezo">
+    <meta property="og:title" content="SEBR.tech - le site du Rezo Polytech">
     <meta property="og:description" content="Site d'Exploration des Bureaux du Rezo Polytech">
     <meta property="og:url" content="https://sebr.tech/">
     <meta property="og:image" content="https://sebr.tech/preview.jpg">
     <meta property="og:image:alt" content="Aperçu du site SEBR.tech">
 
     <meta name="twitter:card" content="summary_large_image">
-    <meta name="twitter:title" content="SEBR.tech - le site du Rezo">
+    <meta name="twitter:title" content="SEBR.tech - le site du Rezo Polytech">
     <meta name="twitter:description" content="Site d'Exploration des Bureaux du Rezo Polytech">
     <meta name="twitter:image" content="https://sebr.tech/preview.jpg">
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "WebSite",
+      "name": "SEBR.tech",
+      "url": "https://sebr.tech",
+      "description": "Site d'Exploration des Bureaux du Réseau Polytech",
+      "keywords": "réseau polytech, rezo polytech, BDE polytech, listes polytech"
+    }
+    </script>
+    <link rel="canonical" href="https://sebr.tech/" />
+    <link rel="sitemap" type="application/xml" href="/sitemap.xml" />
 
     <style>
         :root {
@@ -359,7 +371,14 @@
             border-bottom: 2px solid var(--poly-cyan);
         }
         .blog-tabs-nav::-webkit-scrollbar { display: none; }
-
+        .blog-content-area h1 {
+            font-size: 1.3rem;
+            font-weight: 800;
+            color: var(--poly-cyan);
+            margin: 0 0 14px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid #1e2d3d;
+        }
         .blog-tab-btn {
             background: rgba(255,255,255,0.08);
             color: rgba(255,255,255,0.75);
@@ -390,7 +409,14 @@
             flex: 1;
             overflow-y: auto;
         }
-
+        .blog-content-area h1 {
+            font-size: 1.3rem;
+            font-weight: 800;
+            color: var(--poly-cyan);
+            margin: 0 0 14px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid #1e2d3d;
+        }
         .blog-panel { display: none; animation: blogFadeIn 0.3s ease; }
         .blog-panel.active { display: block; }
 
@@ -723,8 +749,8 @@
             <div class="blog-content-area">
 
                 <div id="blog-panel-accueil" class="blog-panel active">
-                    <h2>Bienvenue dans le Rézo !</h2>
-                    <p>Tu viens de débarquer à Polytech et tu entends un vocabulaire bizarre ? Pas de panique ! Le Rézo Polytech, c'est 16 écoles d'ingénieurs en France, des traditions, du folklore mais surtout une grande famille !</p>
+                    <h1>Bienvenue dans le Rézo Polytech !</h1>
+                    <p>Tu viens de débarquer à l'école d'ingé et tu entends un vocabulaire bizarre ? Pas de panique ! Le Rézo Polytech, c'est 16 écoles en France, des traditions, du folklore mais surtout une grande famille !</p>
                     <p>Ce mini-guide est là pour t'aider à décrypter cet univers. Explore les onglets pour tout savoir sur la vie étudiante, de la fameuse "combar" aux campagnes du BDE !</p>
                     <p style="margin-top: 20px; padding: 14px; background: rgba(0,158,227,0.08); border-left: 3px solid var(--poly-cyan); border-radius: 4px; font-size: 0.88rem; color: #aaa;">
                         👆 Cliquez sur une école sur la carte pour voir ses bureaux et ses listes.
