@@ -78,7 +78,7 @@
 
         #viewer-section::before {
             content: ''; position: absolute; inset: 0;
-            background: 
+            background:
                 radial-gradient(circle at 20% 80%, rgba(0,158,227,0.06) 0%, transparent 50%),
                 radial-gradient(circle at 80% 20%, rgba(0,48,87,0.15) 0%, transparent 50%);
             pointer-events: none;
@@ -146,7 +146,6 @@
         .bracelet-card:hover { border-color: var(--poly-cyan); transform: translateX(3px); box-shadow: -3px 0 10px rgba(0,158,227,0.15); }
         .bracelet-card.selected { border-color: var(--poly-cyan); background: rgba(0,158,227,0.08); }
 
-        /* Mise en évidence du bracelet ciblé par URL */
         .bracelet-card.highlighted {
             border-color: var(--poly-cyan);
             background: rgba(0,158,227,0.12);
@@ -407,7 +406,8 @@
             <div class="section-label">Couleur du fond</div>
             <div class="color-row">
                 <input type="color" class="color-input" id="inp-bg-color" value="#004554" oninput="syncColorInput('bg')">
-                <input type="text" class="color-hex" id="inp-bg-hex" value=#004554" oninput="syncColorHex('bg')" maxlength="7" placeholder="#004554">
+                <!-- BUG FIX #3 : guillemet ouvrant manquant sur value -->
+                <input type="text" class="color-hex" id="inp-bg-hex" value="#004554" oninput="syncColorHex('bg')" maxlength="7" placeholder="#004554">
                 <span class="color-label">Couleur principale</span>
             </div>
 
@@ -442,7 +442,6 @@
                 <option value="nice">Nice</option>
             </select>
 
-            <!-- FIX: id corrigé en "inp-annee-form" pour éviter la collision avec inp-ville -->
             <div class="section-label">Année</div>
             <select class="form-field" id="inp-annee-form" onchange="loadListes()">
                 <option value="">— Sélectionner —</option>
@@ -452,7 +451,6 @@
                 <option value="2023-2024">2023-2024</option>
             </select>
 
-            <!-- FIX: id corrigé en "inp-liste-liee" (existait dans le JS mais pas dans le HTML) -->
             <div class="section-label">Lier à une liste <span style="color:#556">(optionnel)</span></div>
             <select class="form-field" id="inp-liste-liee">
                 <option value="">— Aucune liste —</option>
@@ -500,22 +498,27 @@ import {
 } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
 
+// ============================================================
+// LIMITE QUOTIDIENNE
+// ============================================================
 async function aAtteintLimiteQuotidienne() {
     if (!currentUser) return true;
     const debutJournee = new Date();
     debutJournee.setHours(0, 0, 0, 0);
-    const qBracelets = query(collection(db, "bracelets"), 
-                        where("auteur", "==", currentUser.email), 
-                        where("createdAt", ">=", debutJournee));
-    const qPropositions = query(collection(db, "propositions"), 
-                        where("auteur", "==", currentUser.email), 
-                        where("createdAt", ">=", debutJournee));
+    const qBracelets = query(
+        collection(db, "bracelets"),
+        where("auteur", "==", currentUser.email),
+        where("createdAt", ">=", debutJournee)
+    );
+    const qPropositions = query(
+        collection(db, "propositions"),
+        where("auteur", "==", currentUser.email),
+        where("createdAt", ">=", debutJournee)
+    );
     const [snapB, snapP] = await Promise.all([getDocs(qBracelets), getDocs(qPropositions)]);
-    const totalAujourdhui = snapB.size + snapP.size;
-    const LIMITE = 5;
-    return totalAujourdhui >= LIMITE;
+    return (snapB.size + snapP.size) >= 5;
 }
-    
+
 const firebaseConfig = {
     apiKey: "AIzaSyB1_SgV4E80Qxs2vQ-_jIGexv6YYqaiARs",
     authDomain: "sebr-dea8d.firebaseapp.com",
@@ -537,11 +540,10 @@ let currentUser = null;
 let currentUserData = null;
 let selectedBraceletData = null;
 let editingBraceletId = null;
-let userCollection = new Set(); // IDs des bracelets en collection
+let userCollection = new Set();
 let mainScene, mainCamera, mainRenderer, mainBracelet, animFrameId, controls;
 let modalScene, modalCamera, modalRenderer, modalBracelet, modalAnimId;
 
-// ID du bracelet ciblé via l'URL (?bracelet=ID)
 const urlParams = new URLSearchParams(window.location.search);
 const targetBraceletId = urlParams.get('bracelet') || null;
 
@@ -562,7 +564,9 @@ onAuthStateChanged(auth, async (user) => {
 
                 authBtn.textContent = `👤 ${currentUserData.prenom || 'Deconnexion'}`;
                 authBtn.className = 'btn-auth logout';
-                authBtn.onclick = async () => { if(confirm('Se déconnecter ?')) { await signOut(auth); location.reload(); } };
+                authBtn.onclick = async () => {
+                    if (confirm('Se déconnecter ?')) { await signOut(auth); location.reload(); }
+                };
 
                 if (role === 'admin' || role === 'editor') {
                     adminBtn.classList.remove('hidden');
@@ -578,7 +582,6 @@ onAuthStateChanged(auth, async (user) => {
             }
         } catch(e) { console.error(e); }
 
-        // Charger la collection de l'utilisateur
         await loadUserCollection();
         showCollectionContent(true);
     } else {
@@ -603,12 +606,7 @@ async function loadUserCollection() {
     if (!currentUser) return;
     try {
         const snap = await getDoc(doc(db, "collections", currentUser.email));
-        if (snap.exists()) {
-            const data = snap.data();
-            userCollection = new Set(data.braceletIds || []);
-        } else {
-            userCollection = new Set();
-        }
+        userCollection = snap.exists() ? new Set(snap.data().braceletIds || []) : new Set();
     } catch(e) {
         console.error("Erreur chargement collection:", e);
         userCollection = new Set();
@@ -642,7 +640,6 @@ window.toggleCollection = async function(braceletId, btn) {
         btn.title = 'Retirer de ma collection';
     }
     await saveUserCollection();
-    // Mettre à jour tous les boutons coeur pour ce bracelet
     document.querySelectorAll(`.btn-heart[data-id="${braceletId}"]`).forEach(b => {
         if (userCollection.has(braceletId)) b.classList.add('liked');
         else b.classList.remove('liked');
@@ -675,10 +672,7 @@ function renderCollection() {
                         n === 1 ? '1 bracelet dans votre collection' :
                         `${n} bracelets dans votre collection`;
 
-    if (n === 0) {
-        empty.style.display = 'flex';
-        return;
-    }
+    if (n === 0) { empty.style.display = 'flex'; return; }
     empty.style.display = 'none';
 
     collectionBracelets.forEach((b, i) => {
@@ -708,7 +702,6 @@ function renderCollection() {
         btnVoir.onclick = (e) => { e.stopPropagation(); openModal(b); };
         actions.appendChild(btnVoir);
 
-        // Bouton coeur (déjà liké dans la collection)
         const btnHeart = document.createElement('button');
         btnHeart.className = 'btn-heart liked';
         btnHeart.dataset.id = b.id;
@@ -738,15 +731,11 @@ async function loadBracelets() {
         document.getElementById('loading-bracelets').style.display = 'none';
         document.getElementById('bracelets-grid').style.display = 'flex';
 
-        // ── Sélection automatique via paramètre URL ──
         if (targetBraceletId) {
             const target = allBracelets.find(b => b.id === targetBraceletId);
             if (target) {
-                // Charger en 3D immédiatement
                 loadBraceletIn3D(target);
-                // Ouvrir la modal de détail
                 openModal(target);
-                // Mettre en évidence la carte dans la liste après le rendu
                 setTimeout(() => {
                     const card = document.querySelector(`.bracelet-card[data-bracelet-id="${CSS.escape(targetBraceletId)}"]`);
                     if (card) {
@@ -756,119 +745,87 @@ async function loadBracelets() {
                 }, 100);
             }
         }
-
     } catch(e) {
         document.getElementById('loading-bracelets').textContent = 'Erreur de chargement.';
         console.error(e);
     }
 }
 
-// FIX: exposé sur window car appelé depuis onchange inline dans le HTML
-// (les fonctions dans type="module" ne sont pas globales par défaut)
-window.loadListes = async function loadListes() {
-  const ville = document.getElementById('inp-ville')?.value?.trim();
-  const annee = document.getElementById('inp-annee-form')?.value;
-  const select = document.getElementById('inp-liste-liee');
+// ============================================================
+// CHARGER LES LISTES (select "Lier à une liste")
+// ============================================================
+window.loadListes = async function() {
+    const ville = document.getElementById('inp-ville')?.value?.trim();
+    const annee = document.getElementById('inp-annee-form')?.value;
+    const select = document.getElementById('inp-liste-liee');
 
-  select.innerHTML = '<option value="">Aucune liste</option>';
+    select.innerHTML = '<option value="">Aucune liste</option>';
+    if (!ville || !annee) return;
 
-  if (!ville || !annee) return;
+    try {
+        const archiveRef = doc(db, "ecoles", ville, "archives", annee);
+        const archiveSnap = await getDoc(archiveRef);
+        if (!archiveSnap.exists()) {
+            console.warn(`loadListes: document introuvable pour ${ville} / ${annee}`);
+            return;
+        }
 
-  try {
-    const archiveRef = doc(db, "ecoles", ville, "archives", annee);
-    const archiveSnap = await getDoc(archiveRef);
+        const data = archiveSnap.data();
 
-    if (!archiveSnap.exists()) {
-      console.warn(`loadListes: document introuvable pour ${ville} / ${annee}`);
-      return;
+        const ajouterOption = (group, value, label, type) => {
+            if (!value) return;
+            const opt = document.createElement('option');
+            opt.value = value;
+            opt.textContent = label || value;
+            if (type) opt.dataset.type = type;
+            group.appendChild(opt);
+        };
+
+        const extraireNom = (item, fallback) => {
+            if (!item) return null;
+            if (typeof item === 'string') return item.trim();
+            if (typeof item === 'object') return (item.nom || item.name || fallback || '').trim();
+            return null;
+        };
+
+        // Actuels
+        const groupeActuels = document.createElement('optgroup');
+        groupeActuels.label = 'Actuels';
+        const nomBdeActuel = extraireNom(data.bde_actuel, 'BDE actuel');
+        const nomBdpActuel = extraireNom(data.bdp_actuel, 'BDP actuel');
+        if (nomBdeActuel) ajouterOption(groupeActuels, nomBdeActuel, `${nomBdeActuel}`, 'listes_bde');
+        if (nomBdpActuel) ajouterOption(groupeActuels, nomBdpActuel, `${nomBdpActuel}`, 'listes_bdp');
+        if (groupeActuels.children.length > 0) select.appendChild(groupeActuels);
+
+        // Listes BDE / BDP / Fakelistes
+        const groupes = [
+            { key: 'listesbde',   label: 'Listes BDE',  type: 'listes_bde'  },
+            { key: 'listesbdp',   label: 'Listes BDP',  type: 'listes_bdp'  },
+            { key: 'fakelistes',  label: 'Fakelistes',  type: 'fakelistes'  }
+        ];
+        groupes.forEach(({ key, label, type }) => {
+            const listes = data[key];
+            if (!Array.isArray(listes) || listes.length === 0) return;
+            const group = document.createElement('optgroup');
+            group.label = label;
+            listes.forEach(item => {
+                const nom = extraireNom(item);
+                if (nom) ajouterOption(group, nom, nom, type);
+            });
+            if (group.children.length > 0) select.appendChild(group);
+        });
+    } catch(e) {
+        console.error("loadListes: Erreur :", e);
     }
-
-    const data = archiveSnap.data();
-    console.log("loadListes dataLocal =", data);
-
-    const ajouterOption = (group, value, label, type = '') => {
-      if (!value) return;
-    
-      const opt = document.createElement('option');
-      opt.value = value;
-      opt.textContent = label || value;
-    
-      if (type) {
-        opt.dataset.type = type;
-      }
-    
-      group.appendChild(opt);
-    };
-
-    const extraireNom = (item, fallback) => {
-      if (!item) return null;
-      if (typeof item === 'string') return item.trim();
-      if (typeof item === 'object') {
-        return (item.nom || item.name || fallback || "").trim();
-      }
-      return null;
-    };
-
-    // 1) ACTUELS
-    const groupeActuels = document.createElement('optgroup');
-    groupeActuels.label = 'Actuels';
-
-    const nomBdeActuel = extraireNom(data.bde_actuel, 'BDE actuel');
-    const nomBdpActuel = extraireNom(data.bdp_actuel, 'BDP actuel');
-
-    if (nomBdeActuel) {
-      ajouterOption(groupeActuels, nomBdeActuel, `${nomBdeActuel}`);
-    }
-
-    if (nomBdpActuel) {
-      ajouterOption(groupeActuels, nomBdpActuel, `${nomBdpActuel}`);
-    }
-
-    if (groupeActuels.children.length > 0) {
-      select.appendChild(groupeActuels);
-    }
-
-    // 2) LISTES
-    const groupes = [
-      { key: 'listesbde', label: 'Listes BDE', type: 'listes_bde' },
-      { key: 'listesbdp', label: 'Listes BDP', type: 'listes_bdp' },
-      { key: 'fakelistes', label: 'Fakelistes', type: 'fakelistes' }
-    ];
-    
-    groupes.forEach(({ key, label, type }) => {
-      const listes = data[key];
-      if (!Array.isArray(listes) || listes.length === 0) return;
-    
-      const group = document.createElement('optgroup');
-      group.label = label;
-    
-      listes.forEach(item => {
-        const nom = extraireNom(item);
-        if (!nom) return;
-        ajouterOption(group, nom, nom, type);
-      });
-    
-      if (group.children.length > 0) {
-        select.appendChild(group);
-      }
-    });
-
-    if (select.children.length === 1) {
-      console.log("Aucune liste disponible pour", ville, annee);
-    }
-
-  } catch (e) {
-    console.error("loadListes: Erreur :", e);
-  }
 };
 
 // ============================================================
 // FILTRES
 // ============================================================
 window.applyFilters = function() {
-    const ville = document.getElementById('filter-ville').value;
-    const annee = document.getElementById('filter-annee').value;
-    const texte = document.getElementById('filter-text').value.toLowerCase();
+    const ville    = document.getElementById('filter-ville').value;
+    const annee    = document.getElementById('filter-annee').value;
+    const texte    = document.getElementById('filter-text').value.toLowerCase();
     const colorVal = document.getElementById('filter-color').value;
     const useColor = colorVal && colorVal !== '#000000';
 
@@ -876,10 +833,7 @@ window.applyFilters = function() {
         if (ville && b.ville !== ville) return false;
         if (annee && b.annee !== annee) return false;
         if (texte && !(b.texte || '').toLowerCase().includes(texte) && !(b.ville || '').toLowerCase().includes(texte)) return false;
-        if (useColor) {
-            const dist = colorDist(colorVal, b.couleurFond || '#000000');
-            if (dist > 80) return false;
-        }
+        if (useColor && colorDist(colorVal, b.couleurFond || '#000000') > 80) return false;
         return true;
     });
     renderBracelets();
@@ -900,25 +854,22 @@ function colorDist(c1, c2) {
 }
 
 // ============================================================
-// RENDER LISTE
+// RENDER LISTE BRACELETS
 // ============================================================
 function renderBracelets() {
-    const grid = document.getElementById('bracelets-grid');
+    const grid  = document.getElementById('bracelets-grid');
     const noRes = document.getElementById('no-results');
     grid.innerHTML = '';
 
-    if (filteredBracelets.length === 0) {
-        noRes.style.display = 'block';
-        return;
-    }
+    if (filteredBracelets.length === 0) { noRes.style.display = 'block'; return; }
     noRes.style.display = 'none';
 
     const canAdmin = currentUserData && (currentUserData.role === 'admin' || currentUserData.role === 'editor');
+
     filteredBracelets.forEach((b, i) => {
         const card = document.createElement('div');
         card.className = 'bracelet-card';
         card.style.animationDelay = `${i * 0.05}s`;
-        // Attribut data pour permettre la sélection par ID
         card.dataset.braceletId = b.id;
 
         const preview = document.createElement('div');
@@ -937,14 +888,12 @@ function renderBracelets() {
         const actions = document.createElement('div');
         actions.className = 'bracelet-card-actions';
 
-        // Bouton Voir
         const btnVoir = document.createElement('button');
         btnVoir.className = 'btn-tiny';
         btnVoir.textContent = '👁';
         btnVoir.onclick = (e) => { e.stopPropagation(); openModal(b); };
         actions.appendChild(btnVoir);
 
-        // Bouton Coeur (collection)
         const btnHeart = document.createElement('button');
         btnHeart.className = 'btn-heart' + (userCollection.has(b.id) ? ' liked' : '');
         btnHeart.dataset.id = b.id;
@@ -990,7 +939,7 @@ function escHtml(s) {
 }
 
 // ============================================================
-// FORMULAIRE APERÇU EN DIRECT
+// FORMULAIRE — aperçu en direct
 // ============================================================
 window.syncColorInput = function(type) {
     const color = document.getElementById(`inp-${type}-color`).value;
@@ -999,15 +948,16 @@ window.syncColorInput = function(type) {
 };
 
 window.syncColorHex = function(type) {
-    let hex = document.getElementById(`inp-${type}-hex`).value;
+    const hex = document.getElementById(`inp-${type}-hex`).value;
     if (/^#[0-9A-Fa-f]{6}$/.test(hex)) {
         document.getElementById(`inp-${type}-color`).value = hex;
         updatePreview();
     }
 };
+
 window.updatePreview = function() {
-    const bg = document.getElementById('inp-bg-color').value;
-    const txt = document.getElementById('inp-text-color').value;
+    const bg    = document.getElementById('inp-bg-color').value;
+    const txt   = document.getElementById('inp-text-color').value;
     const texte = document.getElementById('inp-texte').value || '✊SEBR.TECH🍆✊Le site du Rezo🍆';
 
     const prev = document.getElementById('form-bracelet-preview');
@@ -1015,13 +965,12 @@ window.updatePreview = function() {
     prev.style.color = txt;
     prev.textContent = texte.toUpperCase();
 
-    if (mainBracelet) {
-        updateBraceletColors(mainBracelet, bg, txt, texte);
-    }
+    if (mainBracelet) updateBraceletColors(mainBracelet, bg, txt, texte);
 };
 
 // ============================================================
-// SUBMIT BRACELET — FIX: lecture de inp-annee-form
+// SUBMIT BRACELET
+// BUG FIX #1 : suppression de la double déclaration de listeSelectionnee
 // ============================================================
 window.submitBracelet = async function(isProposal) {
     if (!currentUser) { alert('Connectez-vous d\'abord.'); return; }
@@ -1036,33 +985,29 @@ window.submitBracelet = async function(isProposal) {
             feedback.className = "err";
             return;
         }
-    } catch (e) {
+    } catch(e) {
         console.error("Erreur vérification limite:", e);
     }
 
-    const listeSelectionnee = document.getElementById('inp-liste-liee').value;
+    // BUG FIX #1 : une seule déclaration
     const selectListe = document.getElementById('inp-liste-liee');
     const listeSelectionnee = selectListe.value;
     const selectedOption = selectListe.options[selectListe.selectedIndex];
-    const listeType = selectedOption?.dataset?.type || null;    
+    // Lire le data-type posé par loadListes()
+    const listeType = selectedOption?.dataset?.type || null;
+
+    const listeLieeNette = (!listeSelectionnee || listeSelectionnee === 'BDE actuel' || listeSelectionnee === 'BDP actuel')
+        ? null : listeSelectionnee;
+    const listeTypeNet = listeLieeNette ? listeType : null;
+
     const data = {
-      texte: document.getElementById('inp-texte').value.trim(),
-      ville: document.getElementById('inp-ville').value,
-      annee: document.getElementById('inp-annee-form').value,
-      couleurFond: document.getElementById('inp-bg-color').value,
-      couleurTexte: document.getElementById('inp-text-color').value,
-      listeLiee:
-        (!listeSelectionnee ||
-         listeSelectionnee === 'BDE actuel' ||
-         listeSelectionnee === 'BDP actuel')
-          ? null
-          : listeSelectionnee,
-      listeType:
-        (!listeSelectionnee ||
-         listeSelectionnee === 'BDE actuel' ||
-         listeSelectionnee === 'BDP actuel')
-          ? null
-          : listeType
+        texte:       document.getElementById('inp-texte').value.trim(),
+        ville:       document.getElementById('inp-ville').value,
+        annee:       document.getElementById('inp-annee-form').value,
+        couleurFond: document.getElementById('inp-bg-color').value,
+        couleurTexte:document.getElementById('inp-text-color').value,
+        listeLiee:   listeLieeNette,
+        listeType:   listeTypeNet
     };
 
     if (!data.texte || !data.ville || !data.annee) {
@@ -1073,6 +1018,7 @@ window.submitBracelet = async function(isProposal) {
     const btn = isProposal ? document.getElementById('btn-propose') : document.getElementById('btn-save');
     btn.disabled = true;
     setFeedback('Enregistrement...');
+
     try {
         if (isProposal) {
             await addDoc(collection(db, "proposals"), {
@@ -1119,7 +1065,7 @@ function setFeedback(msg, isErr = false) {
 function resetForm() {
     document.getElementById('inp-texte').value = '';
     document.getElementById('inp-ville').value = '';
-    document.getElementById('inp-annee-form').value = '';   // FIX
+    document.getElementById('inp-annee-form').value = '';
     document.getElementById('inp-bg-color').value = '#0066cc';
     document.getElementById('inp-bg-hex').value = '#0066cc';
     document.getElementById('inp-text-color').value = '#ffffff';
@@ -1133,7 +1079,7 @@ function openEditForm(b) {
     editingBraceletId = b.id;
     document.getElementById('inp-texte').value = b.texte || '';
     document.getElementById('inp-ville').value = b.ville || '';
-    document.getElementById('inp-annee-form').value = b.annee || '';   // FIX
+    document.getElementById('inp-annee-form').value = b.annee || '';
     document.getElementById('inp-bg-color').value = b.couleurFond || '#0066cc';
     document.getElementById('inp-bg-hex').value = b.couleurFond || '#0066cc';
     document.getElementById('inp-text-color').value = b.couleurTexte || '#ffffff';
@@ -1155,13 +1101,14 @@ window.switchTab = function(tab) {
 };
 
 // ============================================================
-// THREE.JS
+// THREE.JS — textures
 // ============================================================
 function createBraceletTextures(bgColor, textColor, text) {
     const canvas = document.createElement('canvas');
     canvas.width = 4096; canvas.height = 256;
     const ctx = canvas.getContext('2d');
 
+    // BUG FIX #4 : renommer en bumpCanvas / bCtx, retourner { map, bump }
     const bumpCanvas = document.createElement('canvas');
     bumpCanvas.width = 4096; bumpCanvas.height = 256;
     const bCtx = bumpCanvas.getContext('2d');
@@ -1171,19 +1118,16 @@ function createBraceletTextures(bgColor, textColor, text) {
     bCtx.fillStyle = '#808080';
     bCtx.fillRect(0, 0, bumpCanvas.width, bumpCanvas.height);
 
-    const val = (text || ''); 
-    
-    let fontSize = 130; 
-    ctx.font = `900 ${fontSize}px "Arial", "Segoe UI Emoji", sans-serif`;
-    
-    const maxWidth = canvas.width * 0.42; 
-    let textWidth = ctx.measureText(val).width;
+    const val = text || '';
 
+    let fontSize = 130;
+    ctx.font = `900 ${fontSize}px "Arial", "Segoe UI Emoji", sans-serif`;
+    const maxWidth = canvas.width * 0.42;
+    let textWidth = ctx.measureText(val).width;
     if (textWidth > maxWidth) {
         fontSize = Math.floor(fontSize * (maxWidth / textWidth));
         if (fontSize < 35) fontSize = 35;
     }
-
     const finalFont = `900 ${fontSize}px "Arial", "Segoe UI Emoji", sans-serif`;
 
     const drawTintedText = (targetCtx, color, x, y) => {
@@ -1191,17 +1135,14 @@ function createBraceletTextures(bgColor, textColor, text) {
         tempCanvas.width = canvas.width;
         tempCanvas.height = canvas.height;
         const tCtx = tempCanvas.getContext('2d');
-
         tCtx.font = finalFont;
         tCtx.textAlign = 'center';
         tCtx.textBaseline = 'middle';
         tCtx.fillStyle = '#000000';
         tCtx.fillText(val, x, y);
-
         tCtx.globalCompositeOperation = 'source-in';
         tCtx.fillStyle = color;
         tCtx.fillRect(0, 0, tempCanvas.width, tempCanvas.height);
-
         targetCtx.drawImage(tempCanvas, 0, 0);
     };
 
@@ -1214,79 +1155,56 @@ function createBraceletTextures(bgColor, textColor, text) {
         drawTintedText(bCtx, '#ffffff', x, y);
     });
 
-    return { 
-        map: new THREE.CanvasTexture(canvas), 
-        bump: new THREE.CanvasTexture(bumpCanvas) 
+    // BUG FIX #4 : retourner { map, bump } (cohérent avec createBracelet qui lit textures.bump)
+    return {
+        map:  new THREE.CanvasTexture(canvas),
+        bump: new THREE.CanvasTexture(bumpCanvas)
     };
 }
 
+// ============================================================
+// THREE.JS — création bracelet
+// BUG FIX #4 : textures.bump (et non textures.bumpMap)
+// ============================================================
 function createBracelet(bgColor, textColor, text) {
     const group = new THREE.Group();
-    const radiusOuter = 3.5;
-    const radiusInner = 3.3;
-    const height = 0.65;
-    const radialSegments = 128;
+    const radiusOuter = 3.5, radiusInner = 3.3, height = 0.65, radialSegments = 128;
 
     const textures = createBraceletTextures(bgColor, textColor, text);
 
     const siliconeMaterialOuter = new THREE.MeshPhysicalMaterial({
         map: textures.map,
-        bumpMap: textures.bumpMap,
+        bumpMap: textures.bump,       // BUG FIX #4
         bumpScale: 0.08,
-        roughness: 0.85,
-        metalness: 0.0,
-        clearcoat: 0.2,
-        clearcoatRoughness: 0.5
+        roughness: 0.85, metalness: 0.0, clearcoat: 0.2, clearcoatRoughness: 0.5
     });
-
     const siliconeMaterialInner = new THREE.MeshPhysicalMaterial({
         color: bgColor || '#003057',
-        roughness: 0.85,
-        metalness: 0.0,
-        clearcoat: 0.2,
-        clearcoatRoughness: 0.5,
+        roughness: 0.85, metalness: 0.0, clearcoat: 0.2, clearcoatRoughness: 0.5,
         side: THREE.BackSide
     });
-
     const siliconeMaterialCaps = new THREE.MeshPhysicalMaterial({
         color: bgColor || '#003057',
-        roughness: 0.85,
-        metalness: 0.0,
-        clearcoat: 0.2,
-        clearcoatRoughness: 0.5,
+        roughness: 0.85, metalness: 0.0, clearcoat: 0.2, clearcoatRoughness: 0.5,
         side: THREE.DoubleSide
     });
 
-    const outerGeo = new THREE.CylinderGeometry(radiusOuter, radiusOuter, height, radialSegments, 1, true);
-    const outerMesh = new THREE.Mesh(outerGeo, siliconeMaterialOuter);
+    const outerMesh  = new THREE.Mesh(new THREE.CylinderGeometry(radiusOuter, radiusOuter, height, radialSegments, 1, true), siliconeMaterialOuter);
+    const innerMesh  = new THREE.Mesh(new THREE.CylinderGeometry(radiusInner, radiusInner, height, radialSegments, 1, true), siliconeMaterialInner);
+    const topCap     = new THREE.Mesh(new THREE.RingGeometry(radiusInner, radiusOuter, radialSegments), siliconeMaterialCaps);
+    topCap.rotation.x = -Math.PI / 2; topCap.position.y = height / 2;
+    const bottomCap  = new THREE.Mesh(new THREE.RingGeometry(radiusInner, radiusOuter, radialSegments), siliconeMaterialCaps);
+    bottomCap.rotation.x = Math.PI / 2; bottomCap.position.y = -height / 2;
 
-    const innerGeo = new THREE.CylinderGeometry(radiusInner, radiusInner, height, radialSegments, 1, true);
-    const innerMesh = new THREE.Mesh(innerGeo, siliconeMaterialInner);
-
-    const topCapGeo = new THREE.RingGeometry(radiusInner, radiusOuter, radialSegments);
-    const topCap = new THREE.Mesh(topCapGeo, siliconeMaterialCaps);
-    topCap.rotation.x = -Math.PI / 2;
-    topCap.position.y = height / 2;
-
-    const bottomCapGeo = new THREE.RingGeometry(radiusInner, radiusOuter, radialSegments);
-    const bottomCap = new THREE.Mesh(bottomCapGeo, siliconeMaterialCaps);
-    bottomCap.rotation.x = Math.PI / 2;
-    bottomCap.position.y = -height / 2;
-
-    group.add(outerMesh);
-    group.add(innerMesh);
-    group.add(topCap);
-    group.add(bottomCap);
-
+    group.add(outerMesh, innerMesh, topCap, bottomCap);
     group.rotation.x = 0.2;
     group.rotation.z = 0.05;
 
     group.userData = {
         outerMesh, innerMesh, topCap, bottomCap,
-        map: textures.map, bumpMap: textures.bumpMap,
+        map: textures.map, bump: textures.bump,   // BUG FIX #4
         bgColor, textColor, text
     };
-
     return group;
 }
 
@@ -1294,47 +1212,41 @@ function updateBraceletColors(braceletGroup, bgColor, textColor, text) {
     if (!braceletGroup) return;
     const data = braceletGroup.userData || {};
 
-    if (data.map) data.map.dispose();
-    if (data.bumpMap) data.bumpMap.dispose();
+    if (data.map)  data.map.dispose();
+    if (data.bump) data.bump.dispose();   // BUG FIX #4
 
     const newTextures = createBraceletTextures(bgColor, textColor, text);
 
     if (data.outerMesh) {
-        data.outerMesh.material.map = newTextures.map;
-        data.outerMesh.material.bumpMap = newTextures.bumpMap;
+        data.outerMesh.material.map     = newTextures.map;
+        data.outerMesh.material.bumpMap = newTextures.bump;   // BUG FIX #4
         data.outerMesh.material.needsUpdate = true;
     }
-    if (data.innerMesh) {
-        data.innerMesh.material.color.set(bgColor || '#003057');
-        data.innerMesh.material.needsUpdate = true;
-    }
-    if (data.topCap) {
-        data.topCap.material.color.set(bgColor || '#003057');
-        data.topCap.material.needsUpdate = true;
-    }
-    if (data.bottomCap) {
-        data.bottomCap.material.color.set(bgColor || '#003057');
-        data.bottomCap.material.needsUpdate = true;
-    }
+    if (data.innerMesh) { data.innerMesh.material.color.set(bgColor || '#003057'); data.innerMesh.material.needsUpdate = true; }
+    if (data.topCap)    { data.topCap.material.color.set(bgColor || '#003057');    data.topCap.material.needsUpdate = true; }
+    if (data.bottomCap) { data.bottomCap.material.color.set(bgColor || '#003057'); data.bottomCap.material.needsUpdate = true; }
 
-    braceletGroup.userData.map = newTextures.map;
-    braceletGroup.userData.bumpMap = newTextures.bumpMap;
-    braceletGroup.userData.bgColor = bgColor;
+    braceletGroup.userData.map       = newTextures.map;
+    braceletGroup.userData.bump      = newTextures.bump;   // BUG FIX #4
+    braceletGroup.userData.bgColor   = bgColor;
     braceletGroup.userData.textColor = textColor;
-    braceletGroup.userData.text = text;
+    braceletGroup.userData.text      = text;
 }
 
+// ============================================================
+// THREE.JS — viewer principal
+// ============================================================
 function initMainViewer() {
-    const canvas = document.getElementById('bracelet-canvas');
+    const canvas  = document.getElementById('bracelet-canvas');
     const section = document.getElementById('viewer-section');
     const W = Math.max(section.clientWidth, 1);
     const H = Math.max(section.clientHeight, 1);
 
-    mainScene = new THREE.Scene();
+    mainScene  = new THREE.Scene();
     mainCamera = new THREE.PerspectiveCamera(35, W / H, 0.1, 100);
-    mainCamera.position.set(0, 4, 14); 
+    mainCamera.position.set(0, 4, 14);
     mainCamera.lookAt(0, 0, 0);
-    
+
     mainRenderer = new THREE.WebGLRenderer({ canvas, antialias: true, alpha: true });
     mainRenderer.setSize(W, H);
     mainRenderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
@@ -1342,32 +1254,29 @@ function initMainViewer() {
 
     mainScene.add(new THREE.AmbientLight(0xffffff, 0.6));
     const sun = new THREE.DirectionalLight(0xffffff, 1.2);
-    sun.position.set(10, 10, 10);
-    mainScene.add(sun);
+    sun.position.set(10, 10, 10); mainScene.add(sun);
     const fill = new THREE.DirectionalLight(0xaaccff, 0.6);
-    fill.position.set(-10, -5, -10);
-    mainScene.add(fill);
+    fill.position.set(-10, -5, -10); mainScene.add(fill);
     const pointLight = new THREE.PointLight(0xffffff, 0.8, 50);
-    pointLight.position.set(0, 2, 5);
-    mainScene.add(pointLight);
+    pointLight.position.set(0, 2, 5); mainScene.add(pointLight);
 
     mainBracelet = createBracelet('#003057', '#ffffff', 'REZO POLYTECH');
     mainScene.add(mainBracelet);
 
     controls = new THREE.OrbitControls(mainCamera, mainRenderer.domElement);
-    controls.enableDamping = true; 
-    controls.dampingFactor = 0.05;
-    controls.autoRotate = true;   
-    controls.autoRotateSpeed = 2.0; 
-    controls.enablePan = false;    
+    controls.enableDamping   = true;
+    controls.dampingFactor   = 0.05;
+    controls.autoRotate      = true;
+    controls.autoRotateSpeed = 2.0;
+    controls.enablePan       = false;
 
     function animate() {
         animFrameId = requestAnimationFrame(animate);
-        if (controls) controls.update(); 
+        if (controls) controls.update();
         mainRenderer.render(mainScene, mainCamera);
     }
     animate();
-    
+
     window.addEventListener('resize', () => {
         const W2 = Math.max(section.clientWidth, 1);
         const H2 = Math.max(section.clientHeight, 1);
@@ -1379,26 +1288,17 @@ function initMainViewer() {
 
 function loadBraceletIn3D(b) {
     if (!mainScene) return;
-
     if (mainBracelet) {
-        const oldTexMap = mainBracelet.userData?.map;
-        const oldBumpMap = mainBracelet.userData?.bumpMap;
-        if (oldTexMap) oldTexMap.dispose();
-        if (oldBumpMap) oldBumpMap.dispose();
+        if (mainBracelet.userData?.map)  mainBracelet.userData.map.dispose();
+        if (mainBracelet.userData?.bump) mainBracelet.userData.bump.dispose();
         mainScene.remove(mainBracelet);
     }
-
-    mainBracelet = createBracelet(
-        b.couleurFond || '#003057',
-        b.couleurTexte || '#ffffff',
-        b.texte || 'BRACELET'
-    );
+    mainBracelet = createBracelet(b.couleurFond || '#003057', b.couleurTexte || '#ffffff', b.texte || 'BRACELET');
     mainScene.add(mainBracelet);
 
     const nameEl = document.getElementById('viewer-bracelet-name');
-    const infoEl = document.getElementById('viewer-bracelet-info');
     nameEl.textContent = (b.texte || 'BRACELET').toUpperCase();
-    infoEl.textContent = `${b.ville ? b.ville.toUpperCase() : ''} · ${b.annee || ''}`;
+    document.getElementById('viewer-bracelet-info').textContent = `${(b.ville || '').toUpperCase()} · ${b.annee || ''}`;
     nameEl.style.opacity = '1';
     document.getElementById('viewer-hint').style.opacity = '0';
     selectedBraceletData = b;
@@ -1406,24 +1306,27 @@ function loadBraceletIn3D(b) {
 
 // ============================================================
 // MODAL DÉTAIL
+// BUG FIX #2 : accolade fermante remise au bon endroit —
+//   les blocs admin + initModalViewer + ouverture overlay
+//   ne sont plus imbriqués dans le if (b.listeLiee)
 // ============================================================
 window.openModal = function(b) {
     document.getElementById('modal-title').textContent = (b.texte || 'Bracelet').toUpperCase();
-    document.getElementById('modal-meta').textContent = `${b.ville || ''} · ${b.annee || ''}`;
+    document.getElementById('modal-meta').textContent  = `${b.ville || ''} · ${b.annee || ''}`;
 
     const grid = document.getElementById('modal-info-grid');
     grid.innerHTML = `
         <div class="modal-info-item">
             <div class="modal-info-label">Couleur fond</div>
             <div class="modal-info-value" style="display:flex;align-items:center;gap:8px;">
-                <span style="width:18px;height:18px;border-radius:3px;background:${escHtml(b.couleurFond || '#000')};display:inline-block;border:1px solid #333;"></span>
+                <span style="width:18px;height:18px;border-radius:3px;background:${escHtml(b.couleurFond||'#000')};display:inline-block;border:1px solid #333;"></span>
                 ${escHtml(b.couleurFond || '')}
             </div>
         </div>
         <div class="modal-info-item">
             <div class="modal-info-label">Couleur texte</div>
             <div class="modal-info-value" style="display:flex;align-items:center;gap:8px;">
-                <span style="width:18px;height:18px;border-radius:3px;background:${escHtml(b.couleurTexte || '#fff')};display:inline-block;border:1px solid #333;"></span>
+                <span style="width:18px;height:18px;border-radius:3px;background:${escHtml(b.couleurTexte||'#fff')};display:inline-block;border:1px solid #333;"></span>
                 ${escHtml(b.couleurTexte || '')}
             </div>
         </div>
@@ -1437,37 +1340,44 @@ window.openModal = function(b) {
         </div>
     `;
 
-    const linkedEl = document.getElementById('modal-linked');
+    // Bloc liste liée — BUG FIX #2 : accolade fermante ici, bien isolée
+    const linkedEl  = document.getElementById('modal-linked');
     const linkedVal = document.getElementById('modal-linked-value');
     if (b.listeLiee) {
         linkedEl.style.display = 'block';
-        const encodedNom = encodeURIComponent(b.listeLiee);
+        const encodedNom   = encodeURIComponent(b.listeLiee);
         const encodedVille = encodeURIComponent(b.ville || '');
         const encodedAnnee = encodeURIComponent(b.annee || '');
-        const nomLower = b.listeLiee.toLowerCase();
-        const type = b.listeType || (
-          nomLower.includes('fake') ? 'fakelistes'
-          : nomLower.includes('bdp') ? 'listes_bdp'
-          : 'listes_bde'
-        );
-        
-        const url = `https://sebr.tech/liste?ecole=${encodedVille}&annee=${encodedAnnee}&type=${type}&id=${encodedNom}`;    
-        
-        linkedVal.innerHTML = `<a href="${url}" target="_blank" style="color:var(--poly-cyan);text-decoration:none;font-weight:700;" onmouseover="this.style.textDecoration='underline'" onmouseout="this.style.textDecoration='none'">${escHtml(b.listeLiee)}</a>`;
 
-    const canAdmin = currentUserData && (currentUserData.role === 'admin' || currentUserData.role === 'editor');
-    const adminBox = document.getElementById('modal-admin-actions');
-    const editBtn = document.getElementById('modal-btn-edit');
+        // Déterminer le type : priorité au champ listeType stocké en DB,
+        // sinon fallback sur heuristique par nom
+        const type = b.listeType || (() => {
+            const n = (b.listeLiee || '').toLowerCase();
+            if (n.includes('fake'))  return 'fakelistes';
+            if (n.includes('bdp'))   return 'listes_bdp';
+            return 'listes_bde';
+        })();
+
+        const url = `https://sebr.tech/liste?ecole=${encodedVille}&annee=${encodedAnnee}&type=${type}&id=${encodedNom}`;
+        linkedVal.innerHTML = `<a href="${url}" target="_blank"
+            style="color:var(--poly-cyan);text-decoration:none;font-weight:700;"
+            onmouseover="this.style.textDecoration='underline'"
+            onmouseout="this.style.textDecoration='none'"
+            >${escHtml(b.listeLiee)}</a>`;
+    } else {
+        linkedEl.style.display = 'none';
+    }
+    // FIN du bloc liste liée — BUG FIX #2 accolade ici (et non après admin/initModal)
+
+    // Boutons admin dans la modal
+    const canAdmin  = currentUserData && (currentUserData.role === 'admin' || currentUserData.role === 'editor');
+    const adminBox  = document.getElementById('modal-admin-actions');
+    const editBtn   = document.getElementById('modal-btn-edit');
     const deleteBtn = document.getElementById('modal-btn-delete');
 
     if (canAdmin) {
         adminBox.style.display = 'flex';
-
-        editBtn.onclick = () => {
-            closeModal();
-            openEditForm(b);
-        };
-
+        editBtn.onclick = () => { closeModal(); openEditForm(b); };
         deleteBtn.onclick = async () => {
             if (!confirm(`Supprimer ${b.texte || 'ce bracelet'} ?`)) return;
             await deleteDoc(doc(db, "bracelets", b.id));
@@ -1476,7 +1386,7 @@ window.openModal = function(b) {
         };
     } else {
         adminBox.style.display = 'none';
-        editBtn.onclick = null;
+        editBtn.onclick   = null;
         deleteBtn.onclick = null;
     }
 
@@ -1485,34 +1395,29 @@ window.openModal = function(b) {
 };
 
 function initModalViewer(b) {
-    if (modalAnimId) cancelAnimationFrame(modalAnimId);
+    if (modalAnimId)   cancelAnimationFrame(modalAnimId);
     if (modalRenderer) modalRenderer.dispose();
 
     const canvas = document.getElementById('modal-bracelet-3d');
-    modalScene = new THREE.Scene();
-    modalCamera = new THREE.PerspectiveCamera(45, 480/120, 0.1, 100);
-    modalCamera.position.set(0, 0, 7.5); 
+    modalScene  = new THREE.Scene();
+    modalCamera = new THREE.PerspectiveCamera(45, 480 / 120, 0.1, 100);
+    modalCamera.position.set(0, 0, 7.5);
 
     modalRenderer = new THREE.WebGLRenderer({ canvas, antialias: true, alpha: true });
     modalRenderer.setSize(canvas.clientWidth || 480, 120);
     modalRenderer.setClearColor(0x070d14, 1);
 
-    const amb = new THREE.AmbientLight(0xffffff, 0.6);
-    modalScene.add(amb);
-    const dir = new THREE.DirectionalLight(0xffffff, 1.2);
-    dir.position.set(5, 5, 5);
-    modalScene.add(dir);
-    const dir2 = new THREE.DirectionalLight(0xaaccff, 0.6);
-    dir2.position.set(-5, -5, -5);
-    modalScene.add(dir2);
+    modalScene.add(new THREE.AmbientLight(0xffffff, 0.6));
+    const dir1 = new THREE.DirectionalLight(0xffffff, 1.2); dir1.position.set(5, 5, 5);   modalScene.add(dir1);
+    const dir2 = new THREE.DirectionalLight(0xaaccff, 0.6); dir2.position.set(-5,-5,-5);   modalScene.add(dir2);
 
     modalBracelet = createBracelet(b.couleurFond || '#003057', b.couleurTexte || '#ffffff', b.texte || 'BRACELET');
     modalBracelet.scale.set(0.72, 0.72, 0.72);
     modalScene.add(modalBracelet);
-    
+
     function animateModal() {
         modalAnimId = requestAnimationFrame(animateModal);
-        modalBracelet.rotation.y -= 0.018; 
+        modalBracelet.rotation.y -= 0.018;
         modalRenderer.render(modalScene, modalCamera);
     }
     animateModal();
@@ -1531,7 +1436,7 @@ document.addEventListener('DOMContentLoaded', () => {
     initMainViewer();
     loadBracelets();
     updatePreview();
-    showCollectionContent(false); // Par défaut non connecté
+    showCollectionContent(false);
 });
 window.loadBracelets = loadBracelets;
 </script>
