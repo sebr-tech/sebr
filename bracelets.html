@@ -786,11 +786,17 @@ window.loadListes = async function loadListes() {
     const data = archiveSnap.data();
     console.log("loadListes dataLocal =", data);
 
-    const ajouterOption = (group, value, label) => {
+    const ajouterOption = (group, value, label, type = '') => {
       if (!value) return;
+    
       const opt = document.createElement('option');
       opt.value = value;
       opt.textContent = label || value;
+    
+      if (type) {
+        opt.dataset.type = type;
+      }
+    
       group.appendChild(opt);
     };
 
@@ -824,24 +830,24 @@ window.loadListes = async function loadListes() {
 
     // 2) LISTES
     const groupes = [
-      { key: 'listes_bde', label: 'Listes BDE' },
-      { key: 'listes_bdp', label: 'Listes BDP' },
-      { key: 'fakelistes', label: 'Fakelistes' }
+      { key: 'listesbde', label: 'Listes BDE', type: 'listes_bde' },
+      { key: 'listesbdp', label: 'Listes BDP', type: 'listes_bdp' },
+      { key: 'fakelistes', label: 'Fakelistes', type: 'fakelistes' }
     ];
-
-    groupes.forEach(({ key, label }) => {
+    
+    groupes.forEach(({ key, label, type }) => {
       const listes = data[key];
       if (!Array.isArray(listes) || listes.length === 0) return;
-
+    
       const group = document.createElement('optgroup');
       group.label = label;
-
+    
       listes.forEach(item => {
         const nom = extraireNom(item);
         if (!nom) return;
-        ajouterOption(group, nom, nom);
+        ajouterOption(group, nom, nom, type);
       });
-
+    
       if (group.children.length > 0) {
         select.appendChild(group);
       }
@@ -1035,19 +1041,28 @@ window.submitBracelet = async function(isProposal) {
     }
 
     const listeSelectionnee = document.getElementById('inp-liste-liee').value;
-
+    const selectListe = document.getElementById('inp-liste-liee');
+    const listeSelectionnee = selectListe.value;
+    const selectedOption = selectListe.options[selectListe.selectedIndex];
+    const listeType = selectedOption?.dataset?.type || null;    
     const data = {
-        texte: document.getElementById('inp-texte').value.trim(),
-        ville: document.getElementById('inp-ville').value,
-        annee: document.getElementById('inp-annee-form').value,
-        couleurFond: document.getElementById('inp-bg-color').value,
-        couleurTexte: document.getElementById('inp-text-color').value,
-        listeLiee:
-            !listeSelectionnee ||
-            listeSelectionnee === 'BDE actuel' ||
-            listeSelectionnee === 'BDP actuel'
-                ? null
-                : listeSelectionnee,
+      texte: document.getElementById('inp-texte').value.trim(),
+      ville: document.getElementById('inp-ville').value,
+      annee: document.getElementById('inp-annee-form').value,
+      couleurFond: document.getElementById('inp-bg-color').value,
+      couleurTexte: document.getElementById('inp-text-color').value,
+      listeLiee:
+        (!listeSelectionnee ||
+         listeSelectionnee === 'BDE actuel' ||
+         listeSelectionnee === 'BDP actuel')
+          ? null
+          : listeSelectionnee,
+      listeType:
+        (!listeSelectionnee ||
+         listeSelectionnee === 'BDE actuel' ||
+         listeSelectionnee === 'BDP actuel')
+          ? null
+          : listeType
     };
 
     if (!data.texte || !data.ville || !data.annee) {
@@ -1430,14 +1445,15 @@ window.openModal = function(b) {
         const encodedVille = encodeURIComponent(b.ville || '');
         const encodedAnnee = encodeURIComponent(b.annee || '');
         const nomLower = b.listeLiee.toLowerCase();
-        const type = nomLower.includes('fake') ? 'fakelistes'
-                   : nomLower.includes('bdp') ? 'listes_bdp'
-                   : 'listes_bde';
-        const url = `https://sebr.tech/liste?ecole=${encodedVille}&annee=${encodedAnnee}&type=${type}&id=${encodedNom}`;
+        const type = b.listeType || (
+          nomLower.includes('fake') ? 'fakelistes'
+          : nomLower.includes('bdp') ? 'listes_bdp'
+          : 'listes_bde'
+        );
+        
+        const url = `https://sebr.tech/liste?ecole=${encodedVille}&annee=${encodedAnnee}&type=${type}&id=${encodedNom}`;    
+        
         linkedVal.innerHTML = `<a href="${url}" target="_blank" style="color:var(--poly-cyan);text-decoration:none;font-weight:700;" onmouseover="this.style.textDecoration='underline'" onmouseout="this.style.textDecoration='none'">${escHtml(b.listeLiee)}</a>`;
-    } else {
-        linkedEl.style.display = 'none';
-    }
 
     const canAdmin = currentUserData && (currentUserData.role === 'admin' || currentUserData.role === 'editor');
     const adminBox = document.getElementById('modal-admin-actions');
